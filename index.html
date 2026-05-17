@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小小鱼每日待办</title>
+  <style>
+    :root {
+      --bg: #f7fbff;
+      --surface: #ffffff;
+      --surface-soft: #eef7fb;
+      --text: #263238;
+      --muted: #6d7c85;
+      --primary: #ff8fb3;
+      --primary-strong: #e95d91;
+      --accent: #39b7c9;
+      --border: rgba(38, 50, 56, 0.12);
+      --shadow: 0 20px 60px rgba(44, 62, 80, 0.12);
+      --done: #9aa8ae;
+      --danger: #ef6b68;
+      --wheel-a: #ffb8cc;
+      --wheel-b: #8bdde8;
+      --wheel-c: #ffe08a;
+      --wheel-d: #a8e6b1;
+    }
+
+    [data-theme="dark"] {
+      --bg: #151923;
+      --surface: #202635;
+      --surface-soft: #2a3143;
+      --text: #eef4f7;
+      --muted: #aab6c0;
+      --primary: #7dd3fc;
+      --primary-strong: #38bdf8;
+      --accent: #f9a8d4;
+      --border: rgba(255, 255, 255, 0.12);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+      --done: #7f8a96;
+      --danger: #fb8d89;
+      --wheel-a: #7dd3fc;
+      --wheel-b: #c4b5fd;
+      --wheel-c: #f9a8d4;
+      --wheel-d: #86efac;
+    }
+
+    [data-theme="pink"] {
+      --bg: #fff5f8;
+      --surface-soft: #ffe8f0;
+      --primary: #ff76a8;
+      --primary-strong: #e64f89;
+      --accent: #ffb86b;
+      --wheel-a: #ff9cbe;
+      --wheel-b: #ffd1df;
+      --wheel-c: #ffc46f;
+      --wheel-d: #b7eed4;
+    }
+
+    [data-theme="blue"] {
+      --bg: #eff8ff;
+      --surface-soft: #dff1ff;
+      --primary: #48a7ff;
+      --primary-strong: #1678d6;
+      --accent: #20c6b4;
+      --wheel-a: #64b5ff;
+      --wheel-b: #a7e5ff;
+      --wheel-c: #8ee6d5;
+      --wheel-d: #ffe08a;
+    }
+
+    [data-theme="green"] {
+      --bg: #f2fff7;
+      --surface-soft: #def8e7;
+      --primary: #49c783;
+      --primary-strong: #229b5d;
+      --accent: #4cb6d6;
+      --wheel-a: #7ee2a8;
+      --wheel-b: #c7f2d5;
+      --wheel-c: #8ed7ee;
+      --wheel-d: #ffd184;
+    }
+
+    [data-theme="purple"] {
+      --bg: #fbf7ff;
+      --surface-soft: #f0e6ff;
+      --primary: #a97cff;
+      --primary-strong: #7c4de6;
+      --accent: #ff8fb3;
+      --wheel-a: #b99bff;
+      --wheel-b: #e1d3ff;
+      --wheel-c: #ffb0cf;
+      --wheel-d: #93e5d0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, var(--surface-soft), transparent 32rem),
+        linear-gradient(135deg, var(--bg), var(--surface-soft));
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 12px 30px color-mix(in srgb, var(--primary) 28%, transparent);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 48px);
+      letter-spacing: 0;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .theme-picker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface) 86%, transparent);
+      box-shadow: 0 8px 24px rgba(25, 45, 64, 0.08);
+    }
+
+    .theme-dot {
+      width: 28px;
+      height: 28px;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      background: var(--dot);
+      color: transparent;
+    }
+
+    .theme-dot.is-active {
+      border-color: var(--text);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 24%, transparent);
+    }
+
+    .avatar-button {
+      width: 58px;
+      height: 58px;
+      padding: 0;
+      border: 3px solid var(--surface);
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 14px 34px rgba(25, 45, 64, 0.16);
+      overflow: hidden;
+    }
+
+    .avatar-button img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: color-mix(in srgb, var(--surface) 93%, transparent);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .todo-panel {
+      padding: clamp(18px, 4vw, 32px);
+      margin-bottom: 24px;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 180px auto;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .field {
+      min-height: 50px;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      padding: 0 16px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .primary-btn,
+    .ghost-btn,
+    .icon-btn {
+      min-height: 44px;
+      border: 0;
+      border-radius: 16px;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .primary-btn {
+      padding: 0 22px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 28%, transparent);
+    }
+
+    .primary-btn:hover,
+    .ghost-btn:hover,
+    .icon-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .ghost-btn {
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      color: var(--text);
+      font-weight: 650;
+    }
+
+    .icon-btn {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      min-height: 42px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .icon-btn.danger {
+      color: var(--danger);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .stats {
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .todo-list,
+    .option-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .todo-item,
+    .option-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 62px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--surface);
+    }
+
+    .check {
+      width: 28px;
+      height: 28px;
+      accent-color: var(--primary);
+    }
+
+    .todo-text {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .todo-title {
+      overflow-wrap: anywhere;
+      font-weight: 700;
+    }
+
+    .todo-date {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .todo-item.done .todo-title {
+      color: var(--done);
+      text-decoration: line-through;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .empty {
+      padding: 26px 16px;
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .wheel-panel {
+      padding: clamp(18px, 4vw, 32px);
+    }
+
+    .wheel-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 430px) 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .wheel-stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 430px;
+    }
+
+    .pointer {
+      position: absolute;
+      top: 13px;
+      z-index: 2;
+      width: 0;
+      height: 0;
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+      border-top: 30px solid var(--primary-strong);
+      filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.18));
+    }
+
+    #wheelCanvas {
+      width: min(100%, 390px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--surface);
+      box-shadow: inset 0 0 0 10px var(--surface), 0 18px 42px rgba(25, 45, 64, 0.17);
+      transition: transform 4.2s cubic-bezier(0.12, 0.78, 0.13, 1);
+    }
+
+    .wheel-center {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: 94px;
+      height: 94px;
+      border: 8px solid var(--surface);
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(25, 45, 64, 0.2);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .wheel-controls {
+      display: grid;
+      gap: 16px;
+    }
+
+    .option-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .option-item {
+      grid-template-columns: 1fr auto;
+      min-height: 54px;
+    }
+
+    .option-item.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+
+    .option-text {
+      overflow-wrap: anywhere;
+      font-weight: 700;
+    }
+
+    .result {
+      min-height: 48px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 820px) {
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .header-actions {
+        flex-direction: column-reverse;
+        align-items: flex-end;
+      }
+
+      .theme-picker {
+        max-width: 180px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        border-radius: 20px;
+      }
+
+      .input-row,
+      .wheel-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .wheel-stage {
+        min-height: 340px;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .app {
+        width: min(100% - 20px, 1080px);
+        padding-top: 16px;
+      }
+
+      .brand {
+        align-items: flex-start;
+      }
+
+      .logo {
+        width: 42px;
+        height: 42px;
+        font-size: 21px;
+      }
+
+      .avatar-button {
+        width: 52px;
+        height: 52px;
+      }
+
+      .todo-item,
+      .option-item {
+        align-items: start;
+      }
+
+      .todo-item {
+        grid-template-columns: auto 1fr;
+      }
+
+      .todo-item .item-actions {
+        grid-column: 2;
+      }
+
+      .option-item {
+        grid-template-columns: 1fr;
+      }
+
+      .option-item .item-actions {
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">鱼</div>
+        <div>
+          <h1>小小鱼每日待办</h1>
+          <p class="subtitle">把今天要做的事轻轻放进清单里</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="theme-picker" role="group" aria-label="选择主题色">
+          <button class="theme-dot" type="button" data-theme-button="light" style="--dot: linear-gradient(135deg, #ff8fb3, #39b7c9);" title="浅色默认">浅</button>
+          <button class="theme-dot" type="button" data-theme-button="dark" style="--dot: linear-gradient(135deg, #202635, #7dd3fc);" title="深色">深</button>
+          <button class="theme-dot" type="button" data-theme-button="pink" style="--dot: linear-gradient(135deg, #ff76a8, #ffb86b);" title="粉色系">粉</button>
+          <button class="theme-dot" type="button" data-theme-button="blue" style="--dot: linear-gradient(135deg, #48a7ff, #20c6b4);" title="蓝色系">蓝</button>
+          <button class="theme-dot" type="button" data-theme-button="green" style="--dot: linear-gradient(135deg, #49c783, #4cb6d6);" title="绿色系">绿</button>
+          <button class="theme-dot" type="button" data-theme-button="purple" style="--dot: linear-gradient(135deg, #a97cff, #ff8fb3);" title="紫色系">紫</button>
+        </div>
+
+        <button class="avatar-button" id="avatarButton" type="button" title="上传头像" aria-label="上传头像">
+          <img id="avatarPreview" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="头像">
+        </button>
+        <input class="hidden" id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp">
+      </div>
+    </header>
+
+    <section class="panel todo-panel" aria-labelledby="todoTitle">
+      <div class="section-head">
+        <h2 id="todoTitle">今日清单</h2>
+        <span class="stats" id="todoStats">0 项</span>
+      </div>
+
+      <form class="input-row" id="todoForm">
+        <input class="field" id="todoInput" type="text" placeholder="写下一个待办事项" autocomplete="off" required>
+        <input class="field" id="todoDate" type="date" aria-label="待办日期">
+        <button class="primary-btn" type="submit">添加</button>
+      </form>
+
+      <ul class="todo-list" id="todoList"></ul>
+      <div class="empty hidden" id="todoEmpty">今天还没有待办，先加一件小事吧。</div>
+    </section>
+
+    <section class="panel wheel-panel" aria-labelledby="wheelTitle">
+      <div class="section-head">
+        <h2 id="wheelTitle">小小鱼大转盘</h2>
+        <span class="stats">选择困难时让它帮你一下</span>
+      </div>
+
+      <div class="wheel-layout">
+        <div class="wheel-stage">
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="wheelCanvas" width="720" height="720" role="img" aria-label="待办抽奖转盘"></canvas>
+          <div class="wheel-center">今天<br>做啥</div>
+        </div>
+
+        <div class="wheel-controls">
+          <form class="option-form" id="optionForm">
+            <input class="field" id="optionInput" type="text" placeholder="添加转盘选项" autocomplete="off" required>
+            <button class="primary-btn" type="submit">添加</button>
+          </form>
+
+          <button class="primary-btn" id="spinButton" type="button">开始抽奖</button>
+          <div class="result" id="spinResult">准备好了就开始转吧。</div>
+          <ul class="option-list" id="optionList"></ul>
+          <div class="empty hidden" id="optionEmpty">至少添加 2 个选项后，就可以开始抽奖。</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const storageKeys = {
+      todos: "xiaoxiaoyu.todos",
+      avatar: "xiaoxiaoyu.avatar",
+      theme: "xiaoxiaoyu.theme",
+      options: "xiaoxiaoyu.wheelOptions"
+    };
+
+    const defaultAvatar = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop stop-color="#ff8fb3"/>
+            <stop offset="1" stop-color="#39b7c9"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" rx="60" fill="url(#g)"/>
+        <circle cx="43" cy="48" r="8" fill="#fff"/>
+        <circle cx="78" cy="48" r="8" fill="#fff"/>
+        <path d="M35 73c12 12 39 12 51 0" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+        <path d="M22 32c15-18 61-18 76 0" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+      </svg>
+    `);
+
+    const todoForm = document.querySelector("#todoForm");
+    const todoInput = document.querySelector("#todoInput");
+    const todoDate = document.querySelector("#todoDate");
+    const todoList = document.querySelector("#todoList");
+    const todoEmpty = document.querySelector("#todoEmpty");
+    const todoStats = document.querySelector("#todoStats");
+    const avatarButton = document.querySelector("#avatarButton");
+    const avatarInput = document.querySelector("#avatarInput");
+    const avatarPreview = document.querySelector("#avatarPreview");
+    const optionForm = document.querySelector("#optionForm");
+    const optionInput = document.querySelector("#optionInput");
+    const optionList = document.querySelector("#optionList");
+    const optionEmpty = document.querySelector("#optionEmpty");
+    const spinButton = document.querySelector("#spinButton");
+    const spinResult = document.querySelector("#spinResult");
+    const wheelCanvas = document.querySelector("#wheelCanvas");
+    const wheelContext = wheelCanvas.getContext("2d");
+
+    let todos = load(storageKeys.todos, []);
+    let wheelOptions = load(storageKeys.options, ["整理桌面", "读 20 分钟书", "散步 15 分钟", "完成最重要的一件事"]);
+    let selectedOptionId = null;
+    let currentRotation = 0;
+    let spinning = false;
+
+    function load(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function save(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function uid() {
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function today() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function formatDate(value) {
+      if (!value) return "未设置日期";
+      const date = new Date(`${value}T00:00:00`);
+      return date.toLocaleDateString("zh-CN", { month: "long", day: "numeric", weekday: "short" });
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+
+    function renderTodos() {
+      todoList.innerHTML = "";
+      todoEmpty.classList.toggle("hidden", todos.length > 0);
+
+      const doneCount = todos.filter((todo) => todo.done).length;
+      todoStats.textContent = `${doneCount}/${todos.length} 已完成`;
+
+      todos
+        .slice()
+        .sort((a, b) => (a.done - b.done) || (a.date || "").localeCompare(b.date || ""))
+        .forEach((todo) => {
+          const item = document.createElement("li");
+          item.className = `todo-item${todo.done ? " done" : ""}`;
+          item.dataset.id = todo.id;
+          item.innerHTML = `
+            <input class="check" type="checkbox" ${todo.done ? "checked" : ""} aria-label="完成待办">
+            <div class="todo-text">
+              <span class="todo-title">${escapeHtml(todo.title)}</span>
+              <span class="todo-date">${formatDate(todo.date)}</span>
+            </div>
+            <div class="item-actions">
+              <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
+              <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
+            </div>
+          `;
+          todoList.appendChild(item);
+        });
+    }
+
+    function addTodo(title, date) {
+      todos.push({ id: uid(), title, date, done: false });
+      save(storageKeys.todos, todos);
+      renderTodos();
+    }
+
+    todoForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const title = todoInput.value.trim();
+      if (!title) return;
+      addTodo(title, todoDate.value || today());
+      todoInput.value = "";
+      todoDate.value = today();
+      todoInput.focus();
+    });
+
+    todoList.addEventListener("click", (event) => {
+      const item = event.target.closest(".todo-item");
+      if (!item) return;
+      const todo = todos.find((entry) => entry.id === item.dataset.id);
+      if (!todo) return;
+
+      if (event.target.matches(".check")) {
+        todo.done = event.target.checked;
+      }
+
+      if (event.target.dataset.action === "delete") {
+        todos = todos.filter((entry) => entry.id !== todo.id);
+      }
+
+      if (event.target.dataset.action === "edit") {
+        const nextTitle = prompt("编辑待办事项", todo.title);
+        if (nextTitle !== null && nextTitle.trim()) {
+          todo.title = nextTitle.trim();
+        }
+      }
+
+      save(storageKeys.todos, todos);
+      renderTodos();
+    });
+
+    function applyTheme(theme) {
+      const nextTheme = theme || "light";
+      document.documentElement.dataset.theme = nextTheme === "light" ? "" : nextTheme;
+      document.querySelectorAll("[data-theme-button]").forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.themeButton === nextTheme);
+      });
+      localStorage.setItem(storageKeys.theme, nextTheme);
+      requestAnimationFrame(drawWheel);
+    }
+
+    document.querySelectorAll("[data-theme-button]").forEach((button) => {
+      button.addEventListener("click", () => applyTheme(button.dataset.themeButton));
+    });
+
+    avatarButton.addEventListener("click", () => avatarInput.click());
+    avatarInput.addEventListener("change", () => {
+      const file = avatarInput.files?.[0];
+      if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        alert("请选择 jpg、png 或 webp 图片。");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const image = reader.result;
+        avatarPreview.src = image;
+        localStorage.setItem(storageKeys.avatar, image);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function drawWheel() {
+      const size = wheelCanvas.width;
+      const center = size / 2;
+      const radius = center - 18;
+      const colors = [cssVar("--wheel-a"), cssVar("--wheel-b"), cssVar("--wheel-c"), cssVar("--wheel-d")];
+      const items = wheelOptions.length ? wheelOptions : [{ title: "先添加选项" }];
+      const angle = (Math.PI * 2) / items.length;
+
+      wheelContext.clearRect(0, 0, size, size);
+      wheelContext.save();
+      wheelContext.translate(center, center);
+      wheelContext.rotate(-Math.PI / 2);
+
+      items.forEach((item, index) => {
+        const start = index * angle;
+        const end = start + angle;
+        wheelContext.beginPath();
+        wheelContext.moveTo(0, 0);
+        wheelContext.arc(0, 0, radius, start, end);
+        wheelContext.closePath();
+        wheelContext.fillStyle = colors[index % colors.length];
+        wheelContext.fill();
+
+        if (item.id && item.id === selectedOptionId) {
+          wheelContext.save();
+          wheelContext.beginPath();
+          wheelContext.moveTo(0, 0);
+          wheelContext.arc(0, 0, radius, start, end);
+          wheelContext.closePath();
+          wheelContext.lineWidth = 16;
+          wheelContext.strokeStyle = cssVar("--primary-strong");
+          wheelContext.stroke();
+          wheelContext.restore();
+        }
+
+        wheelContext.save();
+        wheelContext.rotate(start + angle / 2);
+        wheelContext.textAlign = "right";
+        wheelContext.fillStyle = "#24313a";
+        wheelContext.font = "700 30px Microsoft YaHei, sans-serif";
+        const title = item.title.length > 10 ? `${item.title.slice(0, 10)}…` : item.title;
+        wheelContext.fillText(title, radius - 34, 10);
+        wheelContext.restore();
+      });
+
+      wheelContext.beginPath();
+      wheelContext.arc(0, 0, radius, 0, Math.PI * 2);
+      wheelContext.lineWidth = 14;
+      wheelContext.strokeStyle = cssVar("--surface");
+      wheelContext.stroke();
+      wheelContext.restore();
+    }
+
+    function renderOptions() {
+      optionList.innerHTML = "";
+      optionEmpty.classList.toggle("hidden", wheelOptions.length > 0);
+      spinButton.disabled = wheelOptions.length < 2 || spinning;
+      spinButton.textContent = spinning ? "转动中..." : "开始抽奖";
+
+      wheelOptions.forEach((option) => {
+        const item = document.createElement("li");
+        item.className = `option-item${option.id === selectedOptionId ? " selected" : ""}`;
+        item.dataset.id = option.id;
+        item.innerHTML = `
+          <span class="option-text">${escapeHtml(option.title)}</span>
+          <div class="item-actions">
+            <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
+            <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
+          </div>
+        `;
+        optionList.appendChild(item);
+      });
+
+      drawWheel();
+    }
+
+    optionForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const title = optionInput.value.trim();
+      if (!title) return;
+      wheelOptions.push({ id: uid(), title });
+      save(storageKeys.options, wheelOptions);
+      optionInput.value = "";
+      selectedOptionId = null;
+      spinResult.textContent = "新选项已经放进转盘。";
+      renderOptions();
+    });
+
+    optionList.addEventListener("click", (event) => {
+      const item = event.target.closest(".option-item");
+      if (!item) return;
+      const option = wheelOptions.find((entry) => entry.id === item.dataset.id);
+      if (!option || spinning) return;
+
+      if (event.target.dataset.action === "delete") {
+        wheelOptions = wheelOptions.filter((entry) => entry.id !== option.id);
+        if (selectedOptionId === option.id) selectedOptionId = null;
+        spinResult.textContent = "已经从转盘移除。";
+      }
+
+      if (event.target.dataset.action === "edit") {
+        const nextTitle = prompt("编辑转盘选项", option.title);
+        if (nextTitle !== null && nextTitle.trim()) {
+          option.title = nextTitle.trim();
+          spinResult.textContent = "转盘选项已更新。";
+        }
+      }
+
+      save(storageKeys.options, wheelOptions);
+      renderOptions();
+    });
+
+    spinButton.addEventListener("click", () => {
+      if (spinning || wheelOptions.length < 2) return;
+
+      spinning = true;
+      selectedOptionId = null;
+      renderOptions();
+      spinResult.textContent = "正在认真旋转...";
+
+      const targetIndex = Math.floor(Math.random() * wheelOptions.length);
+      const segment = 360 / wheelOptions.length;
+      const targetMiddle = targetIndex * segment + segment / 2;
+      const fullTurns = 5 + Math.floor(Math.random() * 3);
+      const jitter = (Math.random() - 0.5) * Math.min(segment * 0.45, 14);
+      const extraRotation = fullTurns * 360 + (360 - targetMiddle) + jitter;
+      currentRotation += extraRotation;
+      wheelCanvas.style.transform = `rotate(${currentRotation}deg)`;
+
+      window.setTimeout(() => {
+        const winner = wheelOptions[targetIndex];
+        selectedOptionId = winner.id;
+        spinning = false;
+        spinResult.textContent = `今天就做这件事！${winner.title}`;
+        alert(`今天就做这件事！\n${winner.title}`);
+        renderOptions();
+      }, 4300);
+    });
+
+    function init() {
+      todoDate.value = today();
+      avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
+      applyTheme(localStorage.getItem(storageKeys.theme) || "light");
+      renderTodos();
+      renderOptions();
+    }
+
+    init();
+  </script>
+</body>
+</html>
