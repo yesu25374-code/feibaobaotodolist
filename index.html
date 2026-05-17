@@ -314,6 +314,113 @@
       white-space: nowrap;
     }
 
+    .pager-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .pager-title {
+      min-width: 0;
+      text-align: center;
+    }
+
+    .pager-title h2,
+    .pager-title h3 {
+      margin: 0;
+      overflow-wrap: anywhere;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+
+    .pager-subtitle {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pager-arrow {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 28px;
+      line-height: 1;
+      transition: transform 0.2s, opacity 0.2s, background 0.2s;
+    }
+
+    .pager-arrow:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: var(--surface-soft);
+    }
+
+    .pager-arrow:disabled {
+      cursor: not-allowed;
+      opacity: 0.35;
+    }
+
+    .slide-frame {
+      overflow: hidden;
+    }
+
+    .slide-page {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .slide-left-enter {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    .slide-right-enter {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    .slide-active {
+      transform: translateX(0);
+      opacity: 1;
+      transition: all 0.3s ease;
+    }
+
+    .todo-readonly {
+      display: none;
+      margin: -4px 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .todo-panel.is-history .todo-readonly {
+      display: block;
+    }
+
+    .todo-panel.is-history .input-row {
+      display: none;
+    }
+
+    .wheel-manager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .wheel-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .todo-list,
     .option-list {
       display: grid;
@@ -568,9 +675,18 @@
       </div>
     </header>
 
-    <section class="panel todo-panel" aria-labelledby="todoTitle">
+    <section class="panel todo-panel" id="todoPanel" aria-labelledby="todoTitle">
+      <div class="pager-head">
+        <button class="pager-arrow" id="prevDayButton" type="button" title="查看前一天" aria-label="查看前一天">‹</button>
+        <div class="pager-title">
+          <h2 id="todoTitle">今日清单</h2>
+          <span class="pager-subtitle" id="dateLabel">5月17日 星期日 今天</span>
+        </div>
+        <button class="pager-arrow" id="nextDayButton" type="button" title="查看后一天" aria-label="查看后一天">›</button>
+      </div>
+
       <div class="section-head">
-        <h2 id="todoTitle">今日清单</h2>
+        <span class="todo-readonly" id="todoReadonly">历史日期只读：可以打勾，但不能新增、编辑或删除。</span>
         <span class="stats" id="todoStats">0 项</span>
       </div>
 
@@ -580,17 +696,31 @@
         <button class="primary-btn" type="submit">添加</button>
       </form>
 
-      <ul class="todo-list" id="todoList"></ul>
+      <div class="slide-frame" id="todoSlide">
+        <ul class="todo-list slide-page" id="todoList"></ul>
+      </div>
       <div class="empty hidden" id="todoEmpty">今天还没有待办，先加一件小事吧。</div>
     </section>
 
     <section class="panel wheel-panel" aria-labelledby="wheelTitle">
-      <div class="section-head">
-        <h2 id="wheelTitle">小小鱼大转盘</h2>
-        <span class="stats">选择困难时让它帮你一下</span>
+      <div class="wheel-manager">
+        <div class="wheel-tools">
+          <button class="icon-btn" id="editWheelButton" type="button" title="编辑名称">✎</button>
+          <button class="icon-btn danger" id="deleteWheelButton" type="button" title="删除当前转盘">×</button>
+        </div>
+        <button class="ghost-btn" id="createWheelButton" type="button">+ 新建转盘</button>
       </div>
 
-      <div class="wheel-layout">
+      <div class="pager-head">
+        <button class="pager-arrow" id="prevWheelButton" type="button" title="上一个转盘" aria-label="上一个转盘">‹</button>
+        <div class="pager-title">
+          <h2 id="wheelTitle">默认转盘</h2>
+          <span class="pager-subtitle" id="wheelPageLabel">1 / 1</span>
+        </div>
+        <button class="pager-arrow" id="nextWheelButton" type="button" title="下一个转盘" aria-label="下一个转盘">›</button>
+      </div>
+
+      <div class="wheel-layout slide-page" id="wheelSlide">
         <div class="wheel-stage">
           <div class="pointer" aria-hidden="true"></div>
           <canvas id="wheelCanvas" width="720" height="720" role="img" aria-label="待办抽奖转盘"></canvas>
@@ -617,7 +747,9 @@
       todos: "xiaoxiaoyu.todos",
       avatar: "xiaoxiaoyu.avatar",
       theme: "xiaoxiaoyu.theme",
-      options: "xiaoxiaoyu.wheelOptions"
+      options: "xiaoxiaoyu.wheelOptions",
+      wheels: "wheels",
+      currentWheelIndex: "currentWheelIndex"
     };
 
     const defaultAvatar = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
@@ -636,15 +768,27 @@
       </svg>
     `);
 
+    const todoPanel = document.querySelector("#todoPanel");
     const todoForm = document.querySelector("#todoForm");
     const todoInput = document.querySelector("#todoInput");
     const todoDate = document.querySelector("#todoDate");
     const todoList = document.querySelector("#todoList");
     const todoEmpty = document.querySelector("#todoEmpty");
     const todoStats = document.querySelector("#todoStats");
+    const dateLabel = document.querySelector("#dateLabel");
+    const prevDayButton = document.querySelector("#prevDayButton");
+    const nextDayButton = document.querySelector("#nextDayButton");
     const avatarButton = document.querySelector("#avatarButton");
     const avatarInput = document.querySelector("#avatarInput");
     const avatarPreview = document.querySelector("#avatarPreview");
+    const wheelTitle = document.querySelector("#wheelTitle");
+    const wheelPageLabel = document.querySelector("#wheelPageLabel");
+    const prevWheelButton = document.querySelector("#prevWheelButton");
+    const nextWheelButton = document.querySelector("#nextWheelButton");
+    const createWheelButton = document.querySelector("#createWheelButton");
+    const editWheelButton = document.querySelector("#editWheelButton");
+    const deleteWheelButton = document.querySelector("#deleteWheelButton");
+    const wheelSlide = document.querySelector("#wheelSlide");
     const optionForm = document.querySelector("#optionForm");
     const optionInput = document.querySelector("#optionInput");
     const optionList = document.querySelector("#optionList");
@@ -654,8 +798,12 @@
     const wheelCanvas = document.querySelector("#wheelCanvas");
     const wheelContext = wheelCanvas.getContext("2d");
 
-    let todos = load(storageKeys.todos, []);
-    let wheelOptions = normalizeWheelOptions(load(storageKeys.options, ["整理桌面", "读 20 分钟书", "散步 15 分钟", "完成最重要的一件事"]));
+    const todayDate = today();
+    let currentDate = todayDate;
+    let todos = [];
+    let wheels = [];
+    let currentWheelIndex = 0;
+    let wheelOptions = [];
     let selectedOptionId = null;
     let currentAngle = 0;
     let isSpinning = false;
@@ -685,12 +833,74 @@
         .map((item) => ({ id: item.id, title: item.title.trim() }));
     }
 
+    function normalizeTodos(value, fallbackDate = todayDate) {
+      const source = Array.isArray(value) ? value : [];
+      return source
+        .map((item) => {
+          if (!item) return null;
+          const title = item.title || item.text;
+          if (typeof title !== "string" || !title.trim()) return null;
+          return {
+            id: item.id || uid(),
+            title: title.trim(),
+            date: item.date || item.createdAt || fallbackDate,
+            done: Boolean(item.done)
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function normalizeWheels(value) {
+      const source = Array.isArray(value) ? value : [];
+      return source
+        .map((wheel, index) => {
+          if (!wheel) return null;
+          const name = typeof wheel.name === "string" && wheel.name.trim() ? wheel.name.trim() : `转盘 ${index + 1}`;
+          const options = normalizeWheelOptions(wheel.options || []);
+          return { id: wheel.id || uid(), name, options };
+        })
+        .filter(Boolean);
+    }
+
     function uid() {
       return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 
+    function formatDateKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
     function today() {
-      return new Date().toISOString().slice(0, 10);
+      return formatDateKey(new Date());
+    }
+
+    function todoKey(dateStr) {
+      return `todos_${dateStr}`;
+    }
+
+    function toLocalDate(dateStr) {
+      return new Date(`${dateStr}T00:00:00`);
+    }
+
+    function shiftDate(dateStr, days) {
+      const date = toLocalDate(dateStr);
+      date.setDate(date.getDate() + days);
+      return formatDateKey(date);
+    }
+
+    function isTodayPage() {
+      return currentDate === todayDate;
+    }
+
+    function formatCurrentDateLabel(dateStr) {
+      const date = toLocalDate(dateStr);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const weekday = date.toLocaleDateString("zh-CN", { weekday: "long" });
+      return `${month}月${day}日 ${weekday}${dateStr === todayDate ? " 今天" : ""}`;
     }
 
     function formatDate(value) {
@@ -709,9 +919,154 @@
       })[char]);
     }
 
+    function runSlide(element, direction) {
+      element.classList.remove("slide-left-enter", "slide-right-enter", "slide-active");
+      element.classList.add(direction === "left" ? "slide-left-enter" : "slide-right-enter");
+      element.getBoundingClientRect();
+      element.classList.add("slide-active");
+      window.setTimeout(() => {
+        element.classList.remove("slide-left-enter", "slide-right-enter", "slide-active");
+      }, 320);
+    }
+
+    function setupSwipe(element, onLeft, onRight) {
+      let startX = 0;
+      let startY = 0;
+
+      element.addEventListener("touchstart", (event) => {
+        const touch = event.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+      }, { passive: true });
+
+      element.addEventListener("touchend", (event) => {
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        if (Math.abs(deltaX) <= 50 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+        if (deltaX < 0) onLeft();
+        if (deltaX > 0) onRight();
+      }, { passive: true });
+    }
+
+    function migrateTodoStorage() {
+      const legacyTodos = normalizeTodos(load(storageKeys.todos, []), todayDate);
+      if (!legacyTodos.length || localStorage.getItem(todoKey(todayDate))) return;
+      const grouped = legacyTodos.reduce((acc, todo) => {
+        const date = todo.date || todayDate;
+        acc[date] ||= [];
+        acc[date].push(todo);
+        return acc;
+      }, {});
+      Object.entries(grouped).forEach(([date, items]) => save(todoKey(date), items));
+    }
+
+    function migrateWheelStorage() {
+      const existing = normalizeWheels(load(storageKeys.wheels, []));
+      if (existing.length) {
+        wheels = existing;
+        currentWheelIndex = Math.min(Number(localStorage.getItem(storageKeys.currentWheelIndex)) || 0, wheels.length - 1);
+        return;
+      }
+
+      const legacyOptions = normalizeWheelOptions(load(storageKeys.options, ["整理桌面", "读 20 分钟书", "散步 15 分钟", "完成最重要的一件事"]));
+      wheels = [{ id: "default-wheel", name: "默认转盘", options: legacyOptions }];
+      currentWheelIndex = 0;
+      save(storageKeys.wheels, wheels);
+      localStorage.setItem(storageKeys.currentWheelIndex, "0");
+    }
+
+    function saveCurrentTodos() {
+      save(todoKey(currentDate), todos);
+    }
+
+    function loadTodosByDate(dateStr) {
+      currentDate = dateStr;
+      todos = normalizeTodos(load(todoKey(dateStr), []), dateStr);
+      renderTodos();
+    }
+
+    function prevDay() {
+      loadTodosByDate(shiftDate(currentDate, -1));
+      runSlide(todoList, "right");
+    }
+
+    function nextDay() {
+      if (isTodayPage()) return;
+      loadTodosByDate(shiftDate(currentDate, 1));
+      runSlide(todoList, "left");
+    }
+
+    function saveWheels() {
+      save(storageKeys.wheels, wheels);
+      localStorage.setItem(storageKeys.currentWheelIndex, String(currentWheelIndex));
+    }
+
+    function currentWheel() {
+      return wheels[currentWheelIndex];
+    }
+
+    function loadWheel(index) {
+      if (!wheels.length) migrateWheelStorage();
+      currentWheelIndex = Math.max(0, Math.min(index, wheels.length - 1));
+      const wheel = currentWheel();
+      wheel.options = normalizeWheelOptions(wheel.options || []);
+      wheelOptions = wheel.options;
+      selectedOptionId = null;
+      currentAngle = 0;
+      saveWheels();
+      renderWheelShell();
+      renderOptions();
+      drawWheel();
+    }
+
+    function renderWheelShell() {
+      const wheel = currentWheel();
+      wheelTitle.textContent = wheel?.name || "默认转盘";
+      wheelPageLabel.textContent = `${currentWheelIndex + 1} / ${wheels.length}`;
+      prevWheelButton.disabled = currentWheelIndex === 0 || isSpinning;
+      nextWheelButton.disabled = currentWheelIndex === wheels.length - 1 || isSpinning;
+      editWheelButton.disabled = isSpinning;
+      deleteWheelButton.disabled = currentWheelIndex === 0 || isSpinning;
+    }
+
+    function createNewWheel(name) {
+      const cleanName = name.trim();
+      if (!cleanName) return;
+      wheels.push({ id: uid(), name: cleanName, options: [] });
+      loadWheel(wheels.length - 1);
+      runSlide(wheelSlide, "left");
+    }
+
+    function deleteCurrentWheel() {
+      if (currentWheelIndex === 0 || wheels.length <= 1) return;
+      const wheel = currentWheel();
+      if (!confirm(`确定删除「${wheel.name}」吗？`)) return;
+      wheels.splice(currentWheelIndex, 1);
+      loadWheel(Math.min(currentWheelIndex, wheels.length - 1));
+      runSlide(wheelSlide, "right");
+    }
+
+    function prevWheel() {
+      if (currentWheelIndex <= 0 || isSpinning) return;
+      loadWheel(currentWheelIndex - 1);
+      runSlide(wheelSlide, "right");
+    }
+
+    function nextWheel() {
+      if (currentWheelIndex >= wheels.length - 1 || isSpinning) return;
+      loadWheel(currentWheelIndex + 1);
+      runSlide(wheelSlide, "left");
+    }
+
     function renderTodos() {
       todoList.innerHTML = "";
       todoEmpty.classList.toggle("hidden", todos.length > 0);
+      todoEmpty.textContent = isTodayPage() ? "今天还没有待办，先加一件小事吧。" : "这一天没有待办～";
+      todoPanel.classList.toggle("is-history", !isTodayPage());
+      dateLabel.textContent = formatCurrentDateLabel(currentDate);
+      nextDayButton.disabled = isTodayPage();
+      todoDate.value = currentDate;
 
       const doneCount = todos.filter((todo) => todo.done).length;
       todoStats.textContent = `${doneCount}/${todos.length} 已完成`;
@@ -730,27 +1085,31 @@
               <span class="todo-date">${formatDate(todo.date)}</span>
             </div>
             <div class="item-actions">
-              <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
-              <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
+              ${isTodayPage() ? `
+                <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
+                <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
+              ` : ""}
             </div>
           `;
           todoList.appendChild(item);
         });
     }
 
-    function addTodo(title, date) {
-      todos.push({ id: uid(), title, date, done: false });
-      save(storageKeys.todos, todos);
+    function addTodo(title) {
+      if (!isTodayPage()) return;
+      todos.push({ id: uid(), title, date: currentDate, done: false });
+      saveCurrentTodos();
       renderTodos();
     }
 
     todoForm.addEventListener("submit", (event) => {
       event.preventDefault();
+      if (!isTodayPage()) return;
       const title = todoInput.value.trim();
       if (!title) return;
-      addTodo(title, todoDate.value || today());
+      addTodo(title);
       todoInput.value = "";
-      todoDate.value = today();
+      todoDate.value = currentDate;
       todoInput.focus();
     });
 
@@ -764,18 +1123,18 @@
         todo.done = event.target.checked;
       }
 
-      if (event.target.dataset.action === "delete") {
+      if (event.target.dataset.action === "delete" && isTodayPage()) {
         todos = todos.filter((entry) => entry.id !== todo.id);
       }
 
-      if (event.target.dataset.action === "edit") {
+      if (event.target.dataset.action === "edit" && isTodayPage()) {
         const nextTitle = prompt("编辑待办事项", todo.title);
         if (nextTitle !== null && nextTitle.trim()) {
           todo.title = nextTitle.trim();
         }
       }
 
-      save(storageKeys.todos, todos);
+      saveCurrentTodos();
       renderTodos();
     });
 
@@ -897,7 +1256,7 @@
     function addOption(title) {
       wheelOptions.push({ id: uid(), title: title.trim() });
       selectedOptionId = null;
-      save(storageKeys.options, wheelOptions);
+      saveWheels();
       renderOptions();
       drawWheel();
     }
@@ -905,7 +1264,7 @@
     function deleteOption(index) {
       const [removed] = wheelOptions.splice(index, 1);
       if (removed?.id === selectedOptionId) selectedOptionId = null;
-      save(storageKeys.options, wheelOptions);
+      saveWheels();
       renderOptions();
       drawWheel();
     }
@@ -915,6 +1274,7 @@
 
       isSpinning = true;
       selectedOptionId = null;
+      renderWheelShell();
       renderOptions();
       spinResult.textContent = "正在认真旋转...";
 
@@ -943,6 +1303,7 @@
           alert(`今天就做这件事！\n${result.option.title}`);
         }
         isSpinning = false;
+        renderWheelShell();
         renderOptions();
         drawWheel();
       }
@@ -1000,7 +1361,7 @@
         if (nextTitle !== null && nextTitle.trim()) {
           option.title = nextTitle.trim();
           spinResult.textContent = "转盘选项已更新。";
-          save(storageKeys.options, wheelOptions);
+          saveWheels();
           renderOptions();
           drawWheel();
         }
@@ -1008,13 +1369,36 @@
     });
 
     spinButton.addEventListener("click", spinWheel);
+    prevDayButton.addEventListener("click", prevDay);
+    nextDayButton.addEventListener("click", nextDay);
+    prevWheelButton.addEventListener("click", prevWheel);
+    nextWheelButton.addEventListener("click", nextWheel);
+    createWheelButton.addEventListener("click", () => {
+      const name = prompt("新建转盘名称", "新的转盘");
+      if (name !== null) createNewWheel(name);
+    });
+    editWheelButton.addEventListener("click", () => {
+      if (isSpinning) return;
+      const wheel = currentWheel();
+      const name = prompt("编辑转盘名称", wheel.name);
+      if (name !== null && name.trim()) {
+        wheel.name = name.trim();
+        saveWheels();
+        renderWheelShell();
+      }
+    });
+    deleteWheelButton.addEventListener("click", deleteCurrentWheel);
 
     function init() {
-      todoDate.value = today();
+      migrateTodoStorage();
+      migrateWheelStorage();
+      todoDate.value = todayDate;
       avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
       applyTheme(localStorage.getItem(storageKeys.theme) || "light");
-      renderTodos();
-      renderOptions();
+      loadTodosByDate(todayDate);
+      loadWheel(currentWheelIndex);
+      setupSwipe(todoPanel, prevDay, nextDay);
+      setupSwipe(wheelSlide, nextWheel, prevWheel);
     }
 
     init();

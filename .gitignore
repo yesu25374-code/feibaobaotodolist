@@ -2,4 +2,5 @@ node_modules/
 test-results/
 verification-screenshot.png
 wheel-fix-screenshot.png
+paging-fix-screenshot.png
 gcm-diagnose.log
