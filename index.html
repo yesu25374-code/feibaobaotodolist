@@ -2,8 +2,17 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>小小鱼每日待办</title>
+  <meta name="theme-color" content="#ff8fb3" id="themeColorMeta">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#151923" id="themeColorDarkMeta">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="小小鱼每日待办">
+  <meta name="application-name" content="小小鱼每日待办">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="appleStatusBarMeta">
+  <link rel="apple-touch-icon" href="apple-touch-icon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
   <style>
     :root {
       --bg: #f7fbff;
@@ -98,6 +107,7 @@
     body {
       margin: 0;
       min-height: 100vh;
+      min-height: 100dvh;
       background:
         radial-gradient(circle at top left, var(--surface-soft), transparent 32rem),
         linear-gradient(135deg, var(--bg), var(--surface-soft));
@@ -117,7 +127,7 @@
     .app {
       width: min(1080px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 28px 0 48px;
+      padding: max(28px, env(safe-area-inset-top)) 0 max(48px, env(safe-area-inset-bottom));
     }
 
     .topbar {
@@ -752,6 +762,15 @@
       currentWheelIndex: "currentWheelIndex"
     };
 
+    const themeChrome = {
+      light: { color: "#ff8fb3", darkColor: "#151923", statusBar: "black-translucent" },
+      dark: { color: "#151923", darkColor: "#151923", statusBar: "black-translucent" },
+      pink: { color: "#ff76a8", darkColor: "#151923", statusBar: "black-translucent" },
+      blue: { color: "#48a7ff", darkColor: "#151923", statusBar: "black-translucent" },
+      green: { color: "#49c783", darkColor: "#151923", statusBar: "black-translucent" },
+      purple: { color: "#a97cff", darkColor: "#151923", statusBar: "black-translucent" }
+    };
+
     const defaultAvatar = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <defs>
@@ -781,6 +800,9 @@
     const avatarButton = document.querySelector("#avatarButton");
     const avatarInput = document.querySelector("#avatarInput");
     const avatarPreview = document.querySelector("#avatarPreview");
+    const themeColorMeta = document.querySelector("#themeColorMeta");
+    const themeColorDarkMeta = document.querySelector("#themeColorDarkMeta");
+    const appleStatusBarMeta = document.querySelector("#appleStatusBarMeta");
     const wheelTitle = document.querySelector("#wheelTitle");
     const wheelPageLabel = document.querySelector("#wheelPageLabel");
     const prevWheelButton = document.querySelector("#prevWheelButton");
@@ -1140,10 +1162,14 @@
 
     function applyTheme(theme) {
       const nextTheme = theme || "light";
+      const chrome = themeChrome[nextTheme] || themeChrome.light;
       document.documentElement.dataset.theme = nextTheme === "light" ? "" : nextTheme;
       document.querySelectorAll("[data-theme-button]").forEach((button) => {
         button.classList.toggle("is-active", button.dataset.themeButton === nextTheme);
       });
+      themeColorMeta.content = chrome.color;
+      themeColorDarkMeta.content = chrome.darkColor;
+      appleStatusBarMeta.content = chrome.statusBar;
       localStorage.setItem(storageKeys.theme, nextTheme);
       requestAnimationFrame(drawWheel);
     }

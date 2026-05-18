@@ -1,0 +1,18 @@
+{
+  "name": "小小鱼每日待办",
+  "short_name": "小小鱼待办",
+  "description": "每日待办、主题换肤和小小鱼大转盘",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7fbff",
+  "theme_color": "#ff8fb3",
+  "icons": [
+    {
+      "src": "apple-touch-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
