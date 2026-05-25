@@ -179,6 +179,22 @@
       gap: 12px;
     }
 
+    .sync-btn {
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(25, 45, 64, 0.08);
+    }
+
+    .sync-btn.is-active {
+      background: var(--surface-soft);
+      color: var(--primary-strong);
+    }
+
     .theme-picker {
       display: flex;
       align-items: center;
@@ -669,6 +685,7 @@
       </div>
 
       <div class="header-actions">
+        <button class="sync-btn" id="syncButton" type="button">云同步</button>
         <div class="theme-picker" role="group" aria-label="选择主题色">
           <button class="theme-dot" type="button" data-theme-button="light" style="--dot: linear-gradient(135deg, #ff8fb3, #39b7c9);" title="浅色默认">浅</button>
           <button class="theme-dot" type="button" data-theme-button="dark" style="--dot: linear-gradient(135deg, #202635, #7dd3fc);" title="深色">深</button>
@@ -759,7 +776,14 @@
       theme: "xiaoxiaoyu.theme",
       options: "xiaoxiaoyu.wheelOptions",
       wheels: "wheels",
-      currentWheelIndex: "currentWheelIndex"
+      currentWheelIndex: "currentWheelIndex",
+      syncCode: "xiaoxiaoyu.syncCode",
+      syncUpdatedAt: "xiaoxiaoyu.syncUpdatedAt"
+    };
+
+    const supabaseConfig = {
+      url: "https://rkqrfnvdoajhqfxqerfc.supabase.co",
+      anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcXJmbnZkb2FqaHFmeHFlcmZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2ODE2NTcsImV4cCI6MjA5NTI1NzY1N30.EWIoqzu1O58c5rc6HYpNXEQwol6-6rdu3jo1Kvfk8SI"
     };
 
     const themeChrome = {
@@ -800,6 +824,7 @@
     const avatarButton = document.querySelector("#avatarButton");
     const avatarInput = document.querySelector("#avatarInput");
     const avatarPreview = document.querySelector("#avatarPreview");
+    const syncButton = document.querySelector("#syncButton");
     const themeColorMeta = document.querySelector("#themeColorMeta");
     const themeColorDarkMeta = document.querySelector("#themeColorDarkMeta");
     const appleStatusBarMeta = document.querySelector("#appleStatusBarMeta");
@@ -829,6 +854,9 @@
     let selectedOptionId = null;
     let currentAngle = 0;
     let isSpinning = false;
+    let syncCode = "";
+    let syncTimer = null;
+    let applyingCloudData = false;
 
     function load(key, fallback) {
       try {
@@ -841,6 +869,163 @@
 
     function save(key, value) {
       localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function syncConfigured() {
+      return Boolean(supabaseConfig.url && supabaseConfig.anonKey);
+    }
+
+    function syncHeaders() {
+      return {
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+        "Content-Type": "application/json"
+      };
+    }
+
+    function syncRpcEndpoint(functionName) {
+      const baseUrl = supabaseConfig.url.replace(/\/$/, "");
+      return `${baseUrl}/rest/v1/rpc/${functionName}`;
+    }
+
+    function allTodoDates() {
+      return Object.keys(localStorage)
+        .filter((key) => key.startsWith("todos_"))
+        .map((key) => key.replace("todos_", ""))
+        .sort();
+    }
+
+    function collectSyncData() {
+      const dailyTodos = {};
+      allTodoDates().forEach((date) => {
+        dailyTodos[date] = normalizeTodos(load(todoKey(date), []), date);
+      });
+
+      return {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        dailyTodos,
+        wheels,
+        currentWheelIndex,
+        theme: localStorage.getItem(storageKeys.theme) || "light",
+        avatar: localStorage.getItem(storageKeys.avatar) || ""
+      };
+    }
+
+    function applySyncData(data) {
+      if (!data || typeof data !== "object") return;
+      applyingCloudData = true;
+
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith("todos_"))
+        .forEach((key) => localStorage.removeItem(key));
+
+      Object.entries(data.dailyTodos || {}).forEach(([date, items]) => {
+        save(todoKey(date), normalizeTodos(items, date));
+      });
+
+      wheels = normalizeWheels(data.wheels || []);
+      if (!wheels.length) {
+        wheels = [{ id: "default-wheel", name: "默认转盘", options: normalizeWheelOptions([]) }];
+      }
+      currentWheelIndex = Math.max(0, Math.min(Number(data.currentWheelIndex) || 0, wheels.length - 1));
+      save(storageKeys.wheels, wheels);
+      localStorage.setItem(storageKeys.currentWheelIndex, String(currentWheelIndex));
+
+      if (data.theme) applyTheme(data.theme);
+      if (data.avatar) {
+        localStorage.setItem(storageKeys.avatar, data.avatar);
+        avatarPreview.src = data.avatar;
+      }
+
+      loadTodosByDate(currentDate);
+      loadWheel(currentWheelIndex);
+      applyingCloudData = false;
+    }
+
+    function updateSyncButton() {
+      syncButton.classList.toggle("is-active", Boolean(syncCode));
+      if (!syncConfigured()) {
+        syncButton.textContent = "云同步未配置";
+      } else if (syncCode) {
+        syncButton.textContent = `同步中：${syncCode}`;
+      } else {
+        syncButton.textContent = "云同步";
+      }
+    }
+
+    async function pullCloudData(code) {
+      const response = await fetch(syncRpcEndpoint("xiaoxiaoyu_pull"), {
+        method: "POST",
+        headers: syncHeaders(),
+        body: JSON.stringify({ p_sync_code: code })
+      });
+      if (!response.ok) throw new Error("读取云端数据失败");
+      const rows = await response.json();
+      return rows[0] || null;
+    }
+
+    async function pushCloudData(code = syncCode) {
+      if (!syncConfigured() || !code) return;
+      const payload = collectSyncData();
+      const response = await fetch(syncRpcEndpoint("xiaoxiaoyu_push"), {
+        method: "POST",
+        headers: syncHeaders(),
+        body: JSON.stringify({
+          p_sync_code: code,
+          p_data: payload,
+          p_updated_at: payload.savedAt
+        })
+      });
+      if (!response.ok) throw new Error("保存云端数据失败");
+      localStorage.setItem(storageKeys.syncUpdatedAt, payload.savedAt);
+    }
+
+    function queueCloudSave() {
+      if (applyingCloudData || !syncConfigured() || !syncCode) return;
+      window.clearTimeout(syncTimer);
+      syncTimer = window.setTimeout(() => {
+        pushCloudData().catch((error) => console.warn(error.message));
+      }, 600);
+    }
+
+    async function enableCloudSync() {
+      if (!syncConfigured()) {
+        alert("云同步还没配置 Supabase。先创建 Supabase 项目，并把 URL 和 anon key 填进代码。");
+        return;
+      }
+
+      const code = prompt("输入同步码。手机和 iPad 使用同一个同步码就会互通。", syncCode || "");
+      if (code === null) return;
+      const cleanCode = code.trim();
+      if (!cleanCode) return;
+
+      syncButton.disabled = true;
+      syncButton.textContent = "同步中...";
+      try {
+        const cloudRow = await pullCloudData(cleanCode);
+        syncCode = cleanCode;
+        localStorage.setItem(storageKeys.syncCode, syncCode);
+
+        if (cloudRow?.data) {
+          const cloudTime = Date.parse(cloudRow.updated_at || cloudRow.data.savedAt || 0);
+          const localTime = Date.parse(localStorage.getItem(storageKeys.syncUpdatedAt) || 0);
+          if (cloudTime >= localTime) {
+            applySyncData(cloudRow.data);
+          } else {
+            await pushCloudData(syncCode);
+          }
+        } else {
+          await pushCloudData(syncCode);
+        }
+
+        alert("云同步已开启。另一台设备输入同一个同步码即可互通。");
+      } catch (error) {
+        alert(error.message || "同步失败，请稍后再试。");
+      } finally {
+        syncButton.disabled = false;
+        updateSyncButton();
+      }
     }
 
     function normalizeWheelOptions(value) {
@@ -1000,6 +1185,7 @@
 
     function saveCurrentTodos() {
       save(todoKey(currentDate), todos);
+      queueCloudSave();
     }
 
     function loadTodosByDate(dateStr) {
@@ -1022,6 +1208,7 @@
     function saveWheels() {
       save(storageKeys.wheels, wheels);
       localStorage.setItem(storageKeys.currentWheelIndex, String(currentWheelIndex));
+      queueCloudSave();
     }
 
     function currentWheel() {
@@ -1171,6 +1358,7 @@
       themeColorDarkMeta.content = chrome.darkColor;
       appleStatusBarMeta.content = chrome.statusBar;
       localStorage.setItem(storageKeys.theme, nextTheme);
+      queueCloudSave();
       requestAnimationFrame(drawWheel);
     }
 
@@ -1191,6 +1379,7 @@
         const image = reader.result;
         avatarPreview.src = image;
         localStorage.setItem(storageKeys.avatar, image);
+        queueCloudSave();
       };
       reader.readAsDataURL(file);
     });
@@ -1414,8 +1603,11 @@
       }
     });
     deleteWheelButton.addEventListener("click", deleteCurrentWheel);
+    syncButton.addEventListener("click", enableCloudSync);
 
     function init() {
+      syncCode = localStorage.getItem(storageKeys.syncCode) || "";
+      updateSyncButton();
       migrateTodoStorage();
       migrateWheelStorage();
       todoDate.value = todayDate;
