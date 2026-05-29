@@ -418,19 +418,11 @@
     }
 
     .todo-readonly {
-      display: none;
+      display: block;
       margin: -4px 0 14px;
       color: var(--muted);
       font-size: 14px;
       text-align: center;
-    }
-
-    .todo-panel.is-history .todo-readonly {
-      display: block;
-    }
-
-    .todo-panel.is-history .input-row {
-      display: none;
     }
 
     .wheel-manager {
@@ -713,7 +705,7 @@
       </div>
 
       <div class="section-head">
-        <span class="todo-readonly" id="todoReadonly">历史日期只读：可以打勾，但不能新增、编辑或删除。</span>
+        <span class="todo-readonly" id="todoReadonly">可以切换或选择任意日期，提前安排待办。</span>
         <span class="stats" id="todoStats">0 项</span>
       </div>
 
@@ -1200,7 +1192,6 @@
     }
 
     function nextDay() {
-      if (isTodayPage()) return;
       loadTodosByDate(shiftDate(currentDate, 1));
       runSlide(todoList, "left");
     }
@@ -1271,10 +1262,9 @@
     function renderTodos() {
       todoList.innerHTML = "";
       todoEmpty.classList.toggle("hidden", todos.length > 0);
-      todoEmpty.textContent = isTodayPage() ? "今天还没有待办，先加一件小事吧。" : "这一天没有待办～";
-      todoPanel.classList.toggle("is-history", !isTodayPage());
+      todoEmpty.textContent = isTodayPage() ? "今天还没有待办，先加一件小事吧。" : "这一天还没有待办～";
       dateLabel.textContent = formatCurrentDateLabel(currentDate);
-      nextDayButton.disabled = isTodayPage();
+      nextDayButton.disabled = false;
       todoDate.value = currentDate;
 
       const doneCount = todos.filter((todo) => todo.done).length;
@@ -1294,10 +1284,8 @@
               <span class="todo-date">${formatDate(todo.date)}</span>
             </div>
             <div class="item-actions">
-              ${isTodayPage() ? `
-                <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
-                <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
-              ` : ""}
+              <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
+              <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
             </div>
           `;
           todoList.appendChild(item);
@@ -1305,7 +1293,6 @@
     }
 
     function addTodo(title) {
-      if (!isTodayPage()) return;
       todos.push({ id: uid(), title, date: currentDate, done: false });
       saveCurrentTodos();
       renderTodos();
@@ -1313,13 +1300,22 @@
 
     todoForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      if (!isTodayPage()) return;
       const title = todoInput.value.trim();
       if (!title) return;
+      if (todoDate.value && todoDate.value !== currentDate) {
+        loadTodosByDate(todoDate.value);
+      }
       addTodo(title);
       todoInput.value = "";
       todoDate.value = currentDate;
       todoInput.focus();
+    });
+
+    todoDate.addEventListener("change", () => {
+      if (!todoDate.value || todoDate.value === currentDate) return;
+      const direction = todoDate.value > currentDate ? "left" : "right";
+      loadTodosByDate(todoDate.value);
+      runSlide(todoList, direction);
     });
 
     todoList.addEventListener("click", (event) => {
@@ -1332,11 +1328,11 @@
         todo.done = event.target.checked;
       }
 
-      if (event.target.dataset.action === "delete" && isTodayPage()) {
+      if (event.target.dataset.action === "delete") {
         todos = todos.filter((entry) => entry.id !== todo.id);
       }
 
-      if (event.target.dataset.action === "edit" && isTodayPage()) {
+      if (event.target.dataset.action === "edit") {
         const nextTitle = prompt("编辑待办事项", todo.title);
         if (nextTitle !== null && nextTitle.trim()) {
           todo.title = nextTitle.trim();
