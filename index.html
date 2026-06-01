@@ -251,21 +251,6 @@
       margin-bottom: 24px;
     }
 
-    .input-row {
-      display: grid;
-      grid-template-columns: 1fr 180px auto;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .todo-extra {
-      display: grid;
-      grid-column: 1 / -1;
-      grid-template-columns: 1.4fr 120px 1fr 150px auto;
-      gap: 10px;
-      align-items: center;
-    }
-
     .reminder-toggle {
       display: flex;
       align-items: center;
@@ -484,8 +469,7 @@
       list-style: none;
     }
 
-    .slide-frame,
-    .wheel-controls {
+    .slide-frame {
       position: relative;
     }
 
@@ -495,11 +479,6 @@
       right: 0;
       min-height: 34px;
       box-shadow: 0 10px 24px rgba(25, 45, 64, 0.08);
-    }
-
-    .wheel-controls .corner-toggle {
-      top: 104px;
-      right: 0;
     }
 
     .todo-item,
@@ -602,27 +581,57 @@
       text-decoration: line-through;
     }
 
-    .todo-edit-dock {
-      margin-top: 12px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: var(--surface-soft);
-    }
-
-    .dock-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
     .todo-editor {
       display: grid;
-      grid-template-columns: 1.3fr 150px 120px 1fr 1.2fr 150px auto auto;
+      grid-template-columns: 1fr 150px;
       gap: 10px;
       align-items: center;
+    }
+
+    .todo-editor .field:first-child,
+    .modal-actions {
+      grid-column: 1 / -1;
+    }
+
+    .todo-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
+    .todo-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(25, 33, 45, 0.32);
+      backdrop-filter: blur(8px);
+    }
+
+    .todo-modal-card {
+      position: relative;
+      width: min(560px, 100%);
+      max-height: min(86vh, 720px);
+      overflow: auto;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 28px 70px rgba(25, 45, 64, 0.22);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 4px;
     }
 
     .item-actions {
@@ -711,7 +720,7 @@
 
     .option-form {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr auto auto;
       gap: 10px;
     }
 
@@ -765,8 +774,6 @@
         border-radius: 20px;
       }
 
-      .input-row,
-      .todo-extra,
       .todo-editor,
       .wheel-layout {
         grid-template-columns: 1fr;
@@ -822,10 +829,6 @@
       .corner-toggle {
         top: -40px;
       }
-
-      .wheel-controls .corner-toggle {
-        top: 100px;
-      }
     }
   </style>
 </head>
@@ -871,62 +874,16 @@
       <div class="section-head">
         <span class="todo-readonly" id="todoReadonly">可以切换或选择任意日期，提前安排待办。</span>
         <div class="head-actions">
+          <button class="primary-btn" id="newTodoButton" type="button">+ 新建待办</button>
           <span class="stats" id="todoStats">0 项</span>
         </div>
       </div>
-
-      <form class="input-row" id="todoForm">
-        <input class="field" id="todoInput" type="text" placeholder="写下一个待办事项" autocomplete="off" required>
-        <input class="field" id="todoDate" type="date" aria-label="待办日期">
-        <button class="primary-btn" type="submit">添加</button>
-        <div class="todo-extra">
-          <input class="field" id="todoNote" type="text" placeholder="备注，例如准备材料" autocomplete="off">
-          <input class="field" id="todoTime" type="time" aria-label="提醒时间">
-          <input class="field" id="todoPlace" type="text" placeholder="地点" autocomplete="off">
-          <select class="field" id="todoPriority" aria-label="重要程度">
-            <option value="#ff8fb3">粉色重要</option>
-            <option value="#48a7ff">蓝色普通</option>
-            <option value="#49c783">绿色轻松</option>
-            <option value="#f5b84b">黄色提醒</option>
-            <option value="#a97cff">紫色灵感</option>
-          </select>
-          <label class="reminder-toggle">
-            <input id="todoReminder" type="checkbox">
-            提醒
-          </label>
-        </div>
-      </form>
 
       <div class="slide-frame" id="todoSlide">
         <button class="icon-btn mini-toggle corner-toggle" id="collapseTodosButton" type="button" title="折叠待办" aria-label="折叠待办">⌃</button>
         <ul class="todo-list slide-page" id="todoList"></ul>
       </div>
       <div class="empty hidden" id="todoEmpty">今天还没有待办，先加一件小事吧。</div>
-      <div class="todo-edit-dock hidden" id="todoEditDock">
-        <div class="dock-head">
-          <strong>编辑待办</strong>
-          <button class="icon-btn mini-toggle" id="closeTodoEditorButton" type="button" title="收起编辑">×</button>
-        </div>
-        <form class="todo-editor" id="todoEditorForm">
-          <input class="field" id="editTodoTitle" type="text" placeholder="待办内容" required>
-          <input class="field" id="editTodoDate" type="date" aria-label="日期">
-          <input class="field" id="editTodoTime" type="time" aria-label="提醒时间">
-          <input class="field" id="editTodoPlace" type="text" placeholder="地点" autocomplete="off">
-          <input class="field" id="editTodoNote" type="text" placeholder="备注" autocomplete="off">
-          <select class="field" id="editTodoPriority" aria-label="重要程度">
-            <option value="#ff8fb3">粉色重要</option>
-            <option value="#48a7ff">蓝色普通</option>
-            <option value="#49c783">绿色轻松</option>
-            <option value="#f5b84b">黄色提醒</option>
-            <option value="#a97cff">紫色灵感</option>
-          </select>
-          <label class="reminder-toggle">
-            <input id="editTodoReminder" type="checkbox">
-            提醒
-          </label>
-          <button class="primary-btn" type="submit">保存</button>
-        </form>
-      </div>
       <div class="undo-bar hidden" id="undoBar">
         <span id="undoText">已删除 1 个待办</span>
         <button class="ghost-btn" id="undoDeleteButton" type="button">撤销</button>
@@ -962,16 +919,45 @@
           <form class="option-form" id="optionForm">
             <input class="field" id="optionInput" type="text" placeholder="添加转盘选项" autocomplete="off" required>
             <button class="primary-btn" type="submit">添加</button>
+            <button class="icon-btn mini-toggle" id="collapseOptionsButton" type="button" title="折叠选项" aria-label="折叠选项">⌃</button>
           </form>
 
           <button class="primary-btn" id="spinButton" type="button">开始抽奖</button>
-          <div class="result" id="spinResult">准备好了就开始转吧。</div>
-          <button class="icon-btn mini-toggle corner-toggle" id="collapseOptionsButton" type="button" title="折叠选项" aria-label="折叠选项">⌃</button>
+          <div class="result" id="spinResult"></div>
           <ul class="option-list" id="optionList"></ul>
           <div class="empty hidden" id="optionEmpty">至少添加 2 个选项后，就可以开始抽奖。</div>
         </div>
       </div>
     </section>
+
+    <div class="todo-modal" id="todoModal" hidden>
+      <div class="todo-modal-backdrop" id="todoModalBackdrop"></div>
+      <div class="todo-modal-card" role="dialog" aria-modal="true" aria-labelledby="todoModalTitle">
+        <button class="icon-btn mini-toggle modal-close" id="closeTodoEditorButton" type="button" title="关闭" aria-label="关闭">×</button>
+        <form class="todo-editor" id="todoEditorForm">
+          <input class="field" id="todoInput" type="text" placeholder="写下一个待办事项" autocomplete="off" required>
+          <input class="field" id="todoDate" type="date" aria-label="待办日期">
+          <input class="field" id="todoNote" type="text" placeholder="备注，例如准备材料" autocomplete="off">
+          <input class="field" id="todoTime" type="time" aria-label="提醒时间">
+          <input class="field" id="todoPlace" type="text" placeholder="地点" autocomplete="off">
+          <select class="field" id="todoPriority" aria-label="重要程度">
+            <option value="#ff8fb3">粉色重要</option>
+            <option value="#48a7ff">蓝色普通</option>
+            <option value="#49c783">绿色轻松</option>
+            <option value="#f5b84b">黄色提醒</option>
+            <option value="#a97cff">紫色灵感</option>
+          </select>
+          <label class="reminder-toggle">
+            <input id="todoReminder" type="checkbox">
+            提醒
+          </label>
+          <div class="modal-actions">
+            <button class="ghost-btn" id="cancelTodoEditorButton" type="button">取消</button>
+            <button class="primary-btn" id="todoSaveButton" type="submit">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -1020,7 +1006,7 @@
     `);
 
     const todoPanel = document.querySelector("#todoPanel");
-    const todoForm = document.querySelector("#todoForm");
+    const newTodoButton = document.querySelector("#newTodoButton");
     const todoInput = document.querySelector("#todoInput");
     const todoDate = document.querySelector("#todoDate");
     const todoNote = document.querySelector("#todoNote");
@@ -1035,16 +1021,12 @@
     const undoBar = document.querySelector("#undoBar");
     const undoText = document.querySelector("#undoText");
     const undoDeleteButton = document.querySelector("#undoDeleteButton");
-    const todoEditDock = document.querySelector("#todoEditDock");
+    const todoModal = document.querySelector("#todoModal");
+    const todoModalBackdrop = document.querySelector("#todoModalBackdrop");
     const todoEditorForm = document.querySelector("#todoEditorForm");
     const closeTodoEditorButton = document.querySelector("#closeTodoEditorButton");
-    const editTodoTitle = document.querySelector("#editTodoTitle");
-    const editTodoDate = document.querySelector("#editTodoDate");
-    const editTodoTime = document.querySelector("#editTodoTime");
-    const editTodoPlace = document.querySelector("#editTodoPlace");
-    const editTodoNote = document.querySelector("#editTodoNote");
-    const editTodoPriority = document.querySelector("#editTodoPriority");
-    const editTodoReminder = document.querySelector("#editTodoReminder");
+    const cancelTodoEditorButton = document.querySelector("#cancelTodoEditorButton");
+    const todoSaveButton = document.querySelector("#todoSaveButton");
     const dateLabel = document.querySelector("#dateLabel");
     const prevDayButton = document.querySelector("#prevDayButton");
     const nextDayButton = document.querySelector("#nextDayButton");
@@ -1662,84 +1644,93 @@
       }, 8000);
     }
 
-    function addTodo(title) {
-      todos.push({
-        id: uid(),
-        title,
-        date: currentDate,
-        done: false,
-        note: todoNote.value.trim(),
-        time: todoTime.value,
-        place: todoPlace.value.trim(),
-        color: todoPriority.value,
-        reminder: todoReminder.checked,
-        order: todos.length
-      });
-      saveCurrentTodos();
-      renderTodos();
-      scheduleReminders();
+    function resetTodoEditor(date = currentDate) {
+      todoInput.value = "";
+      todoDate.value = date;
+      todoNote.value = "";
+      todoTime.value = "";
+      todoPlace.value = "";
+      todoPriority.value = "#ff8fb3";
+      todoReminder.checked = false;
     }
 
-    function openTodoEditor(todo) {
-      editingTodoId = todo.id;
-      editingTodoDate = currentDate;
-      editTodoTitle.value = todo.title || "";
-      editTodoDate.value = todo.date || currentDate;
-      editTodoTime.value = todo.time || "";
-      editTodoPlace.value = todo.place || "";
-      editTodoNote.value = todo.note || "";
-      editTodoPriority.value = todo.color || "#ff8fb3";
-      editTodoReminder.checked = Boolean(todo.reminder);
-      todoEditDock.classList.remove("hidden");
+    function openTodoEditor(todo = null) {
+      editingTodoId = todo?.id || null;
+      editingTodoDate = todo ? currentDate : null;
+      if (todo) {
+        todoInput.value = todo.title || "";
+        todoDate.value = todo.date || currentDate;
+        todoTime.value = todo.time || "";
+        todoPlace.value = todo.place || "";
+        todoNote.value = todo.note || "";
+        todoPriority.value = todo.color || "#ff8fb3";
+        todoReminder.checked = Boolean(todo.reminder);
+      } else {
+        resetTodoEditor(currentDate);
+      }
+      todoSaveButton.textContent = todo ? "保存" : "添加";
+      todoModal.hidden = false;
+      document.body.style.overflow = "hidden";
       renderTodos();
-      requestAnimationFrame(() => editTodoTitle.focus());
+      requestAnimationFrame(() => todoInput.focus());
     }
 
     function closeTodoEditor() {
       editingTodoId = null;
       editingTodoDate = null;
-      todoEditDock.classList.add("hidden");
+      todoModal.hidden = true;
+      document.body.style.overflow = "";
       renderTodos();
     }
 
     function saveTodoEditor() {
-      if (!editingTodoId) return;
-      const title = editTodoTitle.value.trim();
+      const title = todoInput.value.trim();
       if (!title) return;
 
-      const todo = todos.find((entry) => entry.id === editingTodoId);
-      if (!todo) {
-        closeTodoEditor();
-        return;
-      }
-
-      const targetDate = editTodoDate.value || currentDate;
-      const updatedTodo = {
-        ...todo,
+      const targetDate = todoDate.value || currentDate;
+      const formTodo = {
         title,
         date: targetDate,
-        note: editTodoNote.value.trim(),
-        time: editTodoTime.value,
-        place: editTodoPlace.value.trim(),
-        color: editTodoPriority.value,
-        reminder: editTodoReminder.checked && Boolean(editTodoTime.value)
+        note: todoNote.value.trim(),
+        time: todoTime.value,
+        place: todoPlace.value.trim(),
+        color: todoPriority.value,
+        reminder: todoReminder.checked && Boolean(todoTime.value)
       };
 
-      if (targetDate !== currentDate) {
-        todos = todos.filter((entry) => entry.id !== editingTodoId);
-        saveCurrentTodos();
-        const targetTodos = normalizeTodos(load(todoKey(targetDate), []), targetDate);
-        targetTodos.push({ ...updatedTodo, order: targetTodos.length });
-        save(todoKey(targetDate), targetTodos);
-        queueCloudSave();
-        editingTodoId = null;
-        editingTodoDate = null;
-        todoEditDock.classList.add("hidden");
-        loadTodosByDate(targetDate);
-      } else {
-        Object.assign(todo, updatedTodo);
+      if (!editingTodoId) {
+        if (targetDate !== currentDate) loadTodosByDate(targetDate);
+        todos.push({
+          id: uid(),
+          ...formTodo,
+          done: false,
+          order: todos.length
+        });
         saveCurrentTodos();
         closeTodoEditor();
+      } else {
+        const todo = todos.find((entry) => entry.id === editingTodoId);
+        if (!todo) {
+          closeTodoEditor();
+          return;
+        }
+
+        const updatedTodo = { ...todo, ...formTodo };
+
+        if (targetDate !== currentDate) {
+          todos = todos.filter((entry) => entry.id !== editingTodoId);
+          saveCurrentTodos();
+          const targetTodos = normalizeTodos(load(todoKey(targetDate), []), targetDate);
+          targetTodos.push({ ...updatedTodo, order: targetTodos.length });
+          save(todoKey(targetDate), targetTodos);
+          queueCloudSave();
+          closeTodoEditor();
+          loadTodosByDate(targetDate);
+        } else {
+          Object.assign(todo, updatedTodo);
+          saveCurrentTodos();
+          closeTodoEditor();
+        }
       }
 
       scheduleReminders();
@@ -1801,23 +1792,6 @@
       saveRemindedSet(reminded);
     }
 
-    todoForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const title = todoInput.value.trim();
-      if (!title) return;
-      if (todoDate.value && todoDate.value !== currentDate) {
-        loadTodosByDate(todoDate.value);
-      }
-      addTodo(title);
-      todoInput.value = "";
-      todoNote.value = "";
-      todoTime.value = "";
-      todoPlace.value = "";
-      todoReminder.checked = false;
-      todoDate.value = currentDate;
-      todoInput.focus();
-    });
-
     todoDate.addEventListener("change", () => {
       if (!todoDate.value || todoDate.value === currentDate) return;
       const direction = todoDate.value > currentDate ? "left" : "right";
@@ -1829,11 +1803,14 @@
       if (todoReminder.checked) ensureNotificationPermission();
     });
 
-    editTodoReminder.addEventListener("change", () => {
-      if (editTodoReminder.checked) ensureNotificationPermission();
-    });
-
+    newTodoButton.addEventListener("click", () => openTodoEditor());
     closeTodoEditorButton.addEventListener("click", closeTodoEditor);
+    cancelTodoEditorButton.addEventListener("click", closeTodoEditor);
+    todoModalBackdrop.addEventListener("click", closeTodoEditor);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !todoModal.hidden) closeTodoEditor();
+    });
 
     todoEditorForm.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -2184,7 +2161,7 @@
       if (!title) return;
       addOption(title);
       optionInput.value = "";
-      spinResult.textContent = "新选项已经放进转盘。";
+      spinResult.textContent = "";
     });
 
     optionList.addEventListener("click", (event) => {
@@ -2196,14 +2173,14 @@
 
       if (event.target.dataset.action === "delete") {
         deleteOption(optionIndex);
-        spinResult.textContent = "已经从转盘移除。";
+        spinResult.textContent = "";
       }
 
       if (event.target.dataset.action === "edit") {
         const nextTitle = prompt("编辑转盘选项", option.title);
         if (nextTitle !== null && nextTitle.trim()) {
           option.title = nextTitle.trim();
-          spinResult.textContent = "转盘选项已更新。";
+          spinResult.textContent = "";
           saveWheels();
           renderOptions();
           drawWheel();
