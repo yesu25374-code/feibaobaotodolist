@@ -933,7 +933,7 @@
           <form class="option-form" id="optionForm">
             <input class="field" id="optionInput" type="text" placeholder="添加转盘选项" autocomplete="off" required>
             <button class="primary-btn" type="submit">添加</button>
-            <button class="icon-btn mini-toggle" id="collapseOptionsButton" type="button" title="折叠选项" aria-label="折叠选项">⌃</button>
+            <button class="ghost-btn compact-btn" id="collapseOptionsButton" type="button">折叠</button>
           </form>
 
           <button class="primary-btn" id="spinButton" type="button">开始抽奖</button>
@@ -2193,7 +2193,7 @@
       const optionsCollapsed = localStorage.getItem(storageKeys.optionsCollapsed) === "true";
       optionList.classList.toggle("is-collapsed", optionsCollapsed);
       optionEmpty.classList.toggle("is-collapsed", optionsCollapsed);
-      collapseOptionsButton.textContent = optionsCollapsed ? "⌄" : "⌃";
+      collapseOptionsButton.textContent = optionsCollapsed ? "展开" : "折叠";
       collapseOptionsButton.title = optionsCollapsed ? "展开选项" : "折叠选项";
       collapseOptionsButton.setAttribute("aria-label", collapseOptionsButton.title);
       spinButton.disabled = wheelOptions.length < 2 || isSpinning;
