@@ -966,6 +966,7 @@
     let syncCode = "";
     let syncTimer = null;
     let applyingCloudData = false;
+    let cloudSavePaused = true;
     let lastDeletedTodo = null;
     let undoTimer = null;
     let draggedTodoId = null;
@@ -1026,6 +1027,47 @@
       };
     }
 
+    function syncContentScore(data) {
+      if (!data || typeof data !== "object") return 0;
+
+      const todoScore = Object.values(data.dailyTodos || {}).reduce((total, items) => {
+        return total + (Array.isArray(items) ? items.length * 10 : 0);
+      }, 0);
+
+      const wheelScore = normalizeWheels(data.wheels || []).reduce((total, wheel, index) => {
+        const optionCount = Array.isArray(wheel.options) ? wheel.options.length : 0;
+        const extraWheelWeight = index > 0 ? 5 : 0;
+        return total + optionCount + extraWheelWeight;
+      }, 0);
+
+      return todoScore + wheelScore;
+    }
+
+    async function syncBestAvailableData(cloudRow) {
+      const cloudData = cloudRow?.data || null;
+      const localData = collectSyncData();
+      const localScore = syncContentScore(localData);
+      const cloudScore = syncContentScore(cloudData);
+
+      if (localScore > cloudScore) {
+        await pushCloudData(syncCode);
+        return true;
+      }
+
+      if (cloudData) {
+        applySyncData(cloudData);
+        localStorage.setItem(storageKeys.syncUpdatedAt, cloudRow.updated_at || cloudData.savedAt || new Date().toISOString());
+        return true;
+      }
+
+      if (localScore > 0) {
+        await pushCloudData(syncCode);
+        return true;
+      }
+
+      return false;
+    }
+
     function applySyncData(data) {
       if (!data || typeof data !== "object") return;
       applyingCloudData = true;
@@ -1068,10 +1110,7 @@
       if (!syncConfigured() || !syncCode) return;
       try {
         const cloudRow = await pullCloudData(syncCode);
-        if (cloudRow?.data) {
-          applySyncData(cloudRow.data);
-          localStorage.setItem(storageKeys.syncUpdatedAt, cloudRow.updated_at || cloudRow.data.savedAt || new Date().toISOString());
-        }
+        await syncBestAvailableData(cloudRow);
       } catch (error) {
         console.warn(error.message || "云同步刷新失败");
       } finally {
@@ -1083,9 +1122,8 @@
       if (!syncConfigured() || !syncCode) return false;
       try {
         const cloudRow = await pullCloudData(syncCode);
-        if (!cloudRow?.data) return false;
-        applySyncData(cloudRow.data);
-        localStorage.setItem(storageKeys.syncUpdatedAt, cloudRow.updated_at || cloudRow.data.savedAt || new Date().toISOString());
+        const synced = await syncBestAvailableData(cloudRow);
+        if (!synced) return false;
         updateSyncButton();
         return true;
       } catch (error) {
@@ -1133,7 +1171,7 @@
     }
 
     function queueCloudSave() {
-      if (applyingCloudData || !syncConfigured() || !syncCode) return;
+      if (cloudSavePaused || applyingCloudData || !syncConfigured() || !syncCode) return;
       window.clearTimeout(syncTimer);
       syncTimer = window.setTimeout(() => {
         pushCloudData().catch((error) => console.warn(error.message));
@@ -1161,7 +1199,11 @@
         if (cloudRow?.data) {
           const cloudTime = Date.parse(cloudRow.updated_at || cloudRow.data.savedAt || 0);
           const localTime = Date.parse(localStorage.getItem(storageKeys.syncUpdatedAt) || 0);
-          if (cloudTime >= localTime) {
+          const localScore = syncContentScore(collectSyncData());
+          const cloudScore = syncContentScore(cloudRow.data);
+          if (localScore > cloudScore) {
+            await pushCloudData(syncCode);
+          } else if (cloudScore > localScore || cloudTime >= localTime) {
             applySyncData(cloudRow.data);
           } else {
             await pushCloudData(syncCode);
@@ -1991,6 +2033,7 @@
         loadTodosByDate(todayDate);
         loadWheel(currentWheelIndex);
       }
+      cloudSavePaused = false;
       setupSwipe(todoPanel, prevDay, nextDay);
       setupSwipe(wheelSlide, nextWheel, prevWheel);
       scheduleReminders();
