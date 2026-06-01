@@ -469,18 +469,6 @@
       list-style: none;
     }
 
-    .slide-frame {
-      position: relative;
-    }
-
-    .corner-toggle {
-      position: absolute;
-      top: -44px;
-      right: 0;
-      min-height: 34px;
-      box-shadow: 0 10px 24px rgba(25, 45, 64, 0.08);
-    }
-
     .todo-item,
     .option-item {
       display: grid;
@@ -495,7 +483,7 @@
     }
 
     .todo-item {
-      grid-template-columns: auto auto 1fr auto;
+      grid-template-columns: auto auto auto minmax(0, 1fr) auto;
       border-left: 7px solid var(--todo-color, var(--primary));
       touch-action: pan-y;
       user-select: none;
@@ -504,8 +492,9 @@
     .todo-item.is-dragging {
       opacity: 0.72;
       box-shadow: 0 18px 38px rgba(25, 45, 64, 0.18);
-      transform: scale(1.01);
+      transform: scale(1.015);
       z-index: 4;
+      background: color-mix(in srgb, var(--surface) 86%, var(--primary) 14%);
     }
 
     .todo-item.is-editing {
@@ -525,6 +514,9 @@
       font-size: 18px;
       line-height: 1;
       touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
     }
 
     .drag-handle:active {
@@ -538,6 +530,26 @@
       border-radius: 999px;
       font-size: 16px;
       line-height: 1;
+    }
+
+    .compact-btn {
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .sort-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    .sort-step {
+      width: 28px;
+      min-height: 22px;
+      border-radius: 10px;
+      font-size: 12px;
     }
 
     .check {
@@ -815,11 +827,12 @@
       }
 
       .todo-item {
-        grid-template-columns: auto auto 1fr;
+        grid-template-columns: auto auto auto minmax(0, 1fr);
       }
 
       .todo-item .item-actions {
-        grid-column: 3;
+        grid-column: 4;
+        justify-content: flex-end;
       }
 
       .option-item {
@@ -830,9 +843,6 @@
         justify-content: flex-end;
       }
 
-      .corner-toggle {
-        top: -40px;
-      }
     }
   </style>
 </head>
@@ -879,12 +889,12 @@
         <span class="todo-readonly" id="todoReadonly">可以切换或选择任意日期，提前安排待办。</span>
         <div class="head-actions">
           <button class="primary-btn" id="newTodoButton" type="button">+ 新建待办</button>
+          <button class="ghost-btn compact-btn" id="collapseTodosButton" type="button">折叠</button>
           <span class="stats" id="todoStats">0 项</span>
         </div>
       </div>
 
       <div class="slide-frame" id="todoSlide">
-        <button class="icon-btn mini-toggle corner-toggle" id="collapseTodosButton" type="button" title="折叠待办" aria-label="折叠待办">⌃</button>
         <ul class="todo-list slide-page" id="todoList"></ul>
       </div>
       <div class="empty hidden" id="todoEmpty">今天还没有待办，先加一件小事吧。</div>
@@ -1583,7 +1593,7 @@
       todoList.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.todosCollapsed) === "true");
       todoEmpty.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.todosCollapsed) === "true");
       const todosCollapsed = localStorage.getItem(storageKeys.todosCollapsed) === "true";
-      collapseTodosButton.textContent = todosCollapsed ? "⌄" : "⌃";
+      collapseTodosButton.textContent = todosCollapsed ? "展开" : "折叠";
       collapseTodosButton.title = todosCollapsed ? "展开待办" : "折叠待办";
       collapseTodosButton.setAttribute("aria-label", collapseTodosButton.title);
       dateLabel.textContent = formatCurrentDateLabel(currentDate);
@@ -1600,7 +1610,6 @@
           const item = document.createElement("li");
           item.className = `todo-item${todo.done ? " done" : ""}${todo.id === editingTodoId ? " is-editing" : ""}`;
           item.dataset.id = todo.id;
-          item.draggable = true;
           item.style.setProperty("--todo-color", todo.color || "#ff8fb3");
           const metaParts = [
             todo.time ? `时间：${escapeHtml(todo.time)}` : "",
@@ -1608,7 +1617,11 @@
             todo.reminder && todo.time ? "已开启提醒" : ""
           ].filter(Boolean);
           item.innerHTML = `
-            <button class="drag-handle" type="button" data-sort-handle title="长按拖动排序" aria-label="长按拖动排序">⋮⋮</button>
+            <button class="drag-handle" type="button" draggable="true" data-sort-handle title="按住拖动排序" aria-label="按住拖动排序">⋮⋮</button>
+            <div class="sort-actions" aria-label="调整顺序">
+              <button class="icon-btn sort-step" type="button" data-action="move-up" title="上移">↑</button>
+              <button class="icon-btn sort-step" type="button" data-action="move-down" title="下移">↓</button>
+            </div>
             <input class="check" type="checkbox" ${todo.done ? "checked" : ""} aria-label="完成待办">
             <div class="todo-text">
               <span class="todo-title">${escapeHtml(todo.title)}</span>
@@ -1633,6 +1646,20 @@
           return todo;
         })
         .filter(Boolean);
+      saveCurrentTodos();
+      renderTodos();
+    }
+
+    function moveTodo(todoId, direction) {
+      const orderedTodos = todos
+        .slice()
+        .sort((a, b) => (Number(a.order) - Number(b.order)) || (a.done - b.done) || (a.date || "").localeCompare(b.date || ""));
+      const index = orderedTodos.findIndex((todo) => todo.id === todoId);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= orderedTodos.length) return;
+      const [todo] = orderedTodos.splice(index, 1);
+      orderedTodos.splice(nextIndex, 0, todo);
+      todos = orderedTodos.map((entry, order) => ({ ...entry, order }));
       saveCurrentTodos();
       renderTodos();
     }
@@ -1831,6 +1858,16 @@
         todo.done = event.target.checked;
       }
 
+      if (event.target.dataset.action === "move-up") {
+        moveTodo(todo.id, -1);
+        return;
+      }
+
+      if (event.target.dataset.action === "move-down") {
+        moveTodo(todo.id, 1);
+        return;
+      }
+
       if (event.target.dataset.action === "delete") {
         const deleteIndex = todos.findIndex((entry) => entry.id === todo.id);
         todos = todos.filter((entry) => entry.id !== todo.id);
@@ -1849,8 +1886,9 @@
     });
 
     todoList.addEventListener("dragstart", (event) => {
+      const handle = event.target.closest("[data-sort-handle]");
       const item = event.target.closest(".todo-item");
-      if (!item) return;
+      if (!handle || !item) return;
       draggedTodoId = item.dataset.id;
       item.classList.add("is-dragging");
       event.dataTransfer.effectAllowed = "move";
@@ -1874,6 +1912,7 @@
     });
 
     function startPointerSort(item) {
+      if (pointerSortingItem === item) return;
       pointerSortingItem = item;
       draggedTodoId = item.dataset.id;
       item.classList.add("is-dragging");
@@ -1901,22 +1940,20 @@
     }
 
     todoList.addEventListener("pointerdown", (event) => {
-      if (event.pointerType === "mouse") return;
+      if (event.pointerType === "mouse" && !event.target.closest("[data-sort-handle]")) return;
       const item = event.target.closest(".todo-item");
-      if (!item || event.target.closest("button:not([data-sort-handle]), input")) return;
+      const handle = event.target.closest("[data-sort-handle]");
+      if (!item || !handle) return;
+      event.preventDefault();
       pointerSortStart = { x: event.clientX, y: event.clientY };
       window.clearTimeout(pointerSortTimer);
-      pointerSortTimer = window.setTimeout(() => startPointerSort(item), 360);
+      startPointerSort(item);
+      try {
+        handle.setPointerCapture(event.pointerId);
+      } catch {}
     });
 
     todoList.addEventListener("pointermove", (event) => {
-      if (!pointerSortStart) return;
-      const moved = Math.hypot(event.clientX - pointerSortStart.x, event.clientY - pointerSortStart.y);
-      if (!pointerSortingItem && moved > 12) {
-        window.clearTimeout(pointerSortTimer);
-        pointerSortStart = null;
-        return;
-      }
       if (!pointerSortingItem) return;
       event.preventDefault();
       movePointerSort(event.clientX, event.clientY);
@@ -1925,11 +1962,32 @@
     todoList.addEventListener("pointerup", finishPointerSort);
     todoList.addEventListener("pointercancel", finishPointerSort);
 
+    todoList.addEventListener("touchstart", (event) => {
+      const handle = event.target.closest("[data-sort-handle]");
+      const item = event.target.closest(".todo-item");
+      if (!handle || !item) return;
+      event.preventDefault();
+      touchSortingItem = item;
+      startPointerSort(item);
+    }, { passive: false });
+
+    todoList.addEventListener("touchmove", (event) => {
+      if (!touchSortingItem) return;
+      event.preventDefault();
+      const touch = event.touches[0];
+      movePointerSort(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    todoList.addEventListener("touchend", () => {
+      if (!touchSortingItem) return;
+      touchSortingItem = null;
+      finishPointerSort();
+    });
+
     todoList.addEventListener("touchcancel", () => {
       window.clearTimeout(touchSortTimer);
-      if (touchSortingItem) touchSortingItem.classList.remove("is-dragging");
       touchSortingItem = null;
-      draggedTodoId = null;
+      finishPointerSort();
     });
 
     undoDeleteButton.addEventListener("click", () => {
