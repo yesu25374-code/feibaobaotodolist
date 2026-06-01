@@ -258,6 +258,34 @@
       margin-bottom: 20px;
     }
 
+    .todo-extra {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: 1.4fr 120px 1fr 150px auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .reminder-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 50px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .reminder-toggle input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+
     .field {
       min-height: 50px;
       width: 100%;
@@ -338,6 +366,14 @@
       color: var(--muted);
       font-size: 14px;
       white-space: nowrap;
+    }
+
+    .head-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .pager-head {
@@ -461,6 +497,18 @@
       background: var(--surface);
     }
 
+    .todo-item {
+      border-left: 7px solid var(--todo-color, var(--primary));
+      touch-action: pan-y;
+      user-select: none;
+    }
+
+    .todo-item.is-dragging {
+      opacity: 0.72;
+      box-shadow: 0 18px 38px rgba(25, 45, 64, 0.18);
+      transform: scale(1.01);
+    }
+
     .check {
       width: 28px;
       height: 28px;
@@ -483,6 +531,20 @@
       font-size: 13px;
     }
 
+    .todo-meta,
+    .todo-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .todo-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .todo-item.done .todo-title {
       color: var(--done);
       text-decoration: line-through;
@@ -499,6 +561,19 @@
       border-radius: 18px;
       color: var(--muted);
       text-align: center;
+    }
+
+    .undo-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font-size: 14px;
     }
 
     .wheel-panel {
@@ -575,6 +650,10 @@
       box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent);
     }
 
+    .is-collapsed {
+      display: none !important;
+    }
+
     .option-text {
       overflow-wrap: anywhere;
       font-weight: 700;
@@ -612,6 +691,7 @@
       }
 
       .input-row,
+      .todo-extra,
       .wheel-layout {
         grid-template-columns: 1fr;
       }
@@ -706,19 +786,42 @@
 
       <div class="section-head">
         <span class="todo-readonly" id="todoReadonly">可以切换或选择任意日期，提前安排待办。</span>
-        <span class="stats" id="todoStats">0 项</span>
+        <div class="head-actions">
+          <button class="ghost-btn" id="collapseTodosButton" type="button">折叠待办</button>
+          <span class="stats" id="todoStats">0 项</span>
+        </div>
       </div>
 
       <form class="input-row" id="todoForm">
         <input class="field" id="todoInput" type="text" placeholder="写下一个待办事项" autocomplete="off" required>
         <input class="field" id="todoDate" type="date" aria-label="待办日期">
         <button class="primary-btn" type="submit">添加</button>
+        <div class="todo-extra">
+          <input class="field" id="todoNote" type="text" placeholder="备注，例如准备材料" autocomplete="off">
+          <input class="field" id="todoTime" type="time" aria-label="提醒时间">
+          <input class="field" id="todoPlace" type="text" placeholder="地点" autocomplete="off">
+          <select class="field" id="todoPriority" aria-label="重要程度">
+            <option value="#ff8fb3">粉色重要</option>
+            <option value="#48a7ff">蓝色普通</option>
+            <option value="#49c783">绿色轻松</option>
+            <option value="#f5b84b">黄色提醒</option>
+            <option value="#a97cff">紫色灵感</option>
+          </select>
+          <label class="reminder-toggle">
+            <input id="todoReminder" type="checkbox">
+            提醒
+          </label>
+        </div>
       </form>
 
       <div class="slide-frame" id="todoSlide">
         <ul class="todo-list slide-page" id="todoList"></ul>
       </div>
       <div class="empty hidden" id="todoEmpty">今天还没有待办，先加一件小事吧。</div>
+      <div class="undo-bar hidden" id="undoBar">
+        <span id="undoText">已删除 1 个待办</span>
+        <button class="ghost-btn" id="undoDeleteButton" type="button">撤销</button>
+      </div>
     </section>
 
     <section class="panel wheel-panel" aria-labelledby="wheelTitle">
@@ -753,6 +856,7 @@
           </form>
 
           <button class="primary-btn" id="spinButton" type="button">开始抽奖</button>
+          <button class="ghost-btn" id="collapseOptionsButton" type="button">折叠选项</button>
           <div class="result" id="spinResult">准备好了就开始转吧。</div>
           <ul class="option-list" id="optionList"></ul>
           <div class="empty hidden" id="optionEmpty">至少添加 2 个选项后，就可以开始抽奖。</div>
@@ -770,7 +874,10 @@
       wheels: "wheels",
       currentWheelIndex: "currentWheelIndex",
       syncCode: "xiaoxiaoyu.syncCode",
-      syncUpdatedAt: "xiaoxiaoyu.syncUpdatedAt"
+      syncUpdatedAt: "xiaoxiaoyu.syncUpdatedAt",
+      todosCollapsed: "xiaoxiaoyu.todosCollapsed",
+      optionsCollapsed: "xiaoxiaoyu.optionsCollapsed",
+      remindedTodos: "xiaoxiaoyu.remindedTodos"
     };
 
     const supabaseConfig = {
@@ -807,9 +914,18 @@
     const todoForm = document.querySelector("#todoForm");
     const todoInput = document.querySelector("#todoInput");
     const todoDate = document.querySelector("#todoDate");
+    const todoNote = document.querySelector("#todoNote");
+    const todoTime = document.querySelector("#todoTime");
+    const todoPlace = document.querySelector("#todoPlace");
+    const todoPriority = document.querySelector("#todoPriority");
+    const todoReminder = document.querySelector("#todoReminder");
     const todoList = document.querySelector("#todoList");
     const todoEmpty = document.querySelector("#todoEmpty");
     const todoStats = document.querySelector("#todoStats");
+    const collapseTodosButton = document.querySelector("#collapseTodosButton");
+    const undoBar = document.querySelector("#undoBar");
+    const undoText = document.querySelector("#undoText");
+    const undoDeleteButton = document.querySelector("#undoDeleteButton");
     const dateLabel = document.querySelector("#dateLabel");
     const prevDayButton = document.querySelector("#prevDayButton");
     const nextDayButton = document.querySelector("#nextDayButton");
@@ -832,6 +948,7 @@
     const optionInput = document.querySelector("#optionInput");
     const optionList = document.querySelector("#optionList");
     const optionEmpty = document.querySelector("#optionEmpty");
+    const collapseOptionsButton = document.querySelector("#collapseOptionsButton");
     const spinButton = document.querySelector("#spinButton");
     const spinResult = document.querySelector("#spinResult");
     const wheelCanvas = document.querySelector("#wheelCanvas");
@@ -849,6 +966,11 @@
     let syncCode = "";
     let syncTimer = null;
     let applyingCloudData = false;
+    let lastDeletedTodo = null;
+    let undoTimer = null;
+    let draggedTodoId = null;
+    let touchSortTimer = null;
+    let touchSortingItem = null;
 
     function load(key, fallback) {
       try {
@@ -1023,7 +1145,7 @@
     function normalizeWheelOptions(value) {
       const source = Array.isArray(value) ? value : [];
       return source
-        .map((item) => {
+        .map((item, index) => {
           if (typeof item === "string") return { id: uid(), title: item };
           if (item && typeof item.title === "string") return { id: item.id || uid(), title: item.title };
           return null;
@@ -1043,7 +1165,13 @@
             id: item.id || uid(),
             title: title.trim(),
             date: item.date || item.createdAt || fallbackDate,
-            done: Boolean(item.done)
+            done: Boolean(item.done),
+            note: item.note || "",
+            time: item.time || "",
+            place: item.place || "",
+            color: item.color || item.priorityColor || "#ff8fb3",
+            reminder: Boolean(item.reminder),
+            order: Number.isFinite(Number(item.order)) ? Number(item.order) : index
           };
         })
         .filter(Boolean);
@@ -1263,6 +1391,9 @@
       todoList.innerHTML = "";
       todoEmpty.classList.toggle("hidden", todos.length > 0);
       todoEmpty.textContent = isTodayPage() ? "今天还没有待办，先加一件小事吧。" : "这一天还没有待办～";
+      todoList.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.todosCollapsed) === "true");
+      todoEmpty.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.todosCollapsed) === "true");
+      collapseTodosButton.textContent = localStorage.getItem(storageKeys.todosCollapsed) === "true" ? "展开待办" : "折叠待办";
       dateLabel.textContent = formatCurrentDateLabel(currentDate);
       nextDayButton.disabled = false;
       todoDate.value = currentDate;
@@ -1272,16 +1403,25 @@
 
       todos
         .slice()
-        .sort((a, b) => (a.done - b.done) || (a.date || "").localeCompare(b.date || ""))
+        .sort((a, b) => (Number(a.order) - Number(b.order)) || (a.done - b.done) || (a.date || "").localeCompare(b.date || ""))
         .forEach((todo) => {
           const item = document.createElement("li");
           item.className = `todo-item${todo.done ? " done" : ""}`;
           item.dataset.id = todo.id;
+          item.draggable = true;
+          item.style.setProperty("--todo-color", todo.color || "#ff8fb3");
+          const metaParts = [
+            todo.time ? `时间：${escapeHtml(todo.time)}` : "",
+            todo.place ? `地点：${escapeHtml(todo.place)}` : "",
+            todo.reminder && todo.time ? "已开启提醒" : ""
+          ].filter(Boolean);
           item.innerHTML = `
             <input class="check" type="checkbox" ${todo.done ? "checked" : ""} aria-label="完成待办">
             <div class="todo-text">
               <span class="todo-title">${escapeHtml(todo.title)}</span>
               <span class="todo-date">${formatDate(todo.date)}</span>
+              ${todo.note ? `<span class="todo-note">备注：${escapeHtml(todo.note)}</span>` : ""}
+              ${metaParts.length ? `<span class="todo-meta">${metaParts.map((part) => `<span>${part}</span>`).join("")}</span>` : ""}
             </div>
             <div class="item-actions">
               <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
@@ -1292,10 +1432,101 @@
         });
     }
 
-    function addTodo(title) {
-      todos.push({ id: uid(), title, date: currentDate, done: false });
+    function reorderTodos() {
+      todos = [...todoList.querySelectorAll(".todo-item")]
+        .map((item, index) => {
+          const todo = todos.find((entry) => entry.id === item.dataset.id);
+          if (todo) todo.order = index;
+          return todo;
+        })
+        .filter(Boolean);
       saveCurrentTodos();
       renderTodos();
+    }
+
+    function showUndo(todo, index) {
+      lastDeletedTodo = { todo, index, date: currentDate };
+      undoText.textContent = `已删除「${todo.title}」`;
+      undoBar.classList.remove("hidden");
+      window.clearTimeout(undoTimer);
+      undoTimer = window.setTimeout(() => {
+        undoBar.classList.add("hidden");
+        lastDeletedTodo = null;
+      }, 8000);
+    }
+
+    function addTodo(title) {
+      todos.push({
+        id: uid(),
+        title,
+        date: currentDate,
+        done: false,
+        note: todoNote.value.trim(),
+        time: todoTime.value,
+        place: todoPlace.value.trim(),
+        color: todoPriority.value,
+        reminder: todoReminder.checked,
+        order: todos.length
+      });
+      saveCurrentTodos();
+      renderTodos();
+      scheduleReminders();
+    }
+
+    function remindedSet() {
+      return new Set(load(storageKeys.remindedTodos, []));
+    }
+
+    function saveRemindedSet(set) {
+      save(storageKeys.remindedTodos, [...set]);
+    }
+
+    async function ensureNotificationPermission() {
+      if (!("Notification" in window)) return false;
+      if (Notification.permission === "granted") return true;
+      if (Notification.permission === "denied") return false;
+      const permission = await Notification.requestPermission();
+      return permission === "granted";
+    }
+
+    function todoReminderTime(todo) {
+      if (!todo.reminder || !todo.time) return null;
+      const date = new Date(`${todo.date}T${todo.time}:00`);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    async function notifyTodo(todo) {
+      const allowed = await ensureNotificationPermission();
+      if (!allowed) return;
+      new Notification(`待办提醒：${todo.title}`, {
+        body: [todo.place ? `地点：${todo.place}` : "", todo.note || ""].filter(Boolean).join(" · ") || "到时间啦",
+        tag: `todo-${todo.id}`
+      });
+    }
+
+    function scheduleReminders() {
+      const reminded = remindedSet();
+      const now = Date.now();
+      allTodoDates().forEach((date) => {
+        normalizeTodos(load(todoKey(date), []), date).forEach((todo) => {
+          const reminderTime = todoReminderTime(todo);
+          if (!reminderTime || todo.done || reminded.has(todo.id)) return;
+          const delay = reminderTime.getTime() - now;
+          if (delay <= 0 && delay > -60000) {
+            reminded.add(todo.id);
+            notifyTodo(todo);
+          } else if (delay > 0 && delay < 2147483647) {
+            window.setTimeout(() => {
+              const latest = remindedSet();
+              if (latest.has(todo.id)) return;
+              latest.add(todo.id);
+              saveRemindedSet(latest);
+              notifyTodo(todo);
+            }, delay);
+          }
+        });
+      });
+      saveRemindedSet(reminded);
     }
 
     todoForm.addEventListener("submit", (event) => {
@@ -1307,6 +1538,10 @@
       }
       addTodo(title);
       todoInput.value = "";
+      todoNote.value = "";
+      todoTime.value = "";
+      todoPlace.value = "";
+      todoReminder.checked = false;
       todoDate.value = currentDate;
       todoInput.focus();
     });
@@ -1316,6 +1551,10 @@
       const direction = todoDate.value > currentDate ? "left" : "right";
       loadTodosByDate(todoDate.value);
       runSlide(todoList, direction);
+    });
+
+    todoReminder.addEventListener("change", () => {
+      if (todoReminder.checked) ensureNotificationPermission();
     });
 
     todoList.addEventListener("click", (event) => {
@@ -1329,7 +1568,9 @@
       }
 
       if (event.target.dataset.action === "delete") {
+        const deleteIndex = todos.findIndex((entry) => entry.id === todo.id);
         todos = todos.filter((entry) => entry.id !== todo.id);
+        showUndo(todo, deleteIndex);
       }
 
       if (event.target.dataset.action === "edit") {
@@ -1337,9 +1578,100 @@
         if (nextTitle !== null && nextTitle.trim()) {
           todo.title = nextTitle.trim();
         }
+        const nextNote = prompt("编辑备注", todo.note || "");
+        if (nextNote !== null) todo.note = nextNote.trim();
+        const nextTime = prompt("编辑时间（例如 09:30，可留空）", todo.time || "");
+        if (nextTime !== null) {
+          todo.time = nextTime.trim();
+          todo.reminder = Boolean(todo.time);
+        }
+        const nextPlace = prompt("编辑地点", todo.place || "");
+        if (nextPlace !== null) todo.place = nextPlace.trim();
       }
 
       saveCurrentTodos();
+      renderTodos();
+      scheduleReminders();
+    });
+
+    todoList.addEventListener("dragstart", (event) => {
+      const item = event.target.closest(".todo-item");
+      if (!item) return;
+      draggedTodoId = item.dataset.id;
+      item.classList.add("is-dragging");
+      event.dataTransfer.effectAllowed = "move";
+    });
+
+    todoList.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      const dragging = todoList.querySelector(".is-dragging");
+      const target = event.target.closest(".todo-item");
+      if (!dragging || !target || dragging === target) return;
+      const rect = target.getBoundingClientRect();
+      const after = event.clientY > rect.top + rect.height / 2;
+      todoList.insertBefore(dragging, after ? target.nextSibling : target);
+    });
+
+    todoList.addEventListener("dragend", () => {
+      const dragging = todoList.querySelector(".is-dragging");
+      if (dragging) dragging.classList.remove("is-dragging");
+      if (draggedTodoId) reorderTodos();
+      draggedTodoId = null;
+    });
+
+    todoList.addEventListener("touchstart", (event) => {
+      const item = event.target.closest(".todo-item");
+      if (!item || event.target.closest("button, input")) return;
+      window.clearTimeout(touchSortTimer);
+      touchSortTimer = window.setTimeout(() => {
+        touchSortingItem = item;
+        draggedTodoId = item.dataset.id;
+        item.classList.add("is-dragging");
+      }, 450);
+    }, { passive: true });
+
+    todoList.addEventListener("touchmove", (event) => {
+      if (!touchSortingItem) return;
+      event.preventDefault();
+      const touch = event.touches[0];
+      const target = document.elementFromPoint(touch.clientX, touch.clientY)?.closest(".todo-item");
+      if (!target || target === touchSortingItem || !todoList.contains(target)) return;
+      const rect = target.getBoundingClientRect();
+      const after = touch.clientY > rect.top + rect.height / 2;
+      todoList.insertBefore(touchSortingItem, after ? target.nextSibling : target);
+    }, { passive: false });
+
+    todoList.addEventListener("touchend", () => {
+      window.clearTimeout(touchSortTimer);
+      if (!touchSortingItem) return;
+      touchSortingItem.classList.remove("is-dragging");
+      touchSortingItem = null;
+      if (draggedTodoId) reorderTodos();
+      draggedTodoId = null;
+    });
+
+    todoList.addEventListener("touchcancel", () => {
+      window.clearTimeout(touchSortTimer);
+      if (touchSortingItem) touchSortingItem.classList.remove("is-dragging");
+      touchSortingItem = null;
+      draggedTodoId = null;
+    });
+
+    undoDeleteButton.addEventListener("click", () => {
+      if (!lastDeletedTodo) return;
+      if (lastDeletedTodo.date !== currentDate) loadTodosByDate(lastDeletedTodo.date);
+      todos.splice(lastDeletedTodo.index, 0, lastDeletedTodo.todo);
+      saveCurrentTodos();
+      renderTodos();
+      scheduleReminders();
+      undoBar.classList.add("hidden");
+      lastDeletedTodo = null;
+      window.clearTimeout(undoTimer);
+    });
+
+    collapseTodosButton.addEventListener("click", () => {
+      const next = localStorage.getItem(storageKeys.todosCollapsed) !== "true";
+      localStorage.setItem(storageKeys.todosCollapsed, String(next));
       renderTodos();
     });
 
@@ -1525,6 +1857,9 @@
     function renderOptions() {
       optionList.innerHTML = "";
       optionEmpty.classList.toggle("hidden", wheelOptions.length > 0);
+      optionList.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.optionsCollapsed) === "true");
+      optionEmpty.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.optionsCollapsed) === "true");
+      collapseOptionsButton.textContent = localStorage.getItem(storageKeys.optionsCollapsed) === "true" ? "展开选项" : "折叠选项";
       spinButton.disabled = wheelOptions.length < 2 || isSpinning;
       spinButton.textContent = isSpinning ? "转动中..." : "开始抽奖";
 
@@ -1580,6 +1915,11 @@
     });
 
     spinButton.addEventListener("click", spinWheel);
+    collapseOptionsButton.addEventListener("click", () => {
+      const next = localStorage.getItem(storageKeys.optionsCollapsed) !== "true";
+      localStorage.setItem(storageKeys.optionsCollapsed, String(next));
+      renderOptions();
+    });
     prevDayButton.addEventListener("click", prevDay);
     nextDayButton.addEventListener("click", nextDay);
     prevWheelButton.addEventListener("click", prevWheel);
@@ -1613,6 +1953,7 @@
       loadWheel(currentWheelIndex);
       setupSwipe(todoPanel, prevDay, nextDay);
       setupSwipe(wheelSlide, nextWheel, prevWheel);
+      scheduleReminders();
     }
 
     init();
