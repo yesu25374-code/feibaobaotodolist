@@ -1079,6 +1079,21 @@
       }
     }
 
+    async function bootstrapCloudData() {
+      if (!syncConfigured() || !syncCode) return false;
+      try {
+        const cloudRow = await pullCloudData(syncCode);
+        if (!cloudRow?.data) return false;
+        applySyncData(cloudRow.data);
+        localStorage.setItem(storageKeys.syncUpdatedAt, cloudRow.updated_at || cloudRow.data.savedAt || new Date().toISOString());
+        updateSyncButton();
+        return true;
+      } catch (error) {
+        console.warn(error.message || "云同步启动失败");
+        return false;
+      }
+    }
+
     function updateSyncButton() {
       syncButton.classList.toggle("is-active", Boolean(syncCode));
       if (!syncConfigured()) {
@@ -1364,7 +1379,7 @@
       wheelOptions = wheel.options;
       selectedOptionId = null;
       currentAngle = 0;
-      saveWheels();
+      localStorage.setItem(storageKeys.currentWheelIndex, String(currentWheelIndex));
       renderWheelShell();
       renderOptions();
       drawWheel();
@@ -1963,7 +1978,7 @@
     deleteWheelButton.addEventListener("click", deleteCurrentWheel);
     syncButton.addEventListener("click", enableCloudSync);
 
-    function init() {
+    async function init() {
       syncCode = localStorage.getItem(storageKeys.syncCode) || "";
       updateSyncButton();
       migrateTodoStorage();
@@ -1971,12 +1986,14 @@
       todoDate.value = todayDate;
       avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
       applyTheme(localStorage.getItem(storageKeys.theme) || "light");
-      loadTodosByDate(todayDate);
-      loadWheel(currentWheelIndex);
+      const bootstrapped = await bootstrapCloudData();
+      if (!bootstrapped) {
+        loadTodosByDate(todayDate);
+        loadWheel(currentWheelIndex);
+      }
       setupSwipe(todoPanel, prevDay, nextDay);
       setupSwipe(wheelSlide, nextWheel, prevWheel);
       scheduleReminders();
-      refreshCloudSync();
     }
 
     init();
