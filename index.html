@@ -1194,7 +1194,7 @@
     function normalizeTodos(value, fallbackDate = todayDate) {
       const source = Array.isArray(value) ? value : [];
       return source
-        .map((item) => {
+        .map((item, index) => {
           if (!item) return null;
           const title = item.title || item.text;
           if (typeof title !== "string" || !title.trim()) return null;
