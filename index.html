@@ -1030,12 +1030,19 @@
       if (!data || typeof data !== "object") return;
       applyingCloudData = true;
 
-      Object.keys(localStorage)
-        .filter((key) => key.startsWith("todos_"))
-        .forEach((key) => localStorage.removeItem(key));
-
       Object.entries(data.dailyTodos || {}).forEach(([date, items]) => {
-        save(todoKey(date), normalizeTodos(items, date));
+        const localItems = normalizeTodos(load(todoKey(date), []), date);
+        const cloudItems = normalizeTodos(items, date);
+        const merged = [...localItems];
+        cloudItems.forEach((cloudTodo) => {
+          const existingIndex = merged.findIndex((localTodo) => localTodo.id === cloudTodo.id);
+          if (existingIndex >= 0) {
+            merged[existingIndex] = { ...merged[existingIndex], ...cloudTodo };
+          } else {
+            merged.push(cloudTodo);
+          }
+        });
+        save(todoKey(date), merged);
       });
 
       wheels = normalizeWheels(data.wheels || []);
@@ -1055,6 +1062,21 @@
       loadTodosByDate(currentDate);
       loadWheel(currentWheelIndex);
       applyingCloudData = false;
+    }
+
+    async function refreshCloudSync() {
+      if (!syncConfigured() || !syncCode) return;
+      try {
+        const cloudRow = await pullCloudData(syncCode);
+        if (cloudRow?.data) {
+          applySyncData(cloudRow.data);
+          localStorage.setItem(storageKeys.syncUpdatedAt, cloudRow.updated_at || cloudRow.data.savedAt || new Date().toISOString());
+        }
+      } catch (error) {
+        console.warn(error.message || "云同步刷新失败");
+      } finally {
+        updateSyncButton();
+      }
     }
 
     function updateSyncButton() {
@@ -1954,6 +1976,7 @@
       setupSwipe(todoPanel, prevDay, nextDay);
       setupSwipe(wheelSlide, nextWheel, prevWheel);
       scheduleReminders();
+      refreshCloudSync();
     }
 
     init();
