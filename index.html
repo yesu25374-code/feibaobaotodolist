@@ -210,10 +210,6 @@
       background-attachment: fixed, fixed, scroll, scroll;
     }
 
-    .bg-clear-btn[hidden] {
-      display: none !important;
-    }
-
     .theme-picker {
       display: flex;
       align-items: center;
@@ -1165,9 +1161,8 @@
       </div>
 
       <div class="header-actions">
-        <button class="sync-btn" id="syncButton" type="button">云同步</button>
         <button class="sync-btn" id="backgroundButton" type="button">背景</button>
-        <button class="sync-btn bg-clear-btn" id="clearBackgroundButton" type="button" hidden>清除背景</button>
+        <button class="sync-btn" id="syncButton" type="button">云同步</button>
         <input class="hidden" id="backgroundInput" type="file" accept="image/jpeg,image/png,image/webp">
         <div class="theme-picker" role="group" aria-label="选择主题色">
           <button class="theme-dot" type="button" data-theme-button="light" style="--dot: linear-gradient(135deg, #ff8fb3, #39b7c9);" title="浅色默认">浅</button>
@@ -1413,7 +1408,6 @@
     const avatarPreview = document.querySelector("#avatarPreview");
     const syncButton = document.querySelector("#syncButton");
     const backgroundButton = document.querySelector("#backgroundButton");
-    const clearBackgroundButton = document.querySelector("#clearBackgroundButton");
     const backgroundInput = document.querySelector("#backgroundInput");
     const habitDock = document.querySelector("#habitDock");
     const habitToggleButton = document.querySelector("#habitToggleButton");
@@ -2769,12 +2763,16 @@
         document.body.style.setProperty("--custom-bg-image", `url("${image}")`);
         document.body.classList.add("has-custom-bg");
         localStorage.setItem(storageKeys.background, image);
-        clearBackgroundButton.hidden = false;
+        backgroundButton.textContent = "清除";
+        backgroundButton.title = "清除背景";
+        backgroundButton.setAttribute("aria-label", "清除背景");
       } else {
         document.body.style.removeProperty("--custom-bg-image");
         document.body.classList.remove("has-custom-bg");
         localStorage.removeItem(storageKeys.background);
-        clearBackgroundButton.hidden = true;
+        backgroundButton.textContent = "背景";
+        backgroundButton.title = "自定义背景";
+        backgroundButton.setAttribute("aria-label", "自定义背景");
       }
     }
 
@@ -2804,7 +2802,14 @@
       return canvas.toDataURL("image/jpeg", 0.82);
     }
 
-    backgroundButton.addEventListener("click", () => backgroundInput.click());
+    backgroundButton.addEventListener("click", () => {
+      if (document.body.classList.contains("has-custom-bg")) {
+        applyBackground("");
+        queueCloudSave();
+        return;
+      }
+      backgroundInput.click();
+    });
     backgroundInput.addEventListener("change", async () => {
       const file = backgroundInput.files?.[0];
       backgroundInput.value = "";
@@ -2824,13 +2829,8 @@
         alert(error.message || "背景图片处理失败。");
       } finally {
         backgroundButton.disabled = false;
-        backgroundButton.textContent = "背景";
+        backgroundButton.textContent = document.body.classList.contains("has-custom-bg") ? "清除" : "背景";
       }
-    });
-
-    clearBackgroundButton.addEventListener("click", () => {
-      applyBackground("");
-      queueCloudSave();
     });
 
     function cssVar(name) {
