@@ -109,8 +109,12 @@
       min-height: 100vh;
       min-height: 100dvh;
       background:
+        radial-gradient(circle, rgba(255, 143, 179, 0.22) 0 2.5px, transparent 3px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 2px, transparent 2.5px),
         radial-gradient(circle at top left, var(--surface-soft), transparent 32rem),
         linear-gradient(135deg, var(--bg), var(--surface-soft));
+      background-size: 22px 22px, 22px 22px, auto, auto;
+      background-position: 0 0, 11px 11px, 0 0, 0 0;
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
     }
@@ -250,26 +254,31 @@
       position: relative;
       z-index: 12;
       margin: -8px 0 18px;
+      width: min(430px, 100%);
     }
 
-    .habit-ticker {
+    .habit-board {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr) auto;
-      align-items: center;
       gap: 10px;
-      width: min(520px, 100%);
-      min-height: 58px;
-      padding: 10px 14px;
+      min-height: 180px;
+      max-height: 180px;
+      padding: 14px;
       border: 1px solid var(--border);
-      border-radius: 18px;
+      border-radius: 22px;
       background: color-mix(in srgb, var(--surface) 88%, transparent);
       color: var(--text);
-      box-shadow: 0 14px 34px rgba(25, 45, 64, 0.1);
+      box-shadow: 0 16px 38px rgba(25, 45, 64, 0.11);
       backdrop-filter: blur(14px);
-      text-align: left;
     }
 
-    .habit-label {
+    .habit-board-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .habit-board-title {
       display: inline-grid;
       place-items: center;
       min-height: 32px;
@@ -282,33 +291,90 @@
       white-space: nowrap;
     }
 
-    .habit-viewport {
-      position: relative;
-      display: block;
-      min-width: 0;
-      height: 26px;
-      overflow: hidden;
-      font-weight: 800;
+    .habit-board-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
     }
 
-    .habit-viewport span {
-      position: absolute;
-      inset: 0;
+    .habit-board-action {
+      width: 34px;
+      min-height: 34px;
+      border-radius: 999px;
+      font-size: 15px;
+    }
+
+    .habit-board-action.is-active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #fff;
+      box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 24%, transparent);
+    }
+
+    .habit-board-window {
+      min-height: 94px;
+      max-height: 94px;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      line-height: 26px;
+    }
+
+    .habit-preview-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
       transform: translateY(0);
+      transition: transform 0.32s ease;
     }
 
-    .habit-viewport.is-rolling span {
+    .habit-preview-list.is-rolling {
       animation: habitRoll 0.44s ease both;
     }
 
-    .habit-meta {
+    .habit-preview-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 43px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--habit-color, var(--primary));
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface) 82%, var(--surface-soft) 18%);
+    }
+
+    .habit-preview-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 800;
+    }
+
+    .habit-preview-meta {
       color: var(--muted);
       font-size: 13px;
       white-space: nowrap;
+    }
+
+    .habit-board-empty {
+      display: grid;
+      place-items: center;
+      min-height: 94px;
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      color: var(--muted);
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .habit-board-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .habit-popover {
@@ -1043,12 +1109,22 @@
         margin-top: -4px;
       }
 
-      .habit-ticker {
-        grid-template-columns: auto minmax(0, 1fr);
+      .habit-board {
+        min-height: 174px;
+        max-height: 174px;
       }
 
-      .habit-meta {
-        grid-column: 2;
+      .habit-board-head {
+        align-items: flex-start;
+      }
+
+      .habit-board-actions {
+        flex-wrap: wrap;
+      }
+
+      .habit-board-action {
+        width: 32px;
+        min-height: 32px;
       }
 
       .habit-row {
@@ -1092,13 +1168,25 @@
     </header>
 
     <section class="habit-dock" id="habitDock" aria-label="注意">
-      <button class="habit-ticker" id="habitToggleButton" type="button" aria-expanded="false" aria-controls="habitPopover">
-        <span class="habit-label">注意</span>
-        <span class="habit-viewport" id="habitViewport">
-          <span id="habitTickerText">还没有注意事项</span>
-        </span>
-        <span class="habit-meta" id="habitTickerMeta">点开添加</span>
-      </button>
+      <div class="habit-board">
+        <div class="habit-board-head">
+          <span class="habit-board-title">注意</span>
+          <div class="habit-board-actions">
+            <button class="icon-btn habit-board-action" id="habitToggleButton" type="button" aria-expanded="false" aria-controls="habitPopover" title="添加注意" aria-label="添加注意">+</button>
+            <button class="icon-btn habit-board-action" id="habitPrevButton" type="button" title="上翻" aria-label="上翻">↑</button>
+            <button class="icon-btn habit-board-action" id="habitNextButton" type="button" title="下翻" aria-label="下翻">↓</button>
+            <button class="icon-btn habit-board-action" id="habitAutoButton" type="button" title="自动滚动" aria-label="自动滚动">↻</button>
+          </div>
+        </div>
+        <div class="habit-board-window" id="habitPreviewWindow">
+          <ul class="habit-preview-list" id="habitPreviewList"></ul>
+          <div class="habit-board-empty hidden" id="habitPreviewEmpty">还没有注意事项</div>
+        </div>
+        <div class="habit-board-foot">
+          <span id="habitBoardCount">0 条</span>
+          <span id="habitBoardMode">手动翻看</span>
+        </div>
+      </div>
 
       <div class="habit-popover" id="habitPopover" hidden>
         <div class="habit-popover-head">
@@ -1307,10 +1395,14 @@
     const syncButton = document.querySelector("#syncButton");
     const habitDock = document.querySelector("#habitDock");
     const habitToggleButton = document.querySelector("#habitToggleButton");
+    const habitPrevButton = document.querySelector("#habitPrevButton");
+    const habitNextButton = document.querySelector("#habitNextButton");
+    const habitAutoButton = document.querySelector("#habitAutoButton");
+    const habitPreviewList = document.querySelector("#habitPreviewList");
+    const habitPreviewEmpty = document.querySelector("#habitPreviewEmpty");
+    const habitBoardCount = document.querySelector("#habitBoardCount");
+    const habitBoardMode = document.querySelector("#habitBoardMode");
     const habitPopover = document.querySelector("#habitPopover");
-    const habitViewport = document.querySelector("#habitViewport");
-    const habitTickerText = document.querySelector("#habitTickerText");
-    const habitTickerMeta = document.querySelector("#habitTickerMeta");
     const habitForm = document.querySelector("#habitForm");
     const habitInput = document.querySelector("#habitInput");
     const habitNote = document.querySelector("#habitNote");
@@ -1353,6 +1445,7 @@
     let habits = [];
     let habitRollIndex = 0;
     let habitRollTimer = null;
+    let habitAutoScroll = false;
     let editingHabitId = null;
     let selectedOptionId = null;
     let currentAngle = 0;
@@ -1851,42 +1944,81 @@
       ].filter(Boolean);
     }
 
-    function currentTickerHabit() {
-      if (!habits.length) return null;
-      habitRollIndex = habitRollIndex % habits.length;
-      return habits[habitRollIndex];
-    }
-
-    function renderHabitTicker(animate = false) {
-      const habit = currentTickerHabit();
-      if (!habit) {
-        habitTickerText.textContent = "还没有注意事项";
-        habitTickerMeta.textContent = "点开添加";
-        return;
-      }
-
-      const summary = [
+    function habitPreviewMeta(habit) {
+      return [
         habit.time ? habit.time : "",
         habit.place ? habit.place : "",
         habit.note ? habit.note : ""
-      ].filter(Boolean);
-      habitTickerText.textContent = habit.title;
-      habitTickerMeta.textContent = summary[0] || `${habits.length} 条`;
+      ].filter(Boolean)[0] || "";
+    }
+
+    function stopHabitAutoScroll() {
+      window.clearInterval(habitRollTimer);
+      habitRollTimer = null;
+      habitAutoScroll = false;
+      habitAutoButton.classList.remove("is-active");
+      habitBoardMode.textContent = "手动翻看";
+    }
+
+    function renderHabitPreview(animate = false) {
+      const visibleCount = habits.length ? Math.min(2, habits.length) : 0;
+      if (habits.length) {
+        habitRollIndex = ((habitRollIndex % habits.length) + habits.length) % habits.length;
+      } else {
+        habitRollIndex = 0;
+      }
+
+      habitPreviewList.innerHTML = "";
+      habitPreviewEmpty.classList.toggle("hidden", habits.length > 0);
+      habitPreviewList.classList.toggle("hidden", habits.length === 0);
+      habitBoardCount.textContent = `${habits.length} 条`;
+      habitPrevButton.disabled = habits.length <= visibleCount;
+      habitNextButton.disabled = habits.length <= visibleCount;
+      habitAutoButton.disabled = habits.length <= visibleCount;
+      if (!habits.length) stopHabitAutoScroll();
+
+      for (let offset = 0; offset < visibleCount; offset += 1) {
+        const habit = habits[(habitRollIndex + offset) % habits.length];
+        const item = document.createElement("li");
+        item.className = "habit-preview-item";
+        item.style.setProperty("--habit-color", habit.color || "#ff8fb3");
+        item.innerHTML = `
+          <span class="habit-preview-title">${escapeHtml(habit.title)}</span>
+          <span class="habit-preview-meta">${escapeHtml(habitPreviewMeta(habit))}</span>
+        `;
+        habitPreviewList.appendChild(item);
+      }
+
       if (animate) {
-        habitViewport.classList.remove("is-rolling");
-        habitViewport.getBoundingClientRect();
-        habitViewport.classList.add("is-rolling");
+        habitPreviewList.classList.remove("is-rolling");
+        habitPreviewList.getBoundingClientRect();
+        habitPreviewList.classList.add("is-rolling");
       }
     }
 
-    function startHabitRoller() {
+    function stepHabitPreview(direction, animate = true) {
+      if (habits.length <= 2) return;
+      habitRollIndex = (habitRollIndex + direction + habits.length) % habits.length;
+      renderHabitPreview(animate);
+    }
+
+    function startHabitAutoScroll() {
       window.clearInterval(habitRollTimer);
-      renderHabitTicker(false);
-      if (habits.length <= 1) return;
+      habitAutoScroll = true;
+      habitAutoButton.classList.add("is-active");
+      habitBoardMode.textContent = "自动滚动";
       habitRollTimer = window.setInterval(() => {
-        habitRollIndex = (habitRollIndex + 1) % habits.length;
-        renderHabitTicker(true);
-      }, 2600);
+        stepHabitPreview(1, true);
+      }, 2200);
+    }
+
+    function toggleHabitAutoScroll() {
+      if (habitAutoScroll) {
+        stopHabitAutoScroll();
+        return;
+      }
+      if (habits.length <= 2) return;
+      startHabitAutoScroll();
     }
 
     function renderHabits() {
@@ -1916,7 +2048,7 @@
         habitList.appendChild(item);
       });
 
-      startHabitRoller();
+      renderHabitPreview(false);
     }
 
     function resetHabitForm() {
@@ -2338,6 +2470,18 @@
     habitToggleButton.addEventListener("click", () => {
       setHabitPopover(habitPopover.hidden);
     });
+
+    habitPrevButton.addEventListener("click", () => {
+      stopHabitAutoScroll();
+      stepHabitPreview(-1);
+    });
+
+    habitNextButton.addEventListener("click", () => {
+      stopHabitAutoScroll();
+      stepHabitPreview(1);
+    });
+
+    habitAutoButton.addEventListener("click", toggleHabitAutoScroll);
 
     closeHabitButton.addEventListener("click", () => setHabitPopover(false));
     cancelHabitEditButton.addEventListener("click", resetHabitForm);
