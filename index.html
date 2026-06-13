@@ -315,7 +315,7 @@
       position: absolute;
       top: calc(100% + 8px);
       left: 0;
-      width: min(620px, 100%);
+      width: min(720px, 100%);
       max-height: min(70vh, 540px);
       overflow: auto;
       padding: 16px;
@@ -348,9 +348,21 @@
 
     .habit-form {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(110px, 150px) auto;
+      grid-template-columns: minmax(0, 1fr) 150px;
       gap: 10px;
       margin-bottom: 12px;
+    }
+
+    .habit-form .field:first-child,
+    .habit-form-actions {
+      grid-column: 1 / -1;
+    }
+
+    .habit-form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
     }
 
     .habit-list {
@@ -372,7 +384,7 @@
 
     .habit-row-main {
       display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       align-items: center;
       gap: 10px;
       min-width: 0;
@@ -399,6 +411,15 @@
       font-size: 13px;
       line-height: 1.4;
       overflow-wrap: anywhere;
+    }
+
+    .habit-meta-line {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
     }
 
     .habit-row-actions {
@@ -1070,33 +1091,43 @@
       </div>
     </header>
 
-    <section class="habit-dock" id="habitDock" aria-label="长期习惯">
+    <section class="habit-dock" id="habitDock" aria-label="注意">
       <button class="habit-ticker" id="habitToggleButton" type="button" aria-expanded="false" aria-controls="habitPopover">
-        <span class="habit-label">长期习惯</span>
+        <span class="habit-label">注意</span>
         <span class="habit-viewport" id="habitViewport">
-          <span id="habitTickerText">还没有长期习惯</span>
+          <span id="habitTickerText">还没有注意事项</span>
         </span>
         <span class="habit-meta" id="habitTickerMeta">点开添加</span>
       </button>
 
       <div class="habit-popover" id="habitPopover" hidden>
         <div class="habit-popover-head">
-          <h2>长期习惯</h2>
+          <h2>注意</h2>
           <button class="icon-btn mini-toggle" id="closeHabitButton" type="button" title="关闭" aria-label="关闭">×</button>
         </div>
         <form class="habit-form" id="habitForm">
-          <input class="field" id="habitInput" type="text" placeholder="添加长期习惯" autocomplete="off" required>
-          <select class="field" id="habitColor" aria-label="习惯颜色">
-            <option value="#ff8fb3">粉色</option>
-            <option value="#48a7ff">蓝色</option>
-            <option value="#49c783">绿色</option>
-            <option value="#f5b84b">黄色</option>
-            <option value="#a97cff">紫色</option>
+          <input class="field" id="habitInput" type="text" placeholder="写下一个注意事项" autocomplete="off" required>
+          <input class="field" id="habitNote" type="text" placeholder="备注，例如准备材料" autocomplete="off">
+          <input class="field" id="habitTime" type="time" aria-label="提醒时间">
+          <input class="field" id="habitPlace" type="text" placeholder="地点" autocomplete="off">
+          <select class="field" id="habitColor" aria-label="重要程度">
+            <option value="#ff8fb3">粉色重要</option>
+            <option value="#48a7ff">蓝色普通</option>
+            <option value="#49c783">绿色轻松</option>
+            <option value="#f5b84b">黄色提醒</option>
+            <option value="#a97cff">紫色灵感</option>
           </select>
-          <button class="primary-btn" type="submit">添加</button>
+          <label class="reminder-toggle">
+            <input id="habitReminder" type="checkbox">
+            提醒
+          </label>
+          <div class="habit-form-actions">
+            <button class="ghost-btn" id="cancelHabitEditButton" type="button">取消</button>
+            <button class="primary-btn" id="habitSaveButton" type="submit">添加</button>
+          </div>
         </form>
         <ul class="habit-list" id="habitList"></ul>
-        <div class="empty hidden" id="habitEmpty">先放一个长期习惯吧。</div>
+        <div class="empty hidden" id="habitEmpty">先放一个注意事项吧。</div>
       </div>
     </section>
 
@@ -1282,7 +1313,13 @@
     const habitTickerMeta = document.querySelector("#habitTickerMeta");
     const habitForm = document.querySelector("#habitForm");
     const habitInput = document.querySelector("#habitInput");
+    const habitNote = document.querySelector("#habitNote");
+    const habitTime = document.querySelector("#habitTime");
+    const habitPlace = document.querySelector("#habitPlace");
     const habitColor = document.querySelector("#habitColor");
+    const habitReminder = document.querySelector("#habitReminder");
+    const habitSaveButton = document.querySelector("#habitSaveButton");
+    const cancelHabitEditButton = document.querySelector("#cancelHabitEditButton");
     const habitList = document.querySelector("#habitList");
     const habitEmpty = document.querySelector("#habitEmpty");
     const closeHabitButton = document.querySelector("#closeHabitButton");
@@ -1316,6 +1353,7 @@
     let habits = [];
     let habitRollIndex = 0;
     let habitRollTimer = null;
+    let editingHabitId = null;
     let selectedOptionId = null;
     let currentAngle = 0;
     let isSpinning = false;
@@ -1635,7 +1673,11 @@
           return {
             id: item.id || uid(),
             title: title.trim(),
+            note: item.note || "",
+            time: item.time || "",
+            place: item.place || "",
             color: item.color || "#ff8fb3",
+            reminder: Boolean(item.reminder),
             createdAt: item.createdAt || new Date().toISOString(),
             order: Number.isFinite(Number(item.order)) ? Number(item.order) : index,
             completions
@@ -1801,8 +1843,12 @@
       queueCloudSave();
     }
 
-    function completedTodayCount() {
-      return habits.filter((habit) => habit.completions?.[todayDate]).length;
+    function habitSummaryParts(habit) {
+      return [
+        habit.time ? `时间：${escapeHtml(habit.time)}` : "",
+        habit.place ? `地点：${escapeHtml(habit.place)}` : "",
+        habit.reminder && habit.time ? "已开启提醒" : ""
+      ].filter(Boolean);
     }
 
     function currentTickerHabit() {
@@ -1814,14 +1860,18 @@
     function renderHabitTicker(animate = false) {
       const habit = currentTickerHabit();
       if (!habit) {
-        habitTickerText.textContent = "还没有长期习惯";
+        habitTickerText.textContent = "还没有注意事项";
         habitTickerMeta.textContent = "点开添加";
         return;
       }
 
-      const done = Boolean(habit.completions?.[todayDate]);
-      habitTickerText.textContent = `${done ? "已完成 " : ""}${habit.title}`;
-      habitTickerMeta.textContent = `${completedTodayCount()}/${habits.length} 今日`;
+      const summary = [
+        habit.time ? habit.time : "",
+        habit.place ? habit.place : "",
+        habit.note ? habit.note : ""
+      ].filter(Boolean);
+      habitTickerText.textContent = habit.title;
+      habitTickerMeta.textContent = summary[0] || `${habits.length} 条`;
       if (animate) {
         habitViewport.classList.remove("is-rolling");
         habitViewport.getBoundingClientRect();
@@ -1845,17 +1895,17 @@
       habitEmpty.classList.toggle("hidden", habits.length > 0);
 
       habits.forEach((habit) => {
-        const isDone = Boolean(habit.completions?.[todayDate]);
         const item = document.createElement("li");
-        item.className = `habit-row${isDone ? " done-today" : ""}`;
+        item.className = "habit-row";
         item.dataset.id = habit.id;
         item.style.setProperty("--habit-color", habit.color || "#ff8fb3");
+        const metaParts = habitSummaryParts(habit);
         item.innerHTML = `
           <div class="habit-row-main">
-            <input class="check" type="checkbox" ${isDone ? "checked" : ""} aria-label="今日完成">
             <div class="habit-row-text">
               <span class="habit-title">${escapeHtml(habit.title)}</span>
-              <span class="habit-note">${isDone ? "今天已经打卡" : "今天还没打卡"}</span>
+              ${habit.note ? `<span class="habit-note">备注：${escapeHtml(habit.note)}</span>` : ""}
+              ${metaParts.length ? `<span class="habit-meta-line">${metaParts.map((part) => `<span>${part}</span>`).join("")}</span>` : ""}
             </div>
           </div>
           <div class="habit-row-actions">
@@ -1869,23 +1919,55 @@
       startHabitRoller();
     }
 
-    function addHabit(title, color) {
+    function resetHabitForm() {
+      editingHabitId = null;
+      habitInput.value = "";
+      habitNote.value = "";
+      habitTime.value = "";
+      habitPlace.value = "";
+      habitColor.value = "#ff8fb3";
+      habitReminder.checked = false;
+      habitSaveButton.textContent = "添加";
+    }
+
+    function fillHabitForm(habit) {
+      editingHabitId = habit.id;
+      habitInput.value = habit.title || "";
+      habitNote.value = habit.note || "";
+      habitTime.value = habit.time || "";
+      habitPlace.value = habit.place || "";
+      habitColor.value = habit.color || "#ff8fb3";
+      habitReminder.checked = Boolean(habit.reminder);
+      habitSaveButton.textContent = "保存";
+      requestAnimationFrame(() => habitInput.focus());
+    }
+
+    function habitFormData() {
+      return {
+        title: habitInput.value.trim(),
+        note: habitNote.value.trim(),
+        time: habitTime.value,
+        place: habitPlace.value.trim(),
+        color: habitColor.value,
+        reminder: habitReminder.checked && Boolean(habitTime.value)
+      };
+    }
+
+    function addHabit(data) {
       habits.push({
         id: uid(),
-        title: title.trim(),
-        color,
+        ...data,
         createdAt: new Date().toISOString(),
         order: habits.length,
         completions: {}
       });
-      saveHabits();
-      renderHabits();
     }
 
     function setHabitPopover(open) {
       habitPopover.hidden = !open;
       habitToggleButton.setAttribute("aria-expanded", String(open));
       if (open) requestAnimationFrame(() => habitInput.focus());
+      if (!open) resetHabitForm();
     }
 
     function loadTodosByDate(dateStr) {
@@ -2170,6 +2252,12 @@
       return Number.isNaN(date.getTime()) ? null : date;
     }
 
+    function habitReminderTime(habit) {
+      if (!habit.reminder || !habit.time) return null;
+      const date = new Date(`${todayDate}T${habit.time}:00`);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
     async function notifyTodo(todo) {
       const allowed = await ensureNotificationPermission();
       if (!allowed) return;
@@ -2179,9 +2267,37 @@
       });
     }
 
+    async function notifyHabit(habit) {
+      const allowed = await ensureNotificationPermission();
+      if (!allowed) return;
+      new Notification(`注意提醒：${habit.title}`, {
+        body: [habit.place ? `地点：${habit.place}` : "", habit.note || ""].filter(Boolean).join(" · ") || "到时间啦",
+        tag: `habit-${todayDate}-${habit.id}`
+      });
+    }
+
     function scheduleReminders() {
       const reminded = remindedSet();
       const now = Date.now();
+      habits.forEach((habit) => {
+        const reminderTime = habitReminderTime(habit);
+        const remindKey = `habit-${todayDate}-${habit.id}`;
+        if (!reminderTime || reminded.has(remindKey)) return;
+        const delay = reminderTime.getTime() - now;
+        if (delay <= 0 && delay > -60000) {
+          reminded.add(remindKey);
+          notifyHabit(habit);
+        } else if (delay > 0 && delay < 2147483647) {
+          window.setTimeout(() => {
+            const latest = remindedSet();
+            if (latest.has(remindKey)) return;
+            latest.add(remindKey);
+            saveRemindedSet(latest);
+            notifyHabit(habit);
+          }, delay);
+        }
+      });
+
       allTodoDates().forEach((date) => {
         normalizeTodos(load(todoKey(date), []), date).forEach((todo) => {
           const reminderTime = todoReminderTime(todo);
@@ -2215,19 +2331,31 @@
       if (todoReminder.checked) ensureNotificationPermission();
     });
 
+    habitReminder.addEventListener("change", () => {
+      if (habitReminder.checked) ensureNotificationPermission();
+    });
+
     habitToggleButton.addEventListener("click", () => {
       setHabitPopover(habitPopover.hidden);
     });
 
     closeHabitButton.addEventListener("click", () => setHabitPopover(false));
+    cancelHabitEditButton.addEventListener("click", resetHabitForm);
 
     habitForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      const title = habitInput.value.trim();
-      if (!title) return;
-      addHabit(title, habitColor.value);
-      habitInput.value = "";
-      habitColor.value = "#ff8fb3";
+      const data = habitFormData();
+      if (!data.title) return;
+      if (editingHabitId) {
+        const habit = habits.find((entry) => entry.id === editingHabitId);
+        if (habit) Object.assign(habit, data);
+      } else {
+        addHabit(data);
+      }
+      saveHabits();
+      renderHabits();
+      resetHabitForm();
+      scheduleReminders();
     });
 
     habitList.addEventListener("click", (event) => {
@@ -2236,24 +2364,8 @@
       const habit = habits.find((entry) => entry.id === item.dataset.id);
       if (!habit) return;
 
-      if (event.target.matches(".check")) {
-        habit.completions ||= {};
-        if (event.target.checked) {
-          habit.completions[todayDate] = new Date().toISOString();
-        } else {
-          delete habit.completions[todayDate];
-        }
-        saveHabits();
-        renderHabits();
-      }
-
       if (event.target.dataset.action === "edit") {
-        const nextTitle = prompt("编辑长期习惯", habit.title);
-        if (nextTitle !== null && nextTitle.trim()) {
-          habit.title = nextTitle.trim();
-          saveHabits();
-          renderHabits();
-        }
+        fillHabitForm(habit);
       }
 
       if (event.target.dataset.action === "delete") {
@@ -2262,6 +2374,7 @@
         habitRollIndex = Math.min(habitRollIndex, Math.max(0, habits.length - 1));
         saveHabits();
         renderHabits();
+        scheduleReminders();
       }
     });
 
