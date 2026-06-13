@@ -265,7 +265,7 @@
       position: relative;
       z-index: 12;
       margin: -8px 0 18px;
-      width: min(238px, 68vw);
+      width: min(520px, 100%);
     }
 
     .habit-board {
@@ -273,7 +273,8 @@
       grid-template-rows: auto minmax(0, 1fr) auto;
       gap: 10px;
       width: 100%;
-      aspect-ratio: 1 / 1;
+      min-height: 190px;
+      max-height: 190px;
       padding: 13px;
       border: 1px solid var(--border);
       border-radius: 24px;
@@ -525,8 +526,8 @@
 
     @keyframes habitRoll {
       0% {
-        opacity: 0;
-        transform: translateY(100%);
+        opacity: 0.45;
+        transform: translateY(10px);
       }
       100% {
         opacity: 1;
@@ -1138,7 +1139,8 @@
       }
 
       .habit-board {
-        aspect-ratio: 1 / 1;
+        min-height: 190px;
+        max-height: 190px;
       }
 
       .habit-board-head {
