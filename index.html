@@ -199,6 +199,21 @@
       color: var(--primary-strong);
     }
 
+    body.has-custom-bg {
+      background-image:
+        linear-gradient(rgba(247, 251, 255, 0.26), rgba(247, 251, 255, 0.34)),
+        var(--custom-bg-image),
+        radial-gradient(circle at top left, var(--surface-soft), transparent 32rem),
+        linear-gradient(135deg, var(--bg), var(--surface-soft));
+      background-size: cover, cover, auto, auto;
+      background-position: center, center, 0 0, 0 0;
+      background-attachment: fixed, fixed, scroll, scroll;
+    }
+
+    .bg-clear-btn[hidden] {
+      display: none !important;
+    }
+
     .theme-picker {
       display: flex;
       align-items: center;
@@ -1151,6 +1166,9 @@
 
       <div class="header-actions">
         <button class="sync-btn" id="syncButton" type="button">云同步</button>
+        <button class="sync-btn" id="backgroundButton" type="button">背景</button>
+        <button class="sync-btn bg-clear-btn" id="clearBackgroundButton" type="button" hidden>清除背景</button>
+        <input class="hidden" id="backgroundInput" type="file" accept="image/jpeg,image/png,image/webp">
         <div class="theme-picker" role="group" aria-label="选择主题色">
           <button class="theme-dot" type="button" data-theme-button="light" style="--dot: linear-gradient(135deg, #ff8fb3, #39b7c9);" title="浅色默认">浅</button>
           <button class="theme-dot" type="button" data-theme-button="dark" style="--dot: linear-gradient(135deg, #202635, #7dd3fc);" title="深色">深</button>
@@ -1322,6 +1340,7 @@
     const storageKeys = {
       todos: "xiaoxiaoyu.todos",
       avatar: "xiaoxiaoyu.avatar",
+      background: "xiaoxiaoyu.background",
       theme: "xiaoxiaoyu.theme",
       options: "xiaoxiaoyu.wheelOptions",
       wheels: "wheels",
@@ -1393,6 +1412,9 @@
     const avatarInput = document.querySelector("#avatarInput");
     const avatarPreview = document.querySelector("#avatarPreview");
     const syncButton = document.querySelector("#syncButton");
+    const backgroundButton = document.querySelector("#backgroundButton");
+    const clearBackgroundButton = document.querySelector("#clearBackgroundButton");
+    const backgroundInput = document.querySelector("#backgroundInput");
     const habitDock = document.querySelector("#habitDock");
     const habitToggleButton = document.querySelector("#habitToggleButton");
     const habitPrevButton = document.querySelector("#habitPrevButton");
@@ -1516,7 +1538,8 @@
         wheels,
         currentWheelIndex,
         theme: localStorage.getItem(storageKeys.theme) || "light",
-        avatar: localStorage.getItem(storageKeys.avatar) || ""
+        avatar: localStorage.getItem(storageKeys.avatar) || "",
+        background: localStorage.getItem(storageKeys.background) || ""
       };
     }
 
@@ -1598,6 +1621,7 @@
         localStorage.setItem(storageKeys.avatar, data.avatar);
         avatarPreview.src = data.avatar;
       }
+      if (typeof data.background === "string") applyBackground(data.background);
 
       renderHabits();
       loadTodosByDate(currentDate);
@@ -2740,6 +2764,75 @@
       reader.readAsDataURL(file);
     });
 
+    function applyBackground(image = "") {
+      if (image) {
+        document.body.style.setProperty("--custom-bg-image", `url("${image}")`);
+        document.body.classList.add("has-custom-bg");
+        localStorage.setItem(storageKeys.background, image);
+        clearBackgroundButton.hidden = false;
+      } else {
+        document.body.style.removeProperty("--custom-bg-image");
+        document.body.classList.remove("has-custom-bg");
+        localStorage.removeItem(storageKeys.background);
+        clearBackgroundButton.hidden = true;
+      }
+    }
+
+    function fileToImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("读取背景图片失败"));
+        reader.onload = () => {
+          const image = new Image();
+          image.onerror = () => reject(new Error("背景图片加载失败"));
+          image.onload = () => resolve(image);
+          image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function compressBackgroundImage(file) {
+      const image = await fileToImage(file);
+      const maxSize = 1600;
+      const ratio = Math.min(1, maxSize / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio));
+      const context = canvas.getContext("2d");
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", 0.82);
+    }
+
+    backgroundButton.addEventListener("click", () => backgroundInput.click());
+    backgroundInput.addEventListener("change", async () => {
+      const file = backgroundInput.files?.[0];
+      backgroundInput.value = "";
+      if (!file) return;
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        alert("请选择 jpg、png 或 webp 图片。");
+        return;
+      }
+
+      try {
+        backgroundButton.disabled = true;
+        backgroundButton.textContent = "处理中...";
+        const image = await compressBackgroundImage(file);
+        applyBackground(image);
+        queueCloudSave();
+      } catch (error) {
+        alert(error.message || "背景图片处理失败。");
+      } finally {
+        backgroundButton.disabled = false;
+        backgroundButton.textContent = "背景";
+      }
+    });
+
+    clearBackgroundButton.addEventListener("click", () => {
+      applyBackground("");
+      queueCloudSave();
+    });
+
     function cssVar(name) {
       return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     }
@@ -2981,6 +3074,7 @@
       todoDate.value = todayDate;
       avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
       applyTheme(localStorage.getItem(storageKeys.theme) || "light");
+      applyBackground(localStorage.getItem(storageKeys.background) || "");
       const bootstrapped = await bootstrapCloudData();
       if (!bootstrapped) {
         renderHabits();
