@@ -246,6 +246,179 @@
       backdrop-filter: blur(16px);
     }
 
+    .habit-dock {
+      position: relative;
+      z-index: 12;
+      margin: -8px 0 18px;
+    }
+
+    .habit-ticker {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      width: min(520px, 100%);
+      min-height: 58px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+      color: var(--text);
+      box-shadow: 0 14px 34px rgba(25, 45, 64, 0.1);
+      backdrop-filter: blur(14px);
+      text-align: left;
+    }
+
+    .habit-label {
+      display: inline-grid;
+      place-items: center;
+      min-height: 32px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .habit-viewport {
+      position: relative;
+      display: block;
+      min-width: 0;
+      height: 26px;
+      overflow: hidden;
+      font-weight: 800;
+    }
+
+    .habit-viewport span {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 26px;
+      transform: translateY(0);
+    }
+
+    .habit-viewport.is-rolling span {
+      animation: habitRoll 0.44s ease both;
+    }
+
+    .habit-meta {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .habit-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: min(620px, 100%);
+      max-height: min(70vh, 540px);
+      overflow: auto;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 28px 70px rgba(25, 45, 64, 0.22);
+    }
+
+    .habit-popover[hidden] {
+      display: none !important;
+    }
+
+    .habit-popover-head,
+    .habit-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .habit-popover-head {
+      margin-bottom: 12px;
+    }
+
+    .habit-popover-head h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .habit-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(110px, 150px) auto;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .habit-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .habit-row {
+      min-height: 58px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-left: 7px solid var(--habit-color, var(--primary));
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--surface) 90%, var(--surface-soft) 10%);
+    }
+
+    .habit-row-main {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .habit-row-text {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .habit-title {
+      overflow-wrap: anywhere;
+      font-weight: 800;
+    }
+
+    .habit-row.done-today .habit-title {
+      color: var(--done);
+      text-decoration: line-through;
+    }
+
+    .habit-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .habit-row-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    @keyframes habitRoll {
+      0% {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     .todo-panel {
       padding: clamp(18px, 4vw, 32px);
       margin-bottom: 24px;
@@ -791,6 +964,7 @@
       }
 
       .todo-editor,
+      .habit-form,
       .wheel-layout {
         grid-template-columns: 1fr;
       }
@@ -822,6 +996,7 @@
       }
 
       .todo-item,
+      .habit-row,
       .option-item {
         align-items: start;
       }
@@ -840,6 +1015,26 @@
       }
 
       .option-item .item-actions {
+        justify-content: flex-end;
+      }
+
+      .habit-dock {
+        margin-top: -4px;
+      }
+
+      .habit-ticker {
+        grid-template-columns: auto minmax(0, 1fr);
+      }
+
+      .habit-meta {
+        grid-column: 2;
+      }
+
+      .habit-row {
+        display: grid;
+      }
+
+      .habit-row-actions {
         justify-content: flex-end;
       }
 
@@ -874,6 +1069,36 @@
         <input class="hidden" id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp">
       </div>
     </header>
+
+    <section class="habit-dock" id="habitDock" aria-label="长期习惯">
+      <button class="habit-ticker" id="habitToggleButton" type="button" aria-expanded="false" aria-controls="habitPopover">
+        <span class="habit-label">长期习惯</span>
+        <span class="habit-viewport" id="habitViewport">
+          <span id="habitTickerText">还没有长期习惯</span>
+        </span>
+        <span class="habit-meta" id="habitTickerMeta">点开添加</span>
+      </button>
+
+      <div class="habit-popover" id="habitPopover" hidden>
+        <div class="habit-popover-head">
+          <h2>长期习惯</h2>
+          <button class="icon-btn mini-toggle" id="closeHabitButton" type="button" title="关闭" aria-label="关闭">×</button>
+        </div>
+        <form class="habit-form" id="habitForm">
+          <input class="field" id="habitInput" type="text" placeholder="添加长期习惯" autocomplete="off" required>
+          <select class="field" id="habitColor" aria-label="习惯颜色">
+            <option value="#ff8fb3">粉色</option>
+            <option value="#48a7ff">蓝色</option>
+            <option value="#49c783">绿色</option>
+            <option value="#f5b84b">黄色</option>
+            <option value="#a97cff">紫色</option>
+          </select>
+          <button class="primary-btn" type="submit">添加</button>
+        </form>
+        <ul class="habit-list" id="habitList"></ul>
+        <div class="empty hidden" id="habitEmpty">先放一个长期习惯吧。</div>
+      </div>
+    </section>
 
     <section class="panel todo-panel" id="todoPanel" aria-labelledby="todoTitle">
       <div class="pager-head">
@@ -981,6 +1206,7 @@
       theme: "xiaoxiaoyu.theme",
       options: "xiaoxiaoyu.wheelOptions",
       wheels: "wheels",
+      habits: "xiaoxiaoyu.habits",
       currentWheelIndex: "currentWheelIndex",
       syncCode: "xiaoxiaoyu.syncCode",
       syncUpdatedAt: "xiaoxiaoyu.syncUpdatedAt",
@@ -1048,6 +1274,18 @@
     const avatarInput = document.querySelector("#avatarInput");
     const avatarPreview = document.querySelector("#avatarPreview");
     const syncButton = document.querySelector("#syncButton");
+    const habitDock = document.querySelector("#habitDock");
+    const habitToggleButton = document.querySelector("#habitToggleButton");
+    const habitPopover = document.querySelector("#habitPopover");
+    const habitViewport = document.querySelector("#habitViewport");
+    const habitTickerText = document.querySelector("#habitTickerText");
+    const habitTickerMeta = document.querySelector("#habitTickerMeta");
+    const habitForm = document.querySelector("#habitForm");
+    const habitInput = document.querySelector("#habitInput");
+    const habitColor = document.querySelector("#habitColor");
+    const habitList = document.querySelector("#habitList");
+    const habitEmpty = document.querySelector("#habitEmpty");
+    const closeHabitButton = document.querySelector("#closeHabitButton");
     const themeColorMeta = document.querySelector("#themeColorMeta");
     const themeColorDarkMeta = document.querySelector("#themeColorDarkMeta");
     const appleStatusBarMeta = document.querySelector("#appleStatusBarMeta");
@@ -1075,6 +1313,9 @@
     let wheels = [];
     let currentWheelIndex = 0;
     let wheelOptions = [];
+    let habits = [];
+    let habitRollIndex = 0;
+    let habitRollTimer = null;
     let selectedOptionId = null;
     let currentAngle = 0;
     let isSpinning = false;
@@ -1140,6 +1381,7 @@
         version: 1,
         savedAt: new Date().toISOString(),
         dailyTodos,
+        habits,
         wheels,
         currentWheelIndex,
         theme: localStorage.getItem(storageKeys.theme) || "light",
@@ -1160,7 +1402,9 @@
         return total + optionCount + extraWheelWeight;
       }, 0);
 
-      return todoScore + wheelScore;
+      const habitScore = normalizeHabits(data.habits || []).length * 6;
+
+      return todoScore + wheelScore + habitScore;
     }
 
     async function syncBestAvailableData(cloudRow) {
@@ -1207,6 +1451,9 @@
         save(todoKey(date), merged);
       });
 
+      habits = mergeHabits(habits, data.habits || []);
+      save(storageKeys.habits, habits);
+
       wheels = normalizeWheels(data.wheels || []);
       if (!wheels.length) {
         wheels = [{ id: "default-wheel", name: "默认转盘", options: normalizeWheelOptions([]) }];
@@ -1221,6 +1468,7 @@
         avatarPreview.src = data.avatar;
       }
 
+      renderHabits();
       loadTodosByDate(currentDate);
       loadWheel(currentWheelIndex);
       applyingCloudData = false;
@@ -1376,6 +1624,46 @@
         .filter(Boolean);
     }
 
+    function normalizeHabits(value) {
+      const source = Array.isArray(value) ? value : [];
+      return source
+        .map((item, index) => {
+          if (!item) return null;
+          const title = item.title || item.text;
+          if (typeof title !== "string" || !title.trim()) return null;
+          const completions = item.completions && typeof item.completions === "object" ? item.completions : {};
+          return {
+            id: item.id || uid(),
+            title: title.trim(),
+            color: item.color || "#ff8fb3",
+            createdAt: item.createdAt || new Date().toISOString(),
+            order: Number.isFinite(Number(item.order)) ? Number(item.order) : index,
+            completions
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function mergeHabits(localValue, cloudValue) {
+      const merged = normalizeHabits(localValue);
+      normalizeHabits(cloudValue).forEach((cloudHabit) => {
+        const index = merged.findIndex((localHabit) => localHabit.id === cloudHabit.id);
+        if (index >= 0) {
+          merged[index] = {
+            ...merged[index],
+            ...cloudHabit,
+            completions: {
+              ...(merged[index].completions || {}),
+              ...(cloudHabit.completions || {})
+            }
+          };
+        } else {
+          merged.push(cloudHabit);
+        }
+      });
+      return merged.sort((a, b) => Number(a.order) - Number(b.order));
+    }
+
     function normalizeWheels(value) {
       const source = Array.isArray(value) ? value : [];
       return source
@@ -1505,6 +1793,99 @@
     function saveCurrentTodos() {
       save(todoKey(currentDate), todos);
       queueCloudSave();
+    }
+
+    function saveHabits() {
+      habits = normalizeHabits(habits).map((habit, index) => ({ ...habit, order: index }));
+      save(storageKeys.habits, habits);
+      queueCloudSave();
+    }
+
+    function completedTodayCount() {
+      return habits.filter((habit) => habit.completions?.[todayDate]).length;
+    }
+
+    function currentTickerHabit() {
+      if (!habits.length) return null;
+      habitRollIndex = habitRollIndex % habits.length;
+      return habits[habitRollIndex];
+    }
+
+    function renderHabitTicker(animate = false) {
+      const habit = currentTickerHabit();
+      if (!habit) {
+        habitTickerText.textContent = "还没有长期习惯";
+        habitTickerMeta.textContent = "点开添加";
+        return;
+      }
+
+      const done = Boolean(habit.completions?.[todayDate]);
+      habitTickerText.textContent = `${done ? "已完成 " : ""}${habit.title}`;
+      habitTickerMeta.textContent = `${completedTodayCount()}/${habits.length} 今日`;
+      if (animate) {
+        habitViewport.classList.remove("is-rolling");
+        habitViewport.getBoundingClientRect();
+        habitViewport.classList.add("is-rolling");
+      }
+    }
+
+    function startHabitRoller() {
+      window.clearInterval(habitRollTimer);
+      renderHabitTicker(false);
+      if (habits.length <= 1) return;
+      habitRollTimer = window.setInterval(() => {
+        habitRollIndex = (habitRollIndex + 1) % habits.length;
+        renderHabitTicker(true);
+      }, 2600);
+    }
+
+    function renderHabits() {
+      habits = normalizeHabits(habits);
+      habitList.innerHTML = "";
+      habitEmpty.classList.toggle("hidden", habits.length > 0);
+
+      habits.forEach((habit) => {
+        const isDone = Boolean(habit.completions?.[todayDate]);
+        const item = document.createElement("li");
+        item.className = `habit-row${isDone ? " done-today" : ""}`;
+        item.dataset.id = habit.id;
+        item.style.setProperty("--habit-color", habit.color || "#ff8fb3");
+        item.innerHTML = `
+          <div class="habit-row-main">
+            <input class="check" type="checkbox" ${isDone ? "checked" : ""} aria-label="今日完成">
+            <div class="habit-row-text">
+              <span class="habit-title">${escapeHtml(habit.title)}</span>
+              <span class="habit-note">${isDone ? "今天已经打卡" : "今天还没打卡"}</span>
+            </div>
+          </div>
+          <div class="habit-row-actions">
+            <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
+            <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
+          </div>
+        `;
+        habitList.appendChild(item);
+      });
+
+      startHabitRoller();
+    }
+
+    function addHabit(title, color) {
+      habits.push({
+        id: uid(),
+        title: title.trim(),
+        color,
+        createdAt: new Date().toISOString(),
+        order: habits.length,
+        completions: {}
+      });
+      saveHabits();
+      renderHabits();
+    }
+
+    function setHabitPopover(open) {
+      habitPopover.hidden = !open;
+      habitToggleButton.setAttribute("aria-expanded", String(open));
+      if (open) requestAnimationFrame(() => habitInput.focus());
     }
 
     function loadTodosByDate(dateStr) {
@@ -1834,6 +2215,56 @@
       if (todoReminder.checked) ensureNotificationPermission();
     });
 
+    habitToggleButton.addEventListener("click", () => {
+      setHabitPopover(habitPopover.hidden);
+    });
+
+    closeHabitButton.addEventListener("click", () => setHabitPopover(false));
+
+    habitForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const title = habitInput.value.trim();
+      if (!title) return;
+      addHabit(title, habitColor.value);
+      habitInput.value = "";
+      habitColor.value = "#ff8fb3";
+    });
+
+    habitList.addEventListener("click", (event) => {
+      const item = event.target.closest(".habit-row");
+      if (!item) return;
+      const habit = habits.find((entry) => entry.id === item.dataset.id);
+      if (!habit) return;
+
+      if (event.target.matches(".check")) {
+        habit.completions ||= {};
+        if (event.target.checked) {
+          habit.completions[todayDate] = new Date().toISOString();
+        } else {
+          delete habit.completions[todayDate];
+        }
+        saveHabits();
+        renderHabits();
+      }
+
+      if (event.target.dataset.action === "edit") {
+        const nextTitle = prompt("编辑长期习惯", habit.title);
+        if (nextTitle !== null && nextTitle.trim()) {
+          habit.title = nextTitle.trim();
+          saveHabits();
+          renderHabits();
+        }
+      }
+
+      if (event.target.dataset.action === "delete") {
+        if (!confirm(`确定删除「${habit.title}」吗？`)) return;
+        habits = habits.filter((entry) => entry.id !== habit.id);
+        habitRollIndex = Math.min(habitRollIndex, Math.max(0, habits.length - 1));
+        saveHabits();
+        renderHabits();
+      }
+    });
+
     newTodoButton.addEventListener("click", () => openTodoEditor());
     closeTodoEditorButton.addEventListener("click", closeTodoEditor);
     cancelTodoEditorButton.addEventListener("click", closeTodoEditor);
@@ -1841,6 +2272,13 @@
 
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && !todoModal.hidden) closeTodoEditor();
+      if (event.key === "Escape" && !habitPopover.hidden) setHabitPopover(false);
+    });
+
+    document.addEventListener("click", (event) => {
+      const path = event.composedPath ? event.composedPath() : [];
+      if (habitPopover.hidden || habitDock.contains(event.target) || path.includes(habitDock)) return;
+      setHabitPopover(false);
     });
 
     todoEditorForm.addEventListener("submit", (event) => {
@@ -2282,11 +2720,13 @@
       updateSyncButton();
       migrateTodoStorage();
       migrateWheelStorage();
+      habits = normalizeHabits(load(storageKeys.habits, []));
       todoDate.value = todayDate;
       avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
       applyTheme(localStorage.getItem(storageKeys.theme) || "light");
       const bootstrapped = await bootstrapCloudData();
       if (!bootstrapped) {
+        renderHabits();
         loadTodosByDate(todayDate);
         loadWheel(currentWheelIndex);
       }
