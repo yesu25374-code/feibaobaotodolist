@@ -288,11 +288,18 @@
     }
 
     .habit-board.is-empty {
-      min-height: 136px;
-      max-height: 136px;
+      grid-template-rows: auto auto;
+      gap: 8px;
+      min-height: 104px;
+      max-height: 104px;
+      padding: 12px 13px;
     }
 
     .habit-board.is-empty .habit-board-action[data-scroll-control] {
+      display: none;
+    }
+
+    .habit-board.is-empty .habit-board-foot {
       display: none;
     }
 
@@ -340,6 +347,12 @@
     .habit-board-window {
       min-height: 0;
       overflow: hidden;
+    }
+
+    .habit-board.is-empty .habit-board-window {
+      min-height: 36px;
+      display: grid;
+      align-items: center;
     }
 
     .habit-preview-list {
@@ -395,15 +408,28 @@
     }
 
     .habit-board-empty {
-      display: grid;
-      place-items: center;
-      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 36px;
       border: 0;
       border-radius: 16px;
       color: var(--muted);
-      text-align: center;
-      font-weight: 700;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 800;
       background: transparent;
+    }
+
+    .habit-board-empty::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      margin-right: 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 12%, transparent);
+      flex: 0 0 auto;
     }
 
     .habit-board-foot {
@@ -1154,8 +1180,8 @@
       }
 
       .habit-board.is-empty {
-        min-height: 136px;
-        max-height: 136px;
+        min-height: 104px;
+        max-height: 104px;
       }
 
       .habit-board-head {
@@ -1443,6 +1469,7 @@
     const backgroundButton = document.querySelector("#backgroundButton");
     const backgroundInput = document.querySelector("#backgroundInput");
     const habitDock = document.querySelector("#habitDock");
+    const habitBoard = document.querySelector(".habit-board");
     const habitToggleButton = document.querySelector("#habitToggleButton");
     const habitPrevButton = document.querySelector("#habitPrevButton");
     const habitNextButton = document.querySelector("#habitNextButton");
@@ -2013,6 +2040,8 @@
 
     function renderHabitPreview(animate = false) {
       const visibleCount = habits.length ? Math.min(2, habits.length) : 0;
+      const hasHabits = habits.length > 0;
+      const canScrollHabits = habits.length > visibleCount;
       if (habits.length) {
         habitRollIndex = ((habitRollIndex % habits.length) + habits.length) % habits.length;
       } else {
@@ -2020,13 +2049,15 @@
       }
 
       habitPreviewList.innerHTML = "";
-      habitDock.querySelector(".habit-board").classList.toggle("is-empty", habits.length === 0);
-      habitPreviewEmpty.classList.toggle("hidden", habits.length > 0);
-      habitPreviewList.classList.toggle("hidden", habits.length === 0);
+      habitBoard.classList.toggle("is-empty", !hasHabits);
+      habitPreviewEmpty.classList.toggle("hidden", hasHabits);
+      habitPreviewList.classList.toggle("hidden", !hasHabits);
       habitBoardCount.textContent = `${habits.length} 条`;
-      habitPrevButton.disabled = habits.length <= visibleCount;
-      habitNextButton.disabled = habits.length <= visibleCount;
-      habitAutoButton.disabled = habits.length <= visibleCount;
+      habitBoardMode.textContent = habitAutoScroll && canScrollHabits ? "自动滚动" : "手动翻看";
+      [habitPrevButton, habitNextButton, habitAutoButton].forEach((button) => {
+        button.hidden = !canScrollHabits;
+        button.disabled = !canScrollHabits;
+      });
       if (!habits.length) stopHabitAutoScroll();
 
       for (let offset = 0; offset < visibleCount; offset += 1) {
