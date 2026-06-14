@@ -207,6 +207,11 @@
       color: var(--primary-strong);
     }
 
+    #backgroundButton {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
     body.has-custom-bg {
       background-image:
         linear-gradient(rgba(247, 251, 255, 0.26), rgba(247, 251, 255, 0.34)),
@@ -324,13 +329,12 @@
       min-height: 36px;
       padding: 0 12px;
       border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
       font-size: 15px;
       font-weight: 800;
       white-space: nowrap;
-      box-shadow: 0 8px 24px rgba(25, 45, 64, 0.08);
+      box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 24%, transparent);
     }
 
     .habit-board-actions {
@@ -1735,6 +1739,7 @@
 
     function updateSyncButton() {
       syncButton.classList.toggle("is-active", Boolean(syncCode));
+      backgroundButton.classList.toggle("is-active", Boolean(syncCode));
       if (!syncConfigured()) {
         syncButton.textContent = "云同步未配置";
       } else if (syncCode) {
@@ -2852,6 +2857,7 @@
         document.body.style.setProperty("--custom-bg-image", `url("${image}")`);
         document.body.classList.add("has-custom-bg");
         localStorage.setItem(storageKeys.background, image);
+        backgroundButton.classList.add("is-clearing");
         backgroundButton.textContent = "清除";
         backgroundButton.title = "清除背景";
         backgroundButton.setAttribute("aria-label", "清除背景");
@@ -2859,6 +2865,7 @@
         document.body.style.removeProperty("--custom-bg-image");
         document.body.classList.remove("has-custom-bg");
         localStorage.removeItem(storageKeys.background);
+        backgroundButton.classList.remove("is-clearing");
         backgroundButton.textContent = "背景";
         backgroundButton.title = "自定义背景";
         backgroundButton.setAttribute("aria-label", "自定义背景");
