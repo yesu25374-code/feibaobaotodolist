@@ -183,6 +183,14 @@
       gap: 12px;
     }
 
+    .sync-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
     .sync-btn {
       min-height: 42px;
       padding: 0 14px;
@@ -1108,6 +1116,10 @@
         align-items: flex-end;
       }
 
+      .sync-actions {
+        width: 100%;
+      }
+
       .theme-picker {
         max-width: 180px;
         flex-wrap: wrap;
@@ -1145,6 +1157,15 @@
       .avatar-button {
         width: 52px;
         height: 52px;
+      }
+
+      .sync-actions {
+        gap: 6px;
+      }
+
+      .sync-actions .sync-btn {
+        min-height: 40px;
+        padding: 0 12px;
       }
 
       .todo-item,
@@ -1220,9 +1241,11 @@
       </div>
 
       <div class="header-actions">
-        <button class="sync-btn" id="backgroundButton" type="button">背景</button>
-        <button class="sync-btn" id="syncButton" type="button">云同步</button>
-        <input class="hidden" id="backgroundInput" type="file" accept="image/jpeg,image/png,image/webp">
+        <div class="sync-actions">
+          <button class="sync-btn" id="backgroundButton" type="button">背景</button>
+          <button class="sync-btn" id="syncButton" type="button">云同步</button>
+          <input class="hidden" id="backgroundInput" type="file" accept="image/jpeg,image/png,image/webp">
+        </div>
         <div class="theme-picker" role="group" aria-label="选择主题色">
           <button class="theme-dot" type="button" data-theme-button="light" style="--dot: linear-gradient(135deg, #ff8fb3, #39b7c9);" title="浅色默认">浅</button>
           <button class="theme-dot" type="button" data-theme-button="dark" style="--dot: linear-gradient(135deg, #202635, #7dd3fc);" title="深色">深</button>
