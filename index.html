@@ -2068,9 +2068,9 @@
     }
 
     function renderHabitPreview(animate = false) {
-      const visibleCount = habits.length ? Math.min(2, habits.length) : 0;
+      const visibleCount = habits.length ? 1 : 0;
       const hasHabits = habits.length > 0;
-      const canScrollHabits = habits.length > visibleCount;
+      const canScrollHabits = habits.length > 1;
       if (habits.length) {
         habitRollIndex = ((habitRollIndex % habits.length) + habits.length) % habits.length;
       } else {
@@ -2109,7 +2109,7 @@
     }
 
     function stepHabitPreview(direction, animate = true) {
-      if (habits.length <= 2) return;
+      if (habits.length <= 1) return;
       habitRollIndex = (habitRollIndex + direction + habits.length) % habits.length;
       renderHabitPreview(animate);
     }
@@ -2129,7 +2129,7 @@
         stopHabitAutoScroll();
         return;
       }
-      if (habits.length <= 2) return;
+      if (habits.length <= 1) return;
       startHabitAutoScroll();
     }
 
