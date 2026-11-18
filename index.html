@@ -699,6 +699,38 @@
       flex-wrap: wrap;
     }
 
+    .mode-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      width: fit-content;
+      margin: 0 auto 14px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface) 80%, var(--primary) 8%);
+    }
+
+    .mode-tab {
+      min-width: 64px;
+      padding: 7px 16px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .mode-tab.is-active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #fff;
+      box-shadow: 0 6px 14px color-mix(in srgb, var(--primary) 30%, transparent);
+    }
+
     .pager-head {
       display: grid;
       grid-template-columns: auto 1fr auto;
@@ -1354,7 +1386,12 @@
       </div>
     </section>
 
-    <section class="panel todo-panel" id="todoPanel" aria-labelledby="todoTitle">
+    <section class="panel todo-panel" id="todoPanel" data-mode="day" aria-labelledby="todoTitle">
+      <div class="mode-tabs" role="tablist" aria-label="计划周期">
+        <button class="mode-tab is-active" type="button" role="tab" data-mode="day">每天</button>
+        <button class="mode-tab" type="button" role="tab" data-mode="week">每周</button>
+        <button class="mode-tab" type="button" role="tab" data-mode="month">每月</button>
+      </div>
       <div class="pager-head">
         <button class="pager-arrow" id="prevDayButton" type="button" title="查看前一天" aria-label="查看前一天">‹</button>
         <div class="pager-title">
@@ -1468,7 +1505,8 @@
       syncUpdatedAt: "xiaoxiaoyu.syncUpdatedAt",
       todosCollapsed: "xiaoxiaoyu.todosCollapsed",
       optionsCollapsed: "xiaoxiaoyu.optionsCollapsed",
-      remindedTodos: "xiaoxiaoyu.remindedTodos"
+      remindedTodos: "xiaoxiaoyu.remindedTodos",
+      todoViewMode: "xiaoxiaoyu.todoViewMode"
     };
 
     const supabaseConfig = {
@@ -1579,6 +1617,7 @@
 
     const todayDate = today();
     let currentDate = todayDate;
+    let viewMode = "day";
     let todos = [];
     let wheels = [];
     let currentWheelIndex = 0;
@@ -1985,8 +2024,50 @@
       return formatDateKey(date);
     }
 
+    function weekStart(dateStr) {
+      const date = toLocalDate(dateStr);
+      const offset = (date.getDay() + 6) % 7;
+      date.setDate(date.getDate() - offset);
+      return formatDateKey(date);
+    }
+
+    // 每天：todos_2026-11-19；每周：todos_W2026-11-16（周一）；每月：todos_M2026-11
+    function listKey(mode, dateStr) {
+      if (mode === "week") return todoKey(`W${weekStart(dateStr)}`);
+      if (mode === "month") return todoKey(`M${dateStr.slice(0, 7)}`);
+      return todoKey(dateStr);
+    }
+
+    function currentListKey() {
+      return listKey(viewMode, currentDate);
+    }
+
+    function shiftPeriod(dateStr, step) {
+      if (viewMode === "week") return shiftDate(dateStr, step * 7);
+      if (viewMode === "month") {
+        const date = toLocalDate(dateStr);
+        date.setDate(1);
+        date.setMonth(date.getMonth() + step);
+        return formatDateKey(date);
+      }
+      return shiftDate(dateStr, step);
+    }
+
     function isTodayPage() {
-      return currentDate === todayDate;
+      return currentListKey() === listKey(viewMode, todayDate);
+    }
+
+    function formatPeriodLabel(dateStr) {
+      if (viewMode === "week") {
+        const start = toLocalDate(weekStart(dateStr));
+        const end = toLocalDate(shiftDate(weekStart(dateStr), 6));
+        return `${start.getMonth() + 1}月${start.getDate()}日 – ${end.getMonth() + 1}月${end.getDate()}日${isTodayPage() ? " 本周" : ""}`;
+      }
+      if (viewMode === "month") {
+        const date = toLocalDate(dateStr);
+        return `${date.getFullYear()}年${date.getMonth() + 1}月${isTodayPage() ? " 本月" : ""}`;
+      }
+      return formatCurrentDateLabel(dateStr);
     }
 
     function formatCurrentDateLabel(dateStr) {
@@ -2071,7 +2152,7 @@
     }
 
     function saveCurrentTodos() {
-      save(todoKey(currentDate), todos);
+      save(currentListKey(), todos);
       queueCloudSave();
     }
 
@@ -2254,18 +2335,48 @@
 
     function loadTodosByDate(dateStr) {
       currentDate = dateStr;
-      todos = normalizeTodos(load(todoKey(dateStr), []), dateStr);
+      todos = normalizeTodos(load(currentListKey(), []), dateStr);
       renderTodos();
     }
 
     function prevDay() {
-      loadTodosByDate(shiftDate(currentDate, -1));
+      loadTodosByDate(shiftPeriod(currentDate, -1));
       runSlide(todoList, "right");
     }
 
     function nextDay() {
-      loadTodosByDate(shiftDate(currentDate, 1));
+      loadTodosByDate(shiftPeriod(currentDate, 1));
       runSlide(todoList, "left");
+    }
+
+    const modeText = {
+      day: { title: "今日清单", unit: "天", empty: "今天还没有待办，先加一件小事吧。", other: "这一天还没有待办～", hint: "可以切换或选择任意日期，提前安排待办。" },
+      week: { title: "周计划", unit: "周", empty: "这周还没有计划，写下本周想完成的事吧。", other: "这一周还没有计划～", hint: "放这一周要完成的事，左右切换看其他周。" },
+      month: { title: "月计划", unit: "月", empty: "这个月还没有计划，定几个小目标吧。", other: "这个月还没有计划～", hint: "放这个月的目标，左右切换看其他月份。" }
+    };
+
+    function applyModeUi() {
+      const text = modeText[viewMode];
+      todoPanel.dataset.mode = viewMode;
+      document.querySelectorAll(".mode-tab").forEach((tab) => {
+        const active = tab.dataset.mode === viewMode;
+        tab.classList.toggle("is-active", active);
+        tab.setAttribute("aria-selected", String(active));
+      });
+      document.querySelector("#todoTitle").textContent = text.title;
+      document.querySelector("#todoReadonly").textContent = text.hint;
+      prevDayButton.title = `查看上一${text.unit}`;
+      nextDayButton.title = `查看下一${text.unit}`;
+      prevDayButton.setAttribute("aria-label", prevDayButton.title);
+      nextDayButton.setAttribute("aria-label", nextDayButton.title);
+    }
+
+    function setViewMode(mode, date = todayDate) {
+      if (!modeText[mode]) return;
+      viewMode = mode;
+      localStorage.setItem(storageKeys.todoViewMode, mode);
+      applyModeUi();
+      loadTodosByDate(date);
     }
 
     function saveWheels() {
@@ -2334,14 +2445,14 @@
     function renderTodos() {
       todoList.innerHTML = "";
       todoEmpty.classList.toggle("hidden", todos.length > 0);
-      todoEmpty.textContent = isTodayPage() ? "今天还没有待办，先加一件小事吧。" : "这一天还没有待办～";
+      todoEmpty.textContent = isTodayPage() ? modeText[viewMode].empty : modeText[viewMode].other;
       todoList.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.todosCollapsed) === "true");
       todoEmpty.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.todosCollapsed) === "true");
       const todosCollapsed = localStorage.getItem(storageKeys.todosCollapsed) === "true";
       collapseTodosButton.textContent = todosCollapsed ? "展开" : "折叠";
       collapseTodosButton.title = todosCollapsed ? "展开待办" : "折叠待办";
       collapseTodosButton.setAttribute("aria-label", collapseTodosButton.title);
-      dateLabel.textContent = formatCurrentDateLabel(currentDate);
+      dateLabel.textContent = formatPeriodLabel(currentDate);
       nextDayButton.disabled = false;
       todoDate.value = currentDate;
 
@@ -2411,7 +2522,7 @@
     }
 
     function showUndo(todo, index) {
-      lastDeletedTodo = { todo, index, date: currentDate };
+      lastDeletedTodo = { todo, index, date: currentDate, mode: viewMode, key: currentListKey() };
       undoText.textContent = `已删除「${todo.title}」`;
       undoBar.classList.remove("hidden");
       window.clearTimeout(undoTimer);
@@ -2476,7 +2587,7 @@
       };
 
       if (!editingTodoId) {
-        if (targetDate !== currentDate) loadTodosByDate(targetDate);
+        if (listKey(viewMode, targetDate) !== currentListKey()) loadTodosByDate(targetDate);
         todos.push({
           id: uid(),
           ...formTodo,
@@ -2494,12 +2605,12 @@
 
         const updatedTodo = { ...todo, ...formTodo };
 
-        if (targetDate !== currentDate) {
+        if (listKey(viewMode, targetDate) !== currentListKey()) {
           todos = todos.filter((entry) => entry.id !== editingTodoId);
           saveCurrentTodos();
-          const targetTodos = normalizeTodos(load(todoKey(targetDate), []), targetDate);
+          const targetTodos = normalizeTodos(load(listKey(viewMode, targetDate), []), targetDate);
           targetTodos.push({ ...updatedTodo, order: targetTodos.length });
-          save(todoKey(targetDate), targetTodos);
+          save(listKey(viewMode, targetDate), targetTodos);
           queueCloudSave();
           closeTodoEditor();
           loadTodosByDate(targetDate);
@@ -2604,7 +2715,7 @@
     }
 
     todoDate.addEventListener("change", () => {
-      if (!todoDate.value || todoDate.value === currentDate) return;
+      if (!todoDate.value || listKey(viewMode, todoDate.value) === currentListKey()) return;
       const direction = todoDate.value > currentDate ? "left" : "right";
       loadTodosByDate(todoDate.value);
       runSlide(todoList, direction);
@@ -2846,7 +2957,8 @@
 
     undoDeleteButton.addEventListener("click", () => {
       if (!lastDeletedTodo) return;
-      if (lastDeletedTodo.date !== currentDate) loadTodosByDate(lastDeletedTodo.date);
+      if (lastDeletedTodo.mode && lastDeletedTodo.mode !== viewMode) setViewMode(lastDeletedTodo.mode, lastDeletedTodo.date);
+      else if (lastDeletedTodo.key !== currentListKey()) loadTodosByDate(lastDeletedTodo.date);
       todos.splice(lastDeletedTodo.index, 0, lastDeletedTodo.todo);
       saveCurrentTodos();
       renderTodos();
@@ -2860,7 +2972,7 @@
       const rank = (todo) => (todo.done ? 1 : todo.failed ? 2 : 0);
       todos = todos
         .slice()
-        .sort((a, b) => (rank(a) - rank(b)) || (a.time || "99:99").localeCompare(b.time || "99:99") || (Number(a.order) - Number(b.order)))
+        .sort((a, b) => (rank(a) - rank(b)) || (a.date || "").localeCompare(b.date || "") || (a.time || "99:99").localeCompare(b.time || "99:99") || (Number(a.order) - Number(b.order)))
         .map((todo, order) => ({ ...todo, order }));
       saveCurrentTodos();
       renderTodos();
@@ -3197,6 +3309,13 @@
       localStorage.setItem(storageKeys.optionsCollapsed, String(next));
       renderOptions();
     });
+    document.querySelectorAll(".mode-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        if (tab.dataset.mode === viewMode) return;
+        setViewMode(tab.dataset.mode);
+        runSlide(todoList, "left");
+      });
+    });
     prevDayButton.addEventListener("click", prevDay);
     nextDayButton.addEventListener("click", nextDay);
     prevWheelButton.addEventListener("click", prevWheel);
@@ -3225,6 +3344,9 @@
       migrateWheelStorage();
       habits = normalizeHabits(load(storageKeys.habits, []));
       todoDate.value = todayDate;
+      const savedMode = localStorage.getItem(storageKeys.todoViewMode);
+      if (modeText[savedMode]) viewMode = savedMode;
+      applyModeUi();
       avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
       applyTheme(localStorage.getItem(storageKeys.theme) || "light");
       applyBackground(localStorage.getItem(storageKeys.background) || "");
