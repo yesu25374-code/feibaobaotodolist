@@ -891,9 +891,44 @@
     }
 
     .check {
-      width: 28px;
-      height: 28px;
-      accent-color: var(--primary);
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 2px solid color-mix(in srgb, var(--primary) 55%, var(--border));
+      border-radius: 9px;
+      background: var(--surface);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+
+    .check:active {
+      transform: scale(0.9);
+    }
+
+    .check.is-done {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+
+    .check.is-failed {
+      border-color: #e5484d;
+      background: #e5484d;
+    }
+
+    .todo-item.failed .todo-title {
+      color: #e5484d;
+      text-decoration: line-through;
+      text-decoration-color: rgba(229, 72, 77, 0.6);
+    }
+
+    .todo-item.failed {
+      opacity: 0.82;
     }
 
     .todo-text {
@@ -1333,6 +1368,7 @@
         <span class="todo-readonly" id="todoReadonly">可以切换或选择任意日期，提前安排待办。</span>
         <div class="head-actions">
           <button class="primary-btn" id="newTodoButton" type="button">+ 新建待办</button>
+          <button class="ghost-btn compact-btn" id="organizeTodosButton" type="button" title="按 待处理 → 已完成 → 未完成 整理，同组按时间排">整理</button>
           <button class="ghost-btn compact-btn" id="collapseTodosButton" type="button">折叠</button>
           <span class="stats" id="todoStats">0 项</span>
         </div>
@@ -1478,6 +1514,7 @@
     const todoEmpty = document.querySelector("#todoEmpty");
     const todoStats = document.querySelector("#todoStats");
     const collapseTodosButton = document.querySelector("#collapseTodosButton");
+    const organizeTodosButton = document.querySelector("#organizeTodosButton");
     const undoBar = document.querySelector("#undoBar");
     const undoText = document.querySelector("#undoText");
     const undoDeleteButton = document.querySelector("#undoDeleteButton");
@@ -1851,6 +1888,7 @@
             title: title.trim(),
             date: item.date || item.createdAt || fallbackDate,
             done: Boolean(item.done),
+            failed: !item.done && Boolean(item.failed),
             note: item.note || "",
             time: item.time || "",
             place: item.place || "",
@@ -2308,14 +2346,15 @@
       todoDate.value = currentDate;
 
       const doneCount = todos.filter((todo) => todo.done).length;
-      todoStats.textContent = `${doneCount}/${todos.length} 已完成`;
+      const failedCount = todos.filter((todo) => todo.failed).length;
+      todoStats.textContent = `${doneCount}/${todos.length} 已完成${failedCount ? ` · ${failedCount} 未完成` : ""}`;
 
       todos
         .slice()
         .sort((a, b) => (Number(a.order) - Number(b.order)) || (a.done - b.done) || (a.date || "").localeCompare(b.date || ""))
         .forEach((todo) => {
           const item = document.createElement("li");
-          item.className = `todo-item${todo.done ? " done" : ""}${todo.id === editingTodoId ? " is-editing" : ""}`;
+          item.className = `todo-item${todo.done ? " done" : ""}${todo.failed ? " failed" : ""}${todo.id === editingTodoId ? " is-editing" : ""}`;
           item.dataset.id = todo.id;
           item.style.setProperty("--todo-color", todo.color || "#ff8fb3");
           const metaParts = [
@@ -2329,7 +2368,7 @@
               <button class="icon-btn sort-step" type="button" data-action="move-up" title="上移">↑</button>
               <button class="icon-btn sort-step" type="button" data-action="move-down" title="下移">↓</button>
             </div>
-            <input class="check" type="checkbox" ${todo.done ? "checked" : ""} aria-label="完成待办">
+            <button class="check${todo.done ? " is-done" : ""}${todo.failed ? " is-failed" : ""}" type="button" title="${todo.done ? "已完成（再点标记为未完成）" : todo.failed ? "未完成（再点恢复）" : "点一下标记完成"}" aria-label="切换完成状态">${todo.done ? "✓" : todo.failed ? "✕" : ""}</button>
             <div class="todo-text">
               <span class="todo-title">${escapeHtml(todo.title)}</span>
               <span class="todo-date">${formatDate(todo.date)}</span>
@@ -2545,7 +2584,7 @@
       allTodoDates().forEach((date) => {
         normalizeTodos(load(todoKey(date), []), date).forEach((todo) => {
           const reminderTime = todoReminderTime(todo);
-          if (!reminderTime || todo.done || reminded.has(todo.id)) return;
+          if (!reminderTime || todo.done || todo.failed || reminded.has(todo.id)) return;
           const delay = reminderTime.getTime() - now;
           if (delay <= 0 && delay > -60000) {
             reminded.add(todo.id);
@@ -2661,8 +2700,16 @@
       const todo = todos.find((entry) => entry.id === item.dataset.id);
       if (!todo) return;
 
-      if (event.target.matches(".check")) {
-        todo.done = event.target.checked;
+      if (event.target.closest(".check")) {
+        // 空 → ✓ 已完成 → ✕ 未完成 → 空
+        if (todo.done) {
+          todo.done = false;
+          todo.failed = true;
+        } else if (todo.failed) {
+          todo.failed = false;
+        } else {
+          todo.done = true;
+        }
       }
 
       if (event.target.dataset.action === "move-up") {
@@ -2807,6 +2854,16 @@
       undoBar.classList.add("hidden");
       lastDeletedTodo = null;
       window.clearTimeout(undoTimer);
+    });
+
+    organizeTodosButton.addEventListener("click", () => {
+      const rank = (todo) => (todo.done ? 1 : todo.failed ? 2 : 0);
+      todos = todos
+        .slice()
+        .sort((a, b) => (rank(a) - rank(b)) || (a.time || "99:99").localeCompare(b.time || "99:99") || (Number(a.order) - Number(b.order)))
+        .map((todo, order) => ({ ...todo, order }));
+      saveCurrentTodos();
+      renderTodos();
     });
 
     collapseTodosButton.addEventListener("click", () => {
