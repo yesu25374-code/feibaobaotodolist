@@ -10,3 +10,7 @@ future-todo-screenshot.png
 todo-enhancements-screenshot.png
 supabase/.temp/
 cloud-backups/
+
+# 本地其他项目（不属于待办网站）
+_*/
+config
