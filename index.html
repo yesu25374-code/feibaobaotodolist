@@ -1055,6 +1055,35 @@
       padding-top: 4px;
     }
 
+    .background-dialog {
+      width: min(360px, calc(100% - 32px));
+      color: var(--text);
+    }
+
+    .background-dialog::backdrop {
+      background: rgba(25, 33, 45, 0.36);
+    }
+
+    .background-dialog h2 {
+      margin: 0 30px 14px 0;
+      font-size: 19px;
+    }
+
+    .background-dialog .modal-actions {
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .background-error {
+      margin: 10px 0 0;
+      color: var(--danger);
+      font-size: 13px;
+    }
+
+    .background-error:empty {
+      display: none;
+    }
+
     .item-actions {
       display: flex;
       gap: 8px;
@@ -1299,6 +1328,228 @@
       }
 
     }
+    .schedule-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 0 0 12px;
+    }
+
+    .schedule-context {
+      width: auto;
+      min-width: 0;
+    }
+
+    .schedule-scroll {
+      --hour-height: 54px;
+      max-height: min(65vh, 620px);
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+    }
+
+    .schedule-header, .schedule-grid {
+      display: grid;
+      grid-template-columns: 49px repeat(7, minmax(0, 1fr));
+    }
+
+    .schedule-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--surface-soft);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .schedule-header time {
+      display: grid;
+      gap: 2px;
+      padding: 7px 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .schedule-header strong {
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .schedule-header .is-today strong {
+      color: var(--primary-strong);
+    }
+
+    .schedule-hours {
+      display: grid;
+      grid-auto-rows: var(--hour-height);
+      padding: 0 5px;
+      color: var(--muted);
+      text-align: right;
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .schedule-hours time {
+      padding-top: 4px;
+    }
+
+    .schedule-hours time:last-child {
+      height: 23px;
+    }
+
+    .schedule-grid {
+      grid-template-rows: calc(24 * var(--hour-height) + 23px);
+    }
+
+    .schedule-day {
+      position: relative;
+      height: calc(24 * var(--hour-height));
+      border-inline-start: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: repeating-linear-gradient(to bottom, transparent 0 calc(var(--hour-height) - 1px), var(--border) calc(var(--hour-height) - 1px) var(--hour-height));
+      cursor: cell;
+    }
+
+    .schedule-event {
+      position: absolute;
+      top: var(--event-top);
+      left: var(--event-left);
+      width: var(--event-width);
+      height: max(16px, var(--event-height));
+      padding: 2px 4px;
+      overflow: hidden;
+      border: 0;
+      border-radius: 5px;
+      background: color-mix(in srgb, var(--event-color) 32%, var(--surface));
+      box-shadow: inset 2px 0 var(--event-color);
+      color: var(--text);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      font: inherit;
+      font-size: 11px;
+      line-height: 1.15;
+      cursor: pointer;
+    }
+
+    .schedule-event span, .schedule-event small {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .schedule-event small {
+      margin-top: 2px;
+      font-size: 10px;
+    }
+
+    .schedule-dialog {
+      width: min(500px, calc(100% - 28px));
+      color: var(--text);
+      max-height: min(88dvh, 720px);
+    }
+
+    .schedule-dialog::backdrop {
+      background: rgba(25, 33, 45, 0.36);
+    }
+
+    .schedule-form [hidden] {
+      display: none !important;
+    }
+
+    .schedule-dialog h2 {
+      margin: 0 30px 14px 0;
+      font-size: 20px;
+    }
+
+    .schedule-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .schedule-form label:not(.schedule-choice), .schedule-color-row {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .schedule-form .field {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .schedule-form input[type="color"] {
+      width: 60px;
+      height: 37px;
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    .schedule-form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .schedule-form .schedule-choice {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .schedule-color-row {
+      grid-template-columns: auto 1fr;
+      align-items: end;
+      gap: 14px;
+    }
+
+    .schedule-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 0;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .schedule-status legend, #scheduleEndHint {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    #scheduleEndHint:empty {
+      display: none;
+    }
+
+    .schedule-delete {
+      margin-inline-end: auto;
+      color: var(--danger);
+    }
+
+    #todoPanel[data-mode="schedule"] > :is(.section-head, .slide-frame, .empty) {
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      .mode-tab {
+        min-width: 0;
+        padding-inline: 10px;
+      }
+
+      .schedule-header, .schedule-grid {
+        grid-template-columns: 40px repeat(7, minmax(0, 1fr));
+      }
+    }
   </style>
 </head>
 <body>
@@ -1314,9 +1565,8 @@
 
       <div class="header-actions">
         <div class="sync-actions">
-          <button class="sync-btn" id="backgroundButton" type="button">背景</button>
+          <button class="sync-btn" id="backgroundButton" type="button" aria-haspopup="dialog">背景</button>
           <button class="sync-btn" id="syncButton" type="button">云同步</button>
-          <input class="hidden" id="backgroundInput" type="file" accept="image/jpeg,image/png,image/webp">
         </div>
         <div class="theme-picker" role="group" aria-label="选择主题色">
           <button class="theme-dot" type="button" data-theme-button="light" style="--dot: linear-gradient(135deg, #ff8fb3, #39b7c9);" title="浅色默认">浅</button>
@@ -1391,6 +1641,7 @@
         <button class="mode-tab is-active" type="button" role="tab" data-mode="day">每天</button>
         <button class="mode-tab" type="button" role="tab" data-mode="week">每周</button>
         <button class="mode-tab" type="button" role="tab" data-mode="month">每月</button>
+        <button class="mode-tab" type="button" role="tab" data-mode="schedule">日程表</button>
       </div>
       <div class="pager-head">
         <button class="pager-arrow" id="prevDayButton" type="button" title="查看前一天" aria-label="查看前一天">‹</button>
@@ -1415,6 +1666,19 @@
         <ul class="todo-list slide-page" id="todoList"></ul>
       </div>
       <div class="empty hidden" id="todoEmpty">今天还没有待办，先加一件小事吧。</div>
+      <section id="scheduleView" aria-labelledby="todoTitle" hidden>
+        <div class="schedule-toolbar">
+          <select class="field schedule-context" id="scheduleContext" aria-label="日程表模式">
+            <option value="vacation">假期</option>
+            <option value="school">在校</option>
+          </select>
+          <button class="primary-btn" id="newScheduleButton" type="button">+ 添加日程</button>
+        </div>
+        <div class="schedule-scroll" tabindex="0" aria-label="周日程，早上六点到次日早上六点">
+          <div class="schedule-header" id="scheduleHeader"></div>
+          <div class="schedule-grid" id="scheduleGrid"></div>
+        </div>
+      </section>
       <div class="undo-bar hidden" id="undoBar">
         <span id="undoText">已删除 1 个待办</span>
         <button class="ghost-btn" id="undoDeleteButton" type="button">撤销</button>
@@ -1461,6 +1725,60 @@
       </div>
     </section>
 
+    <dialog class="todo-modal-card background-dialog" id="backgroundDialog" aria-labelledby="backgroundTitle">
+      <h2 id="backgroundTitle">自定义背景</h2>
+      <form method="dialog">
+        <button class="icon-btn mini-toggle modal-close" type="submit" aria-label="关闭">×</button>
+      </form>
+      <div class="modal-actions">
+        <button class="primary-btn" id="chooseBackgroundButton" type="button" autofocus>上传图片</button>
+        <button class="ghost-btn hidden" id="clearBackgroundButton" type="button">恢复默认</button>
+      </div>
+      <input class="hidden" id="backgroundInput" type="file" accept="image/jpeg,image/png,image/webp">
+      <p class="background-error" id="backgroundError" role="status"></p>
+    </dialog>
+
+    <dialog class="todo-modal-card schedule-dialog" id="scheduleDialog" aria-labelledby="scheduleDialogTitle">
+      <h2 id="scheduleDialogTitle">添加日程</h2>
+      <button class="icon-btn mini-toggle modal-close" id="closeScheduleButton" type="button" aria-label="关闭">×</button>
+      <form class="schedule-form" id="scheduleForm">
+        <label><span id="scheduleTitleLabel">日程名称</span><input class="field" name="title" required autofocus></label>
+        <label>日期<input class="field" name="date" type="date" required></label>
+        <div class="schedule-form-row">
+          <label>开始时间<input class="field" name="start" type="time" required></label>
+          <label>结束时间<input class="field" name="end" type="time" aria-describedby="scheduleEndHint" required><span id="scheduleEndHint"></span></label>
+        </div>
+        <label id="scheduleRepeatRow">周期
+          <select class="field" name="repeat">
+            <option value="once">仅这一次</option>
+            <option value="weekly">每周同一天</option>
+          </select>
+        </label>
+        <div id="scheduleRepeatUntilRow" hidden>
+          <label>重复至（含当天）<input class="field" name="until" type="date"></label>
+        </div>
+        <div class="schedule-form-row">
+          <label><span id="schedulePlaceLabel">地点</span><input class="field" name="place"></label>
+          <label><span id="schedulePeopleLabel">参与人</span><input class="field" name="people"></label>
+        </div>
+        <label>备注<input class="field" name="note"></label>
+        <div class="schedule-color-row">
+          <label>颜色<input class="field" name="color" type="color" value="#48a7ff"></label>
+          <label class="schedule-choice"><input name="reminder" type="checkbox"> 开始时提醒</label>
+        </div>
+        <fieldset class="schedule-status">
+          <legend>完成状态</legend>
+          <label class="schedule-choice"><input name="status" type="radio" value="pending" checked> 待处理</label>
+          <label class="schedule-choice"><input name="status" type="radio" value="done"> ✓ 完成</label>
+          <label class="schedule-choice"><input name="status" type="radio" value="failed"> ❌ 未完成</label>
+        </fieldset>
+        <div class="modal-actions">
+          <button class="ghost-btn schedule-delete" id="deleteScheduleButton" type="button" hidden>删除</button>
+          <button class="primary-btn" type="submit">保存</button>
+        </div>
+      </form>
+    </dialog>
+
     <div class="todo-modal" id="todoModal" hidden>
       <div class="todo-modal-backdrop" id="todoModalBackdrop"></div>
       <div class="todo-modal-card" role="dialog" aria-modal="true" aria-labelledby="todoModalTitle">
@@ -1506,7 +1824,8 @@
       todosCollapsed: "xiaoxiaoyu.todosCollapsed",
       optionsCollapsed: "xiaoxiaoyu.optionsCollapsed",
       remindedTodos: "xiaoxiaoyu.remindedTodos",
-      todoViewMode: "xiaoxiaoyu.todoViewMode"
+      todoViewMode: "xiaoxiaoyu.todoViewMode",
+      scheduleContext: "xiaoxiaoyu.scheduleContext"
     };
 
     const supabaseConfig = {
@@ -1565,12 +1884,29 @@
     const dateLabel = document.querySelector("#dateLabel");
     const prevDayButton = document.querySelector("#prevDayButton");
     const nextDayButton = document.querySelector("#nextDayButton");
+    const scheduleView = document.querySelector("#scheduleView");
+    const scheduleContext = document.querySelector("#scheduleContext");
+    const scheduleGrid = document.querySelector("#scheduleGrid");
+    const scheduleHeader = document.querySelector("#scheduleHeader");
+    const scheduleDialog = document.querySelector("#scheduleDialog");
+    const scheduleForm = document.querySelector("#scheduleForm");
+    const scheduleFields = scheduleForm.elements;
+    const newScheduleButton = document.querySelector("#newScheduleButton");
+    const deleteScheduleButton = document.querySelector("#deleteScheduleButton");
+    const scheduleRepeatRow = document.querySelector("#scheduleRepeatRow");
+    const scheduleRepeatUntilRow = document.querySelector("#scheduleRepeatUntilRow");
+    const scheduleDayStart = 6 * 60;
+    const minutesPerDay = 24 * 60;
     const avatarButton = document.querySelector("#avatarButton");
     const avatarInput = document.querySelector("#avatarInput");
     const avatarPreview = document.querySelector("#avatarPreview");
     const syncButton = document.querySelector("#syncButton");
     const backgroundButton = document.querySelector("#backgroundButton");
     const backgroundInput = document.querySelector("#backgroundInput");
+    const backgroundDialog = document.querySelector("#backgroundDialog");
+    const chooseBackgroundButton = document.querySelector("#chooseBackgroundButton");
+    const clearBackgroundButton = document.querySelector("#clearBackgroundButton");
+    const backgroundError = document.querySelector("#backgroundError");
     const habitDock = document.querySelector("#habitDock");
     const habitBoard = document.querySelector(".habit-board");
     const habitToggleButton = document.querySelector("#habitToggleButton");
@@ -1644,6 +1980,7 @@
     let pointerSortStart = null;
     let editingTodoId = null;
     let editingTodoDate = null;
+    let editingSchedule = null;
 
     function load(key, fallback) {
       try {
@@ -1932,6 +2269,8 @@
             time: item.time || "",
             place: item.place || "",
             color: item.color || item.priorityColor || "#ff8fb3",
+            ...(item.endTime ? { endTime: item.endTime } : {}),
+            ...(typeof item.people === "string" ? { people: item.people } : {}),
             reminder: Boolean(item.reminder),
             order: Number.isFinite(Number(item.order)) ? Number(item.order) : index
           };
@@ -2043,7 +2382,7 @@
     }
 
     function shiftPeriod(dateStr, step) {
-      if (viewMode === "week") return shiftDate(dateStr, step * 7);
+      if (viewMode === "week" || viewMode === "schedule") return shiftDate(dateStr, step * 7);
       if (viewMode === "month") {
         const date = toLocalDate(dateStr);
         date.setDate(1);
@@ -2054,11 +2393,12 @@
     }
 
     function isTodayPage() {
+      if (viewMode === "schedule") return weekStart(currentDate) === weekStart(todayDate);
       return currentListKey() === listKey(viewMode, todayDate);
     }
 
     function formatPeriodLabel(dateStr) {
-      if (viewMode === "week") {
+      if (viewMode === "week" || viewMode === "schedule") {
         const start = toLocalDate(weekStart(dateStr));
         const end = toLocalDate(shiftDate(weekStart(dateStr), 6));
         return `${start.getMonth() + 1}月${start.getDate()}日 – ${end.getMonth() + 1}月${end.getDate()}日${isTodayPage() ? " 本周" : ""}`;
@@ -2335,7 +2675,7 @@
 
     function loadTodosByDate(dateStr) {
       currentDate = dateStr;
-      todos = normalizeTodos(load(currentListKey(), []), dateStr);
+      todos = viewMode === "schedule" ? [] : normalizeTodos(load(currentListKey(), []), dateStr);
       renderTodos();
     }
 
@@ -2352,12 +2692,14 @@
     const modeText = {
       day: { title: "今日清单", unit: "天", empty: "今天还没有待办，先加一件小事吧。", other: "这一天还没有待办～", hint: "可以切换或选择任意日期，提前安排待办。" },
       week: { title: "周计划", unit: "周", empty: "这周还没有计划，写下本周想完成的事吧。", other: "这一周还没有计划～", hint: "放这一周要完成的事，左右切换看其他周。" },
-      month: { title: "月计划", unit: "月", empty: "这个月还没有计划，定几个小目标吧。", other: "这个月还没有计划～", hint: "放这个月的目标，左右切换看其他月份。" }
+      month: { title: "月计划", unit: "月", empty: "这个月还没有计划，定几个小目标吧。", other: "这个月还没有计划～", hint: "放这个月的目标，左右切换看其他月份。" },
+      schedule: { title: "周日程", unit: "周", hint: "" }
     };
 
     function applyModeUi() {
       const text = modeText[viewMode];
       todoPanel.dataset.mode = viewMode;
+      scheduleView.hidden = viewMode !== "schedule";
       document.querySelectorAll(".mode-tab").forEach((tab) => {
         const active = tab.dataset.mode === viewMode;
         tab.classList.toggle("is-active", active);
@@ -2443,6 +2785,11 @@
     }
 
     function renderTodos() {
+      dateLabel.textContent = formatPeriodLabel(currentDate);
+      if (viewMode === "schedule") {
+        renderSchedule();
+        return;
+      }
       todoList.innerHTML = "";
       todoEmpty.classList.toggle("hidden", todos.length > 0);
       todoEmpty.textContent = isTodayPage() ? modeText[viewMode].empty : modeText[viewMode].other;
@@ -2452,7 +2799,6 @@
       collapseTodosButton.textContent = todosCollapsed ? "展开" : "折叠";
       collapseTodosButton.title = todosCollapsed ? "展开待办" : "折叠待办";
       collapseTodosButton.setAttribute("aria-label", collapseTodosButton.title);
-      dateLabel.textContent = formatPeriodLabel(currentDate);
       nextDayButton.disabled = false;
       todoDate.value = currentDate;
 
@@ -2469,8 +2815,9 @@
           item.dataset.id = todo.id;
           item.style.setProperty("--todo-color", todo.color || "#ff8fb3");
           const metaParts = [
-            todo.time ? `时间：${escapeHtml(todo.time)}` : "",
+            todo.time ? `时间：${escapeHtml(scheduleTimeLabel(todo))}` : "",
             todo.place ? `地点：${escapeHtml(todo.place)}` : "",
+            todo.people ? `人员：${escapeHtml(todo.people)}` : "",
             todo.reminder && todo.time ? "已开启提醒" : ""
           ].filter(Boolean);
           item.innerHTML = `
@@ -2521,8 +2868,8 @@
       renderTodos();
     }
 
-    function showUndo(todo, index) {
-      lastDeletedTodo = { todo, index, date: currentDate, mode: viewMode, key: currentListKey() };
+    function showUndo(todo, index, date = currentDate, mode = viewMode) {
+      lastDeletedTodo = { todo, index, date, mode, key: listKey(mode, date) };
       undoText.textContent = `已删除「${todo.title}」`;
       undoBar.classList.remove("hidden");
       window.clearTimeout(undoTimer);
@@ -2531,6 +2878,236 @@
         lastDeletedTodo = null;
       }, 8000);
     }
+
+    function clockMinutes(time) {
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return NaN;
+      const [hour, minute] = time.split(":").map(Number);
+      return hour * 60 + minute;
+    }
+
+    function clockLabel(minutes) {
+      const clock = minutes % minutesPerDay;
+      return `${String(Math.floor(clock / 60)).padStart(2, "0")}:${String(clock % 60).padStart(2, "0")}`;
+    }
+
+    function scheduleTimeLabel(todo) {
+      if (!todo.endTime) return todo.time;
+      const nextDay = clockMinutes(todo.endTime) < clockMinutes(todo.time);
+      return `${todo.time}–${nextDay ? "次日 " : ""}${todo.endTime}`;
+    }
+
+    function renderSchedule() {
+      const school = scheduleContext.value === "school";
+      document.querySelector("#todoTitle").textContent = school ? "周课程表" : "周日程";
+      newScheduleButton.textContent = school ? "+ 添加课程" : "+ 添加日程";
+      const monday = weekStart(currentDate);
+      const weekdays = Array.from({ length: 7 }, (_, index) => shiftDate(monday, index));
+      scheduleHeader.innerHTML = "<span></span>" + weekdays.map((date, index) =>
+        `<time datetime="${date}"${date === todayDate ? ' class="is-today"' : ""}><strong>周${"一二三四五六日"[index]}</strong>${Number(date.slice(5, 7))}/${Number(date.slice(8))}</time>`
+      ).join("");
+      scheduleGrid.innerHTML = '<div class="schedule-hours">' + Array.from({ length: 25 }, (_, index) =>
+        `<time>${clockLabel(scheduleDayStart + index * 60)}</time>`
+      ).join("") + "</div>";
+
+      const entries = [];
+      for (let offset = -1; offset <= 7; offset += 1) {
+        const date = shiftDate(monday, offset);
+        normalizeTodos(load(todoKey(date), []), date).forEach((todo) => {
+          const start = clockMinutes(todo.time);
+          if (!Number.isFinite(start)) return;
+          const end = clockMinutes(todo.endTime);
+          const duration = end === start || !Number.isFinite(end)
+            ? 60 : (end - start + minutesPerDay) % minutesPerDay;
+          const absoluteStart = offset * minutesPerDay + start;
+          entries.push({ todo, date, start: absoluteStart, end: absoluteStart + duration });
+        });
+      }
+
+      weekdays.forEach((date, index) => {
+        const column = document.createElement("div");
+        column.className = "schedule-day";
+        column.dataset.date = date;
+        const start = index * minutesPerDay + scheduleDayStart;
+        const end = start + minutesPerDay;
+        const blocks = entries
+          .filter((entry) => entry.start < end && entry.end > start)
+          .map((entry) => ({ ...entry, start: Math.max(entry.start, start), end: Math.min(entry.end, end) }))
+          .sort((a, b) => a.start - b.start || b.end - a.end);
+
+        let laneEnds = [];
+        blocks.forEach((block) => {
+          if (laneEnds.every((laneEnd) => laneEnd <= block.start)) laneEnds = [];
+          const emptyLane = laneEnds.findIndex((laneEnd) => laneEnd <= block.start);
+          block.lane = emptyLane < 0 ? laneEnds.length : emptyLane;
+          laneEnds[block.lane] = block.end;
+          block.group = laneEnds;
+        });
+
+        blocks.forEach(({ todo, date: todoDate, start: blockStart, end: blockEnd, lane, group }) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "schedule-event";
+          button.style.setProperty("--event-top", `${((blockStart - start) / minutesPerDay) * 100}%`);
+          button.style.setProperty("--event-height", `${((blockEnd - blockStart) / minutesPerDay) * 100}%`);
+          button.style.setProperty("--event-left", `${(lane / group.length) * 100}%`);
+          button.style.setProperty("--event-width", `${100 / group.length}%`);
+          button.style.setProperty("--event-color", scheduleColor(todo.color));
+          const status = todo.done ? "✓ " : todo.failed ? "❌ " : "";
+          button.title = [status + todo.title, scheduleTimeLabel(todo), todo.place].filter(Boolean).join(" · ");
+          button.innerHTML = `<span>${status}${escapeHtml(todo.title)}</span><small>${escapeHtml(todo.time)}${todo.place ? ` · ${escapeHtml(todo.place)}` : ""}</small>`;
+          button.addEventListener("click", () => openScheduleEditor(todoDate, todo));
+          column.appendChild(button);
+        });
+        scheduleGrid.appendChild(column);
+      });
+    }
+
+    function scheduleColor(color) {
+      return /^#[0-9a-f]{6}$/i.test(color) ? color : "#48a7ff";
+    }
+
+    function updateScheduleForm() {
+      const start = clockMinutes(scheduleFields.start.value);
+      const end = clockMinutes(scheduleFields.end.value);
+      const overnight = end < start;
+      document.querySelector("#scheduleEndHint").textContent = overnight ? "次日结束" : "";
+      scheduleFields.end.setCustomValidity(start === end ? "开始时间和结束时间不能相同。" : "");
+      const repeating = !editingSchedule && scheduleFields.repeat.value === "weekly";
+      scheduleRepeatUntilRow.hidden = !repeating;
+      scheduleFields.until.required = repeating;
+      scheduleFields.until.min = scheduleFields.date.value;
+    }
+
+    function openScheduleEditor(date, todo = null, time = "09:00") {
+      const school = scheduleContext.value === "school";
+      const noun = school ? "课程" : "日程";
+      editingSchedule = todo ? { date, id: todo.id } : null;
+      scheduleForm.reset();
+      scheduleFields.title.setCustomValidity("");
+      document.querySelector("#scheduleDialogTitle").textContent = `${todo ? "编辑" : "添加"}${noun}`;
+      document.querySelector("#scheduleTitleLabel").textContent = `${noun}名称`;
+      document.querySelector("#schedulePlaceLabel").textContent = school ? "教室地点" : "地点";
+      document.querySelector("#schedulePeopleLabel").textContent = school ? "任课老师" : "参与人";
+      scheduleFields.title.value = todo?.title || "";
+      scheduleFields.date.value = date;
+      scheduleFields.start.value = todo?.time || time;
+      scheduleFields.end.value = todo?.endTime || clockLabel(clockMinutes(scheduleFields.start.value) + 60);
+      scheduleFields.place.value = todo?.place || "";
+      scheduleFields.people.value = todo?.people || "";
+      scheduleFields.note.value = todo?.note || "";
+      scheduleFields.color.value = scheduleColor(todo?.color);
+      scheduleFields.reminder.checked = Boolean(todo?.reminder);
+      scheduleFields.status.value = todo?.done ? "done" : todo?.failed ? "failed" : "pending";
+      scheduleRepeatRow.hidden = Boolean(todo);
+      deleteScheduleButton.hidden = !todo;
+      updateScheduleForm();
+      scheduleDialog.showModal();
+    }
+
+    function saveSchedule(event) {
+      event.preventDefault();
+      const data = new FormData(scheduleForm);
+      const title = data.get("title").trim();
+      if (!title) {
+        scheduleFields.title.setCustomValidity("请输入名称。");
+        scheduleFields.title.reportValidity();
+        return;
+      }
+
+      const date = data.get("date");
+      const status = data.get("status");
+      const item = {
+        title, date,
+        time: data.get("start"),
+        endTime: data.get("end"),
+        place: data.get("place").trim(),
+        people: data.get("people").trim(),
+        note: data.get("note").trim(),
+        color: data.get("color"),
+        reminder: data.has("reminder"),
+        done: status === "done",
+        failed: status === "failed"
+      };
+
+      const previousDate = editingSchedule?.date;
+      if (editingSchedule) {
+        const sourceDate = editingSchedule.date;
+        const source = normalizeTodos(load(todoKey(sourceDate), []), sourceDate);
+        const index = source.findIndex((entry) => entry.id === editingSchedule.id);
+        if (index < 0) {
+          scheduleDialog.close();
+          loadTodosByDate(currentDate);
+          return;
+        }
+        source[index] = { ...source[index], ...item };
+        if (sourceDate !== date) {
+          const [moved] = source.splice(index, 1);
+          const destination = normalizeTodos(load(todoKey(date), []), date);
+          destination.push({ ...moved, order: destination.length });
+          save(todoKey(date), destination);
+        }
+        save(todoKey(sourceDate), source);
+      } else {
+        const until = data.get("repeat") === "weekly" ? data.get("until") : date;
+        for (let occurrence = date; occurrence <= until; occurrence = shiftDate(occurrence, 7)) {
+          const items = normalizeTodos(load(todoKey(occurrence), []), occurrence);
+          items.push({
+            ...item,
+            id: uid(),
+            date: occurrence,
+            done: occurrence === date && item.done,
+            failed: occurrence === date && item.failed,
+            order: items.length
+          });
+          save(todoKey(occurrence), items);
+        }
+      }
+
+      queueCloudSave();
+      scheduleDialog.close();
+      const displayDate = viewMode === "schedule" && clockMinutes(item.time) < scheduleDayStart
+        ? shiftDate(date, -1) : date;
+      loadTodosByDate(previousDate === date ? currentDate : displayDate);
+      scheduleReminders();
+    }
+
+    newScheduleButton.addEventListener("click", () => openScheduleEditor(currentDate));
+    scheduleContext.addEventListener("change", () => {
+      localStorage.setItem(storageKeys.scheduleContext, scheduleContext.value);
+      renderSchedule();
+    });
+    scheduleGrid.addEventListener("click", (event) => {
+      if (!event.target.matches(".schedule-day")) return;
+      const day = event.target;
+      const bounds = day.getBoundingClientRect();
+      const hour = Math.min(23, Math.floor((event.clientY - bounds.top) * 24 / bounds.height));
+      const start = scheduleDayStart + hour * 60;
+      const date = start >= minutesPerDay ? shiftDate(day.dataset.date, 1) : day.dataset.date;
+      openScheduleEditor(date, null, clockLabel(start));
+    });
+    scheduleForm.addEventListener("input", () => {
+      scheduleFields.title.setCustomValidity("");
+      updateScheduleForm();
+    });
+    scheduleFields.reminder.addEventListener("change", () => {
+      if (scheduleFields.reminder.checked) ensureNotificationPermission();
+    });
+    document.querySelector("#closeScheduleButton").addEventListener("click", () => scheduleDialog.close());
+    scheduleForm.addEventListener("submit", saveSchedule);
+    deleteScheduleButton.addEventListener("click", () => {
+      if (!editingSchedule) return;
+      const { id, date } = editingSchedule;
+      const items = normalizeTodos(load(todoKey(date), []), date);
+      const index = items.findIndex((item) => item.id === id);
+      if (index >= 0) {
+        const [removed] = items.splice(index, 1);
+        save(todoKey(date), items);
+        showUndo(removed, index, date, "day");
+        queueCloudSave();
+      }
+      scheduleDialog.close();
+      loadTodosByDate(currentDate);
+    });
 
     function resetTodoEditor(date = currentDate) {
       todoInput.value = "";
@@ -2704,9 +3281,11 @@
             window.setTimeout(() => {
               const latest = remindedSet();
               if (latest.has(todo.id)) return;
+              const current = normalizeTodos(load(todoKey(date), []), date).find((entry) => entry.id === todo.id);
+              if (!current || current.done || current.failed || todoReminderTime(current)?.getTime() !== reminderTime.getTime()) return;
               latest.add(todo.id);
               saveRemindedSet(latest);
-              notifyTodo(todo);
+              notifyTodo(current);
             }, delay);
           }
         });
@@ -2841,7 +3420,8 @@
       }
 
       if (event.target.dataset.action === "edit") {
-        openTodoEditor(todo);
+        if (viewMode === "day" && todo.endTime) openScheduleEditor(currentDate, todo);
+        else openTodoEditor(todo);
         return;
       }
 
@@ -2957,11 +3537,14 @@
 
     undoDeleteButton.addEventListener("click", () => {
       if (!lastDeletedTodo) return;
-      if (lastDeletedTodo.mode && lastDeletedTodo.mode !== viewMode) setViewMode(lastDeletedTodo.mode, lastDeletedTodo.date);
-      else if (lastDeletedTodo.key !== currentListKey()) loadTodosByDate(lastDeletedTodo.date);
-      todos.splice(lastDeletedTodo.index, 0, lastDeletedTodo.todo);
-      saveCurrentTodos();
-      renderTodos();
+      const { key, index, todo, date, mode } = lastDeletedTodo;
+      const items = normalizeTodos(load(key, []), date);
+      if (!items.some((item) => item.id === todo.id)) items.splice(index, 0, todo);
+      save(key, items);
+      queueCloudSave();
+      if (viewMode === "schedule") renderTodos();
+      else if (mode !== viewMode) setViewMode(mode, date);
+      else loadTodosByDate(date);
       scheduleReminders();
       undoBar.classList.add("hidden");
       lastDeletedTodo = null;
@@ -3023,22 +3606,20 @@
 
     function applyBackground(image = "") {
       if (image) {
-        document.body.style.setProperty("--custom-bg-image", `url("${image}")`);
-        document.body.classList.add("has-custom-bg");
         localStorage.setItem(storageKeys.background, image);
-        backgroundButton.classList.add("is-clearing");
-        backgroundButton.textContent = "清除";
-        backgroundButton.title = "清除背景";
-        backgroundButton.setAttribute("aria-label", "清除背景");
+        document.body.style.setProperty("--custom-bg-image", `url("${image}")`);
       } else {
-        document.body.style.removeProperty("--custom-bg-image");
-        document.body.classList.remove("has-custom-bg");
         localStorage.removeItem(storageKeys.background);
-        backgroundButton.classList.remove("is-clearing");
-        backgroundButton.textContent = "背景";
-        backgroundButton.title = "自定义背景";
-        backgroundButton.setAttribute("aria-label", "自定义背景");
+        document.body.style.removeProperty("--custom-bg-image");
       }
+      document.body.classList.toggle("has-custom-bg", Boolean(image));
+      updateBackgroundControls();
+    }
+
+    function updateBackgroundControls() {
+      const hasImage = document.body.classList.contains("has-custom-bg");
+      chooseBackgroundButton.textContent = chooseBackgroundButton.disabled ? "处理中…" : hasImage ? "更换图片" : "上传图片";
+      clearBackgroundButton.classList.toggle("hidden", !hasImage);
     }
 
     function fileToImage(file) {
@@ -3068,33 +3649,41 @@
     }
 
     backgroundButton.addEventListener("click", () => {
-      if (document.body.classList.contains("has-custom-bg")) {
-        applyBackground("");
-        queueCloudSave();
-        return;
-      }
-      backgroundInput.click();
+      backgroundError.textContent = "";
+      backgroundDialog.showModal();
+    });
+    chooseBackgroundButton.addEventListener("click", () => backgroundInput.click());
+    clearBackgroundButton.addEventListener("click", () => {
+      applyBackground("");
+      backgroundDialog.close();
+      queueCloudSave();
     });
     backgroundInput.addEventListener("change", async () => {
       const file = backgroundInput.files?.[0];
       backgroundInput.value = "";
       if (!file) return;
       if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-        alert("请选择 jpg、png 或 webp 图片。");
+        backgroundError.textContent = "请选择 JPG、PNG 或 WebP 图片。";
         return;
       }
 
       try {
-        backgroundButton.disabled = true;
-        backgroundButton.textContent = "处理中...";
+        backgroundError.textContent = "";
+        chooseBackgroundButton.disabled = true;
+        clearBackgroundButton.disabled = true;
+        updateBackgroundControls();
         const image = await compressBackgroundImage(file);
         applyBackground(image);
+        backgroundDialog.close();
         queueCloudSave();
       } catch (error) {
-        alert(error.message || "背景图片处理失败。");
+        backgroundError.textContent = error.name === "QuotaExceededError"
+          ? "浏览器存储空间不足，请尝试上传更小的图片。"
+          : error.message || "背景图片处理失败。";
       } finally {
-        backgroundButton.disabled = false;
-        backgroundButton.textContent = document.body.classList.contains("has-custom-bg") ? "清除" : "背景";
+        chooseBackgroundButton.disabled = false;
+        clearBackgroundButton.disabled = false;
+        updateBackgroundControls();
       }
     });
 
@@ -3346,6 +3935,7 @@
       todoDate.value = todayDate;
       const savedMode = localStorage.getItem(storageKeys.todoViewMode);
       if (modeText[savedMode]) viewMode = savedMode;
+      scheduleContext.value = localStorage.getItem(storageKeys.scheduleContext) === "school" ? "school" : "vacation";
       applyModeUi();
       avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
       applyTheme(localStorage.getItem(storageKeys.theme) || "light");
