@@ -135,11 +135,39 @@
     }
 
     .topbar {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
-      justify-content: space-between;
-      gap: 18px;
+      gap: 12px 18px;
       margin-bottom: 24px;
+    }
+
+    .room-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-self: end;
+      gap: 6px;
+    }
+
+    .room-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .room-link[aria-current="page"] {
+      background: var(--surface-soft);
+      border-color: var(--primary);
+      color: var(--primary-strong);
     }
 
     .brand {
@@ -177,6 +205,7 @@
     }
 
     .header-actions {
+      grid-area: 1 / 2 / span 2;
       display: flex;
       align-items: center;
       justify-content: flex-end;
@@ -1269,6 +1298,14 @@
         padding: 0 12px;
       }
 
+      .topbar {
+        column-gap: 8px;
+      }
+
+      .room-link {
+        padding-inline: 8px;
+      }
+
       .todo-item,
       .habit-row,
       .option-item {
@@ -1536,8 +1573,38 @@
       color: var(--danger);
     }
 
-    #todoPanel[data-mode="schedule"] > :is(.section-head, .slide-frame, .empty) {
+    [data-room-panel][hidden] {
       display: none;
+    }
+
+    .recipe-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .recipe-card {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface-soft);
+      overflow-wrap: anywhere;
+    }
+
+    .recipe-card h3, .recipe-card h4 {
+      margin: 0 0 6px;
+    }
+
+    .recipe-card p {
+      margin: 0 0 12px;
+      white-space: pre-wrap;
+    }
+
+    #recipeForm textarea {
+      resize: vertical;
+      font: inherit;
     }
 
     @media (max-width: 480px) {
@@ -1563,6 +1630,12 @@
         </div>
       </div>
 
+      <nav class="room-nav" aria-label="页面入口">
+        <a class="room-link" href="#todo" aria-current="page">待办</a>
+        <a class="room-link" href="#schedule">日程表</a>
+        <a class="room-link" href="#recipes">食谱</a>
+      </nav>
+
       <div class="header-actions">
         <div class="sync-actions">
           <button class="sync-btn" id="backgroundButton" type="button" aria-haspopup="dialog">背景</button>
@@ -1584,7 +1657,7 @@
       </div>
     </header>
 
-    <section class="habit-dock" id="habitDock" aria-label="注意">
+    <section class="habit-dock" id="habitDock" data-room-panel="todo" aria-label="注意">
       <div class="habit-board">
         <div class="habit-board-head">
           <span class="habit-board-title">注意</span>
@@ -1636,12 +1709,11 @@
       </div>
     </section>
 
-    <section class="panel todo-panel" id="todoPanel" data-mode="day" aria-labelledby="todoTitle">
+    <section class="panel todo-panel" id="todoPanel" data-room-panel="todo" aria-labelledby="todoTitle">
       <div class="mode-tabs" role="tablist" aria-label="计划周期">
         <button class="mode-tab is-active" type="button" role="tab" data-mode="day">每天</button>
         <button class="mode-tab" type="button" role="tab" data-mode="week">每周</button>
         <button class="mode-tab" type="button" role="tab" data-mode="month">每月</button>
-        <button class="mode-tab" type="button" role="tab" data-mode="schedule">日程表</button>
       </div>
       <div class="pager-head">
         <button class="pager-arrow" id="prevDayButton" type="button" title="查看前一天" aria-label="查看前一天">‹</button>
@@ -1666,26 +1738,13 @@
         <ul class="todo-list slide-page" id="todoList"></ul>
       </div>
       <div class="empty hidden" id="todoEmpty">今天还没有待办，先加一件小事吧。</div>
-      <section id="scheduleView" aria-labelledby="todoTitle" hidden>
-        <div class="schedule-toolbar">
-          <select class="field schedule-context" id="scheduleContext" aria-label="日程表模式">
-            <option value="vacation">假期</option>
-            <option value="school">在校</option>
-          </select>
-          <button class="primary-btn" id="newScheduleButton" type="button">+ 添加日程</button>
-        </div>
-        <div class="schedule-scroll" tabindex="0" aria-label="周日程，早上六点到次日早上六点">
-          <div class="schedule-header" id="scheduleHeader"></div>
-          <div class="schedule-grid" id="scheduleGrid"></div>
-        </div>
-      </section>
       <div class="undo-bar hidden" id="undoBar">
         <span id="undoText">已删除 1 个待办</span>
         <button class="ghost-btn" id="undoDeleteButton" type="button">撤销</button>
       </div>
     </section>
 
-    <section class="panel wheel-panel" aria-labelledby="wheelTitle">
+    <section class="panel wheel-panel" data-room-panel="todo" aria-labelledby="wheelTitle">
       <div class="wheel-manager">
         <div class="wheel-tools">
           <button class="icon-btn" id="editWheelButton" type="button" title="编辑名称">✎</button>
@@ -1724,6 +1783,51 @@
         </div>
       </div>
     </section>
+
+    <section class="panel" id="scheduleView" data-room-panel="schedule" aria-labelledby="scheduleViewTitle" hidden>
+      <div class="pager-head">
+        <button class="pager-arrow" id="prevScheduleWeek" type="button" aria-label="查看上一周">‹</button>
+        <div class="pager-title">
+          <h2 id="scheduleViewTitle">周日程</h2>
+          <span class="pager-subtitle" id="scheduleDateLabel"></span>
+        </div>
+        <button class="pager-arrow" id="nextScheduleWeek" type="button" aria-label="查看下一周">›</button>
+      </div>
+      <div class="schedule-toolbar">
+        <select class="field schedule-context" id="scheduleContext" aria-label="日程表模式">
+          <option value="vacation">假期</option>
+          <option value="school">在校</option>
+        </select>
+        <button class="primary-btn" id="newScheduleButton" type="button">+ 添加日程</button>
+      </div>
+      <div class="schedule-scroll" tabindex="0" aria-label="周日程，早上六点到次日早上六点">
+        <div class="schedule-header" id="scheduleHeader"></div>
+        <div class="schedule-grid" id="scheduleGrid"></div>
+      </div>
+    </section>
+
+    <section class="panel" data-room-panel="recipes" aria-labelledby="recipeTitle" hidden>
+      <div class="schedule-toolbar">
+        <h2 id="recipeTitle">食谱</h2>
+        <button class="primary-btn" id="newRecipeButton" type="button">+ 添加食谱</button>
+      </div>
+      <ul class="recipe-list" id="recipeList"></ul>
+      <p class="empty" id="recipeEmpty">还没有食谱。</p>
+    </section>
+
+    <dialog class="todo-modal-card schedule-dialog" id="recipeDialog" aria-labelledby="recipeDialogTitle">
+      <h2 id="recipeDialogTitle">添加食谱</h2>
+      <form class="schedule-form" id="recipeForm">
+        <label>菜名<input class="field" name="title" required autofocus></label>
+        <label>食材<textarea class="field" name="ingredients" rows="3"></textarea></label>
+        <label>做法<textarea class="field" name="steps" rows="4"></textarea></label>
+        <div class="modal-actions">
+          <button class="ghost-btn schedule-delete" id="deleteRecipeButton" type="button" hidden>删除</button>
+          <button class="ghost-btn" id="cancelRecipeButton" type="button">取消</button>
+          <button class="primary-btn" type="submit">保存</button>
+        </div>
+      </form>
+    </dialog>
 
     <dialog class="todo-modal-card background-dialog" id="backgroundDialog" aria-labelledby="backgroundTitle">
       <h2 id="backgroundTitle">自定义背景</h2>
@@ -1825,7 +1929,8 @@
       optionsCollapsed: "xiaoxiaoyu.optionsCollapsed",
       remindedTodos: "xiaoxiaoyu.remindedTodos",
       todoViewMode: "xiaoxiaoyu.todoViewMode",
-      scheduleContext: "xiaoxiaoyu.scheduleContext"
+      scheduleContext: "xiaoxiaoyu.scheduleContext",
+      recipes: "xiaoxiaoyu.recipes"
     };
 
     const supabaseConfig = {
@@ -1885,6 +1990,8 @@
     const prevDayButton = document.querySelector("#prevDayButton");
     const nextDayButton = document.querySelector("#nextDayButton");
     const scheduleView = document.querySelector("#scheduleView");
+    const scheduleViewTitle = document.querySelector("#scheduleViewTitle");
+    const scheduleDateLabel = document.querySelector("#scheduleDateLabel");
     const scheduleContext = document.querySelector("#scheduleContext");
     const scheduleGrid = document.querySelector("#scheduleGrid");
     const scheduleHeader = document.querySelector("#scheduleHeader");
@@ -1897,6 +2004,13 @@
     const scheduleRepeatUntilRow = document.querySelector("#scheduleRepeatUntilRow");
     const scheduleDayStart = 6 * 60;
     const minutesPerDay = 24 * 60;
+    const roomLinks = document.querySelectorAll(".room-link");
+    const roomPanels = document.querySelectorAll("[data-room-panel]");
+    const recipeList = document.querySelector("#recipeList");
+    const recipeEmpty = document.querySelector("#recipeEmpty");
+    const recipeDialog = document.querySelector("#recipeDialog");
+    const recipeForm = document.querySelector("#recipeForm");
+    const deleteRecipeButton = document.querySelector("#deleteRecipeButton");
     const avatarButton = document.querySelector("#avatarButton");
     const avatarInput = document.querySelector("#avatarInput");
     const avatarPreview = document.querySelector("#avatarPreview");
@@ -1953,8 +2067,11 @@
 
     const todayDate = today();
     let currentDate = todayDate;
+    let scheduleDate = todayDate;
     let viewMode = "day";
     let todos = [];
+    let recipes = load(storageKeys.recipes, []);
+    let editingRecipeId = null;
     let wheels = [];
     let currentWheelIndex = 0;
     let wheelOptions = [];
@@ -2120,6 +2237,7 @@
 
       renderHabits();
       loadTodosByDate(currentDate);
+      if (!scheduleView.hidden) renderSchedule();
       loadWheel(currentWheelIndex);
       applyingCloudData = false;
     }
@@ -2382,7 +2500,7 @@
     }
 
     function shiftPeriod(dateStr, step) {
-      if (viewMode === "week" || viewMode === "schedule") return shiftDate(dateStr, step * 7);
+      if (viewMode === "week") return shiftDate(dateStr, step * 7);
       if (viewMode === "month") {
         const date = toLocalDate(dateStr);
         date.setDate(1);
@@ -2393,16 +2511,18 @@
     }
 
     function isTodayPage() {
-      if (viewMode === "schedule") return weekStart(currentDate) === weekStart(todayDate);
       return currentListKey() === listKey(viewMode, todayDate);
     }
 
+    function formatWeekLabel(dateStr) {
+      const monday = weekStart(dateStr);
+      const start = toLocalDate(monday);
+      const end = toLocalDate(shiftDate(monday, 6));
+      return `${start.getMonth() + 1}月${start.getDate()}日 – ${end.getMonth() + 1}月${end.getDate()}日${monday === weekStart(todayDate) ? " 本周" : ""}`;
+    }
+
     function formatPeriodLabel(dateStr) {
-      if (viewMode === "week" || viewMode === "schedule") {
-        const start = toLocalDate(weekStart(dateStr));
-        const end = toLocalDate(shiftDate(weekStart(dateStr), 6));
-        return `${start.getMonth() + 1}月${start.getDate()}日 – ${end.getMonth() + 1}月${end.getDate()}日${isTodayPage() ? " 本周" : ""}`;
-      }
+      if (viewMode === "week") return formatWeekLabel(dateStr);
       if (viewMode === "month") {
         const date = toLocalDate(dateStr);
         return `${date.getFullYear()}年${date.getMonth() + 1}月${isTodayPage() ? " 本月" : ""}`;
@@ -2675,7 +2795,7 @@
 
     function loadTodosByDate(dateStr) {
       currentDate = dateStr;
-      todos = viewMode === "schedule" ? [] : normalizeTodos(load(currentListKey(), []), dateStr);
+      todos = normalizeTodos(load(currentListKey(), []), dateStr);
       renderTodos();
     }
 
@@ -2692,14 +2812,12 @@
     const modeText = {
       day: { title: "今日清单", unit: "天", empty: "今天还没有待办，先加一件小事吧。", other: "这一天还没有待办～", hint: "可以切换或选择任意日期，提前安排待办。" },
       week: { title: "周计划", unit: "周", empty: "这周还没有计划，写下本周想完成的事吧。", other: "这一周还没有计划～", hint: "放这一周要完成的事，左右切换看其他周。" },
-      month: { title: "月计划", unit: "月", empty: "这个月还没有计划，定几个小目标吧。", other: "这个月还没有计划～", hint: "放这个月的目标，左右切换看其他月份。" },
-      schedule: { title: "周日程", unit: "周", hint: "" }
+      month: { title: "月计划", unit: "月", empty: "这个月还没有计划，定几个小目标吧。", other: "这个月还没有计划～", hint: "放这个月的目标，左右切换看其他月份。" }
     };
 
     function applyModeUi() {
       const text = modeText[viewMode];
       todoPanel.dataset.mode = viewMode;
-      scheduleView.hidden = viewMode !== "schedule";
       document.querySelectorAll(".mode-tab").forEach((tab) => {
         const active = tab.dataset.mode === viewMode;
         tab.classList.toggle("is-active", active);
@@ -2714,12 +2832,84 @@
     }
 
     function setViewMode(mode, date = todayDate) {
-      if (!modeText[mode]) return;
+      if (!Object.hasOwn(modeText, mode)) return;
       viewMode = mode;
       localStorage.setItem(storageKeys.todoViewMode, mode);
       applyModeUi();
       loadTodosByDate(date);
     }
+
+    function showRoom() {
+      const hash = location.hash;
+      const room = hash === "#schedule" || hash === "#recipes" ? hash.slice(1) : "todo";
+      roomPanels.forEach((panel) => { panel.hidden = panel.dataset.roomPanel !== room; });
+      roomLinks.forEach((link) => {
+        if (link.hash === `#${room}`) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      });
+      if (room === "schedule") renderSchedule();
+    }
+
+    function renderRecipes() {
+      recipeEmpty.hidden = recipes.length > 0;
+      recipeList.replaceChildren(...recipes.map((recipe) => {
+        const card = document.createElement("li");
+        card.className = "recipe-card";
+        card.innerHTML = `<h3>${escapeHtml(recipe.title)}</h3>
+          ${recipe.ingredients ? `<h4>食材</h4><p>${escapeHtml(recipe.ingredients)}</p>` : ""}
+          ${recipe.steps ? `<h4>做法</h4><p>${escapeHtml(recipe.steps)}</p>` : ""}
+          <button class="ghost-btn" type="button">编辑</button>`;
+        const editButton = card.querySelector("button");
+        editButton.setAttribute("aria-label", `编辑${recipe.title}`);
+        editButton.addEventListener("click", () => openRecipe(recipe));
+        return card;
+      }));
+    }
+
+    function openRecipe(recipe = null) {
+      editingRecipeId = recipe?.id || null;
+      document.querySelector("#recipeDialogTitle").textContent = recipe ? "编辑食谱" : "添加食谱";
+      recipeForm.elements.title.setCustomValidity("");
+      recipeForm.elements.title.value = recipe?.title || "";
+      recipeForm.elements.ingredients.value = recipe?.ingredients || "";
+      recipeForm.elements.steps.value = recipe?.steps || "";
+      deleteRecipeButton.hidden = !recipe;
+      recipeDialog.showModal();
+    }
+
+    function saveRecipes(nextRecipes) {
+      save(storageKeys.recipes, nextRecipes);
+      recipes = nextRecipes;
+      recipeDialog.close();
+      renderRecipes();
+    }
+
+    window.addEventListener("hashchange", showRoom);
+    document.querySelector("#newRecipeButton").addEventListener("click", () => openRecipe());
+    document.querySelector("#cancelRecipeButton").addEventListener("click", () => recipeDialog.close());
+    recipeForm.elements.title.addEventListener("input", () => recipeForm.elements.title.setCustomValidity(""));
+    recipeForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const fields = new FormData(recipeForm);
+      const title = fields.get("title").trim();
+      if (!title) {
+        recipeForm.elements.title.setCustomValidity("请输入菜名");
+        recipeForm.reportValidity();
+        return;
+      }
+      const recipe = {
+        id: editingRecipeId || uid(),
+        title,
+        ingredients: fields.get("ingredients").trim(),
+        steps: fields.get("steps").trim()
+      };
+      saveRecipes(editingRecipeId
+        ? recipes.map((entry) => entry.id === editingRecipeId ? recipe : entry)
+        : [recipe, ...recipes]);
+    });
+    deleteRecipeButton.addEventListener("click", () => {
+      if (confirm("删除这道食谱？")) saveRecipes(recipes.filter((recipe) => recipe.id !== editingRecipeId));
+    });
 
     function saveWheels() {
       save(storageKeys.wheels, wheels);
@@ -2786,10 +2976,6 @@
 
     function renderTodos() {
       dateLabel.textContent = formatPeriodLabel(currentDate);
-      if (viewMode === "schedule") {
-        renderSchedule();
-        return;
-      }
       todoList.innerHTML = "";
       todoEmpty.classList.toggle("hidden", todos.length > 0);
       todoEmpty.textContent = isTodayPage() ? modeText[viewMode].empty : modeText[viewMode].other;
@@ -2871,6 +3057,8 @@
     function showUndo(todo, index, date = currentDate, mode = viewMode) {
       lastDeletedTodo = { todo, index, date, mode, key: listKey(mode, date) };
       undoText.textContent = `已删除「${todo.title}」`;
+      if (scheduleView.hidden) todoPanel.append(undoBar);
+      else scheduleView.querySelector(".schedule-scroll").before(undoBar);
       undoBar.classList.remove("hidden");
       window.clearTimeout(undoTimer);
       undoTimer = window.setTimeout(() => {
@@ -2898,9 +3086,10 @@
 
     function renderSchedule() {
       const school = scheduleContext.value === "school";
-      document.querySelector("#todoTitle").textContent = school ? "周课程表" : "周日程";
+      scheduleViewTitle.textContent = school ? "周课程表" : "周日程";
+      scheduleDateLabel.textContent = formatWeekLabel(scheduleDate);
       newScheduleButton.textContent = school ? "+ 添加课程" : "+ 添加日程";
-      const monday = weekStart(currentDate);
+      const monday = weekStart(scheduleDate);
       const weekdays = Array.from({ length: 7 }, (_, index) => shiftDate(monday, index));
       scheduleHeader.innerHTML = "<span></span>" + weekdays.map((date, index) =>
         `<time datetime="${date}"${date === todayDate ? ' class="is-today"' : ""}><strong>周${"一二三四五六日"[index]}</strong>${Number(date.slice(5, 7))}/${Number(date.slice(8))}</time>`
@@ -3036,6 +3225,7 @@
         const index = source.findIndex((entry) => entry.id === editingSchedule.id);
         if (index < 0) {
           scheduleDialog.close();
+          renderSchedule();
           loadTodosByDate(currentDate);
           return;
         }
@@ -3065,13 +3255,22 @@
 
       queueCloudSave();
       scheduleDialog.close();
-      const displayDate = viewMode === "schedule" && clockMinutes(item.time) < scheduleDayStart
-        ? shiftDate(date, -1) : date;
-      loadTodosByDate(previousDate === date ? currentDate : displayDate);
+      if (previousDate !== date) {
+        scheduleDate = clockMinutes(item.time) < scheduleDayStart ? shiftDate(date, -1) : date;
+      }
+      renderSchedule();
+      loadTodosByDate(scheduleView.hidden && previousDate !== date ? date : currentDate);
       scheduleReminders();
     }
 
-    newScheduleButton.addEventListener("click", () => openScheduleEditor(currentDate));
+    function shiftScheduleWeek(step) {
+      scheduleDate = shiftDate(scheduleDate, step * 7);
+      renderSchedule();
+    }
+
+    document.querySelector("#prevScheduleWeek").addEventListener("click", () => shiftScheduleWeek(-1));
+    document.querySelector("#nextScheduleWeek").addEventListener("click", () => shiftScheduleWeek(1));
+    newScheduleButton.addEventListener("click", () => openScheduleEditor(scheduleDate));
     scheduleContext.addEventListener("change", () => {
       localStorage.setItem(storageKeys.scheduleContext, scheduleContext.value);
       renderSchedule();
@@ -3106,6 +3305,7 @@
         queueCloudSave();
       }
       scheduleDialog.close();
+      renderSchedule();
       loadTodosByDate(currentDate);
     });
 
@@ -3542,7 +3742,10 @@
       if (!items.some((item) => item.id === todo.id)) items.splice(index, 0, todo);
       save(key, items);
       queueCloudSave();
-      if (viewMode === "schedule") renderTodos();
+      if (!scheduleView.hidden) {
+        renderSchedule();
+        loadTodosByDate(currentDate);
+      }
       else if (mode !== viewMode) setViewMode(mode, date);
       else loadTodosByDate(date);
       scheduleReminders();
@@ -3934,9 +4137,11 @@
       habits = normalizeHabits(load(storageKeys.habits, []));
       todoDate.value = todayDate;
       const savedMode = localStorage.getItem(storageKeys.todoViewMode);
-      if (modeText[savedMode]) viewMode = savedMode;
+      if (Object.hasOwn(modeText, savedMode)) viewMode = savedMode;
       scheduleContext.value = localStorage.getItem(storageKeys.scheduleContext) === "school" ? "school" : "vacation";
       applyModeUi();
+      showRoom();
+      renderRecipes();
       avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
       applyTheme(localStorage.getItem(storageKeys.theme) || "light");
       applyBackground(localStorage.getItem(storageKeys.background) || "");
@@ -3948,6 +4153,7 @@
       }
       cloudSavePaused = false;
       setupSwipe(todoPanel, prevDay, nextDay);
+      setupSwipe(scheduleView, () => shiftScheduleWeek(-1), () => shiftScheduleWeek(1));
       setupSwipe(wheelSlide, nextWheel, prevWheel);
       scheduleReminders();
     }
