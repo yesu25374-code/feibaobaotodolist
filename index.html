@@ -1365,6 +1365,25 @@
       }
 
     }
+    .app[data-room="schedule"] {
+      width: 100%;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      background: var(--surface);
+      min-height: 100dvh;
+    }
+
+    .app[data-room="schedule"] > .topbar {
+      display: none;
+    }
+
+    .schedule-top {
+      padding: 8px 12px 0;
+    }
+
+    .schedule-top .pager-head {
+      margin-top: 4px;
+    }
+
     .schedule-toolbar {
       display: flex;
       align-items: center;
@@ -1379,11 +1398,7 @@
     }
 
     .schedule-scroll {
-      --hour-height: 54px;
-      max-height: min(65vh, 620px);
-      overflow: auto;
-      border: 1px solid var(--border);
-      border-radius: 16px;
+      --hour-height: 64px;
       background: var(--surface);
     }
 
@@ -1394,7 +1409,7 @@
 
     .schedule-header {
       position: sticky;
-      top: 0;
+      top: env(safe-area-inset-top);
       z-index: 2;
       background: var(--surface-soft);
       border-bottom: 1px solid var(--border);
@@ -1406,7 +1421,7 @@
       gap: 2px;
       padding: 7px 0;
       color: var(--muted);
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .schedule-header strong {
@@ -1424,7 +1439,7 @@
       padding: 0 5px;
       color: var(--muted);
       text-align: right;
-      font-size: 10px;
+      font-size: 11px;
       font-variant-numeric: tabular-nums;
     }
 
@@ -1455,24 +1470,31 @@
       left: var(--event-left);
       width: var(--event-width);
       height: max(16px, var(--event-height));
-      padding: 2px 4px;
-      overflow: hidden;
-      border: 0;
       border-radius: 5px;
       background: color-mix(in srgb, var(--event-color) 32%, var(--surface));
       box-shadow: inset 2px 0 var(--event-color);
+    }
+
+    .schedule-event-open {
+      width: 100%;
+      height: 100%;
+      padding: 2px 4px;
+      overflow: hidden;
+      border: 0;
+      border-radius: inherit;
+      background: transparent;
       color: var(--text);
       text-align: left;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       font: inherit;
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.15;
       cursor: pointer;
     }
 
-    .schedule-event span, .schedule-event small {
+    .schedule-event-open > span {
       max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -1480,9 +1502,45 @@
       flex-shrink: 0;
     }
 
-    .schedule-event small {
+    .schedule-event-time {
+      display: flex;
+      flex-wrap: wrap;
+      column-gap: 2px;
       margin-top: 2px;
-      font-size: 10px;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .schedule-resize {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: min(26px, 100%);
+      height: min(26px, 100%);
+      padding: 0;
+      border: 0;
+      border-radius: 5px 0 5px 0;
+      background: color-mix(in srgb, var(--event-color) 46%, var(--surface));
+      color: var(--text);
+      touch-action: none;
+      user-select: none;
+      cursor: ns-resize;
+    }
+
+    .schedule-resize::after {
+      content: "";
+      position: absolute;
+      right: 4px;
+      bottom: 4px;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid;
+      border-bottom: 2px solid;
+    }
+
+    .schedule-event.is-resizing {
+      z-index: 1;
+      outline: 2px solid var(--event-color);
     }
 
     .schedule-dialog {
@@ -1575,36 +1633,6 @@
 
     [data-room-panel][hidden] {
       display: none;
-    }
-
-    .recipe-list {
-      display: grid;
-      gap: 12px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .recipe-card {
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: var(--surface-soft);
-      overflow-wrap: anywhere;
-    }
-
-    .recipe-card h3, .recipe-card h4 {
-      margin: 0 0 6px;
-    }
-
-    .recipe-card p {
-      margin: 0 0 12px;
-      white-space: pre-wrap;
-    }
-
-    #recipeForm textarea {
-      resize: vertical;
-      font: inherit;
     }
 
     @media (max-width: 480px) {
@@ -1744,7 +1772,7 @@
       </div>
     </section>
 
-    <section class="panel wheel-panel" data-room-panel="todo" aria-labelledby="wheelTitle">
+    <section class="panel wheel-panel" data-room-panel="recipes" aria-labelledby="wheelTitle" hidden>
       <div class="wheel-manager">
         <div class="wheel-tools">
           <button class="icon-btn" id="editWheelButton" type="button" title="编辑名称">✎</button>
@@ -1765,7 +1793,7 @@
       <div class="wheel-layout slide-page" id="wheelSlide">
         <div class="wheel-stage">
           <div class="pointer" aria-hidden="true"></div>
-          <canvas id="wheelCanvas" width="720" height="720" role="img" aria-label="待办抽奖转盘"></canvas>
+          <canvas id="wheelCanvas" width="720" height="720" role="img" aria-label="食谱转盘"></canvas>
           <div class="wheel-center">今天<br>做啥</div>
         </div>
 
@@ -1784,21 +1812,24 @@
       </div>
     </section>
 
-    <section class="panel" id="scheduleView" data-room-panel="schedule" aria-labelledby="scheduleViewTitle" hidden>
-      <div class="pager-head">
-        <button class="pager-arrow" id="prevScheduleWeek" type="button" aria-label="查看上一周">‹</button>
-        <div class="pager-title">
-          <h2 id="scheduleViewTitle">周日程</h2>
-          <span class="pager-subtitle" id="scheduleDateLabel"></span>
+    <section id="scheduleView" data-room-panel="schedule" aria-labelledby="scheduleViewTitle" hidden>
+      <div class="schedule-top">
+        <a class="room-link" id="scheduleBack" href="#todo">返回待办</a>
+        <div class="pager-head">
+          <button class="pager-arrow" id="prevScheduleWeek" type="button" aria-label="查看上一周">‹</button>
+          <div class="pager-title">
+            <h2 id="scheduleViewTitle">周日程</h2>
+            <span class="pager-subtitle" id="scheduleDateLabel"></span>
+          </div>
+          <button class="pager-arrow" id="nextScheduleWeek" type="button" aria-label="查看下一周">›</button>
         </div>
-        <button class="pager-arrow" id="nextScheduleWeek" type="button" aria-label="查看下一周">›</button>
-      </div>
-      <div class="schedule-toolbar">
-        <select class="field schedule-context" id="scheduleContext" aria-label="日程表模式">
-          <option value="vacation">假期</option>
-          <option value="school">在校</option>
-        </select>
-        <button class="primary-btn" id="newScheduleButton" type="button">+ 添加日程</button>
+        <div class="schedule-toolbar">
+          <select class="field schedule-context" id="scheduleContext" aria-label="日程表模式">
+            <option value="vacation">假期</option>
+            <option value="school">在校</option>
+          </select>
+          <button class="primary-btn" id="newScheduleButton" type="button">+ 添加日程</button>
+        </div>
       </div>
       <div class="schedule-scroll" tabindex="0" aria-label="周日程，早上六点到次日早上六点">
         <div class="schedule-header" id="scheduleHeader"></div>
@@ -1806,26 +1837,14 @@
       </div>
     </section>
 
-    <section class="panel" data-room-panel="recipes" aria-labelledby="recipeTitle" hidden>
-      <div class="schedule-toolbar">
-        <h2 id="recipeTitle">食谱</h2>
-        <button class="primary-btn" id="newRecipeButton" type="button">+ 添加食谱</button>
-      </div>
-      <ul class="recipe-list" id="recipeList"></ul>
-      <p class="empty" id="recipeEmpty">还没有食谱。</p>
-    </section>
-
-    <dialog class="todo-modal-card schedule-dialog" id="recipeDialog" aria-labelledby="recipeDialogTitle">
-      <h2 id="recipeDialogTitle">添加食谱</h2>
-      <form class="schedule-form" id="recipeForm">
-        <label>菜名<input class="field" name="title" required autofocus></label>
-        <label>食材<textarea class="field" name="ingredients" rows="3"></textarea></label>
-        <label>做法<textarea class="field" name="steps" rows="4"></textarea></label>
+    <dialog class="todo-modal-card schedule-dialog" id="textDialog" aria-labelledby="textDialogTitle">
+      <h2 id="textDialogTitle"></h2>
+      <form class="schedule-form" method="dialog">
+        <input class="field" id="textDialogInput" aria-label="名称" autocomplete="off">
         <div class="modal-actions">
-          <button class="ghost-btn schedule-delete" id="deleteRecipeButton" type="button" hidden>删除</button>
-          <button class="ghost-btn" id="cancelRecipeButton" type="button">取消</button>
-          <button class="primary-btn" type="submit">保存</button>
+          <button class="primary-btn" type="submit" value="save">保存</button>
         </div>
+        <button class="icon-btn mini-toggle modal-close" type="submit" value="cancel" aria-label="取消" autofocus>×</button>
       </form>
     </dialog>
 
@@ -1844,9 +1863,9 @@
 
     <dialog class="todo-modal-card schedule-dialog" id="scheduleDialog" aria-labelledby="scheduleDialogTitle">
       <h2 id="scheduleDialogTitle">添加日程</h2>
-      <button class="icon-btn mini-toggle modal-close" id="closeScheduleButton" type="button" aria-label="关闭">×</button>
+      <button class="icon-btn mini-toggle modal-close" id="closeScheduleButton" type="button" aria-label="关闭" autofocus>×</button>
       <form class="schedule-form" id="scheduleForm">
-        <label><span id="scheduleTitleLabel">日程名称</span><input class="field" name="title" required autofocus></label>
+        <label><span id="scheduleTitleLabel">日程名称</span><input class="field" name="title" required></label>
         <label>日期<input class="field" name="date" type="date" required></label>
         <div class="schedule-form-row">
           <label>开始时间<input class="field" name="start" type="time" required></label>
@@ -1929,8 +1948,7 @@
       optionsCollapsed: "xiaoxiaoyu.optionsCollapsed",
       remindedTodos: "xiaoxiaoyu.remindedTodos",
       todoViewMode: "xiaoxiaoyu.todoViewMode",
-      scheduleContext: "xiaoxiaoyu.scheduleContext",
-      recipes: "xiaoxiaoyu.recipes"
+      scheduleContext: "xiaoxiaoyu.scheduleContext"
     };
 
     const supabaseConfig = {
@@ -2004,13 +2022,12 @@
     const scheduleRepeatUntilRow = document.querySelector("#scheduleRepeatUntilRow");
     const scheduleDayStart = 6 * 60;
     const minutesPerDay = 24 * 60;
-    const roomLinks = document.querySelectorAll(".room-link");
+    const scheduleResizeStep = 15;
+    const app = document.querySelector(".app");
+    const roomLinks = document.querySelectorAll(".room-nav .room-link");
     const roomPanels = document.querySelectorAll("[data-room-panel]");
-    const recipeList = document.querySelector("#recipeList");
-    const recipeEmpty = document.querySelector("#recipeEmpty");
-    const recipeDialog = document.querySelector("#recipeDialog");
-    const recipeForm = document.querySelector("#recipeForm");
-    const deleteRecipeButton = document.querySelector("#deleteRecipeButton");
+    const textDialog = document.querySelector("#textDialog");
+    const textDialogInput = document.querySelector("#textDialogInput");
     const avatarButton = document.querySelector("#avatarButton");
     const avatarInput = document.querySelector("#avatarInput");
     const avatarPreview = document.querySelector("#avatarPreview");
@@ -2070,8 +2087,6 @@
     let scheduleDate = todayDate;
     let viewMode = "day";
     let todos = [];
-    let recipes = load(storageKeys.recipes, []);
-    let editingRecipeId = null;
     let wheels = [];
     let currentWheelIndex = 0;
     let wheelOptions = [];
@@ -2321,7 +2336,7 @@
         return;
       }
 
-      const code = prompt("输入同步码。手机和 iPad 使用同一个同步码就会互通。", syncCode || "");
+      const code = await requestText("输入同步码", syncCode);
       if (code === null) return;
       const cleanCode = code.trim();
       if (!cleanCode) return;
@@ -2575,6 +2590,7 @@
       }, { passive: true });
 
       element.addEventListener("touchend", (event) => {
+        if (event.target.closest(".schedule-resize")) return;
         const touch = event.changedTouches[0];
         const deltaX = touch.clientX - startX;
         const deltaY = touch.clientY - startY;
@@ -2762,7 +2778,6 @@
       habitColor.value = habit.color || "#ff8fb3";
       habitReminder.checked = Boolean(habit.reminder);
       habitSaveButton.textContent = "保存";
-      requestAnimationFrame(() => habitInput.focus());
     }
 
     function habitFormData() {
@@ -2789,7 +2804,6 @@
     function setHabitPopover(open) {
       habitPopover.hidden = !open;
       habitToggleButton.setAttribute("aria-expanded", String(open));
-      if (open) requestAnimationFrame(() => habitInput.focus());
       if (!open) resetHabitForm();
     }
 
@@ -2842,74 +2856,35 @@
     function showRoom() {
       const hash = location.hash;
       const room = hash === "#schedule" || hash === "#recipes" ? hash.slice(1) : "todo";
+      const previousRoom = app.dataset.room;
+      app.dataset.room = room;
       roomPanels.forEach((panel) => { panel.hidden = panel.dataset.roomPanel !== room; });
       roomLinks.forEach((link) => {
         if (link.hash === `#${room}`) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
       });
       if (room === "schedule") renderSchedule();
+      if (previousRoom && previousRoom !== room) {
+        window.scrollTo(0, 0);
+        if (room === "schedule") document.querySelector("#scheduleBack").focus({ preventScroll: true });
+        else if (previousRoom === "schedule") document.querySelector(".room-nav [aria-current='page']").focus({ preventScroll: true });
+      }
     }
 
-    function renderRecipes() {
-      recipeEmpty.hidden = recipes.length > 0;
-      recipeList.replaceChildren(...recipes.map((recipe) => {
-        const card = document.createElement("li");
-        card.className = "recipe-card";
-        card.innerHTML = `<h3>${escapeHtml(recipe.title)}</h3>
-          ${recipe.ingredients ? `<h4>食材</h4><p>${escapeHtml(recipe.ingredients)}</p>` : ""}
-          ${recipe.steps ? `<h4>做法</h4><p>${escapeHtml(recipe.steps)}</p>` : ""}
-          <button class="ghost-btn" type="button">编辑</button>`;
-        const editButton = card.querySelector("button");
-        editButton.setAttribute("aria-label", `编辑${recipe.title}`);
-        editButton.addEventListener("click", () => openRecipe(recipe));
-        return card;
-      }));
-    }
-
-    function openRecipe(recipe = null) {
-      editingRecipeId = recipe?.id || null;
-      document.querySelector("#recipeDialogTitle").textContent = recipe ? "编辑食谱" : "添加食谱";
-      recipeForm.elements.title.setCustomValidity("");
-      recipeForm.elements.title.value = recipe?.title || "";
-      recipeForm.elements.ingredients.value = recipe?.ingredients || "";
-      recipeForm.elements.steps.value = recipe?.steps || "";
-      deleteRecipeButton.hidden = !recipe;
-      recipeDialog.showModal();
-    }
-
-    function saveRecipes(nextRecipes) {
-      save(storageKeys.recipes, nextRecipes);
-      recipes = nextRecipes;
-      recipeDialog.close();
-      renderRecipes();
+    function requestText(title, value = "") {
+      document.querySelector("#textDialogTitle").textContent = title;
+      textDialogInput.setAttribute("aria-label", title);
+      textDialogInput.value = value;
+      textDialog.returnValue = "";
+      return new Promise((resolve) => {
+        textDialog.addEventListener("close", () => {
+          resolve(textDialog.returnValue === "save" ? textDialogInput.value : null);
+        }, { once: true });
+        textDialog.showModal();
+      });
     }
 
     window.addEventListener("hashchange", showRoom);
-    document.querySelector("#newRecipeButton").addEventListener("click", () => openRecipe());
-    document.querySelector("#cancelRecipeButton").addEventListener("click", () => recipeDialog.close());
-    recipeForm.elements.title.addEventListener("input", () => recipeForm.elements.title.setCustomValidity(""));
-    recipeForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const fields = new FormData(recipeForm);
-      const title = fields.get("title").trim();
-      if (!title) {
-        recipeForm.elements.title.setCustomValidity("请输入菜名");
-        recipeForm.reportValidity();
-        return;
-      }
-      const recipe = {
-        id: editingRecipeId || uid(),
-        title,
-        ingredients: fields.get("ingredients").trim(),
-        steps: fields.get("steps").trim()
-      };
-      saveRecipes(editingRecipeId
-        ? recipes.map((entry) => entry.id === editingRecipeId ? recipe : entry)
-        : [recipe, ...recipes]);
-    });
-    deleteRecipeButton.addEventListener("click", () => {
-      if (confirm("删除这道食谱？")) saveRecipes(recipes.filter((recipe) => recipe.id !== editingRecipeId));
-    });
 
     function saveWheels() {
       save(storageKeys.wheels, wheels);
@@ -3120,7 +3095,7 @@
         const end = start + minutesPerDay;
         const blocks = entries
           .filter((entry) => entry.start < end && entry.end > start)
-          .map((entry) => ({ ...entry, start: Math.max(entry.start, start), end: Math.min(entry.end, end) }))
+          .map((entry) => ({ ...entry, eventStart: entry.start, eventEnd: entry.end, start: Math.max(entry.start, start), end: Math.min(entry.end, end) }))
           .sort((a, b) => a.start - b.start || b.end - a.end);
 
         let laneEnds = [];
@@ -3132,22 +3107,120 @@
           block.group = laneEnds;
         });
 
-        blocks.forEach(({ todo, date: todoDate, start: blockStart, end: blockEnd, lane, group }) => {
+        blocks.forEach((block) => {
+          const { todo, date: todoDate, start: blockStart, end: blockEnd, eventEnd, lane, group } = block;
+          const card = document.createElement("div");
+          card.className = "schedule-event";
+          card.style.setProperty("--event-top", `${((blockStart - start) / minutesPerDay) * 100}%`);
+          card.style.setProperty("--event-height", `${((blockEnd - blockStart) / minutesPerDay) * 100}%`);
+          card.style.setProperty("--event-left", `${(lane / group.length) * 100}%`);
+          card.style.setProperty("--event-width", `${100 / group.length}%`);
+          card.style.setProperty("--event-color", scheduleColor(todo.color));
           const button = document.createElement("button");
           button.type = "button";
-          button.className = "schedule-event";
-          button.style.setProperty("--event-top", `${((blockStart - start) / minutesPerDay) * 100}%`);
-          button.style.setProperty("--event-height", `${((blockEnd - blockStart) / minutesPerDay) * 100}%`);
-          button.style.setProperty("--event-left", `${(lane / group.length) * 100}%`);
-          button.style.setProperty("--event-width", `${100 / group.length}%`);
-          button.style.setProperty("--event-color", scheduleColor(todo.color));
+          button.className = "schedule-event-open";
           const status = todo.done ? "✓ " : todo.failed ? "❌ " : "";
           button.title = [status + todo.title, scheduleTimeLabel(todo), todo.place].filter(Boolean).join(" · ");
-          button.innerHTML = `<span>${status}${escapeHtml(todo.title)}</span><small>${escapeHtml(todo.time)}${todo.place ? ` · ${escapeHtml(todo.place)}` : ""}</small>`;
+          button.innerHTML = `<span>${status}${escapeHtml(todo.title)}</span><small class="schedule-event-time"><span>${escapeHtml(todo.time)}</span><span>–${clockLabel(eventEnd)}</span></small>`;
           button.addEventListener("click", () => openScheduleEditor(todoDate, todo));
-          column.appendChild(button);
+          card.appendChild(button);
+          if (blockEnd === eventEnd) attachScheduleResize(card, column, block, end);
+          column.appendChild(card);
         });
         scheduleGrid.appendChild(column);
+      });
+    }
+
+    function saveScheduleEnd(block, end) {
+      const key = todoKey(block.date);
+      const items = normalizeTodos(load(key, []), block.date);
+      const item = items.find((entry) => entry.id === block.todo.id);
+      if (item && item.time === block.todo.time && item.endTime === block.todo.endTime) {
+        item.endTime = clockLabel(end);
+        save(key, items);
+        queueCloudSave();
+        loadTodosByDate(currentDate);
+      }
+      renderSchedule();
+    }
+
+    function attachScheduleResize(card, column, block, columnEnd) {
+      const handle = document.createElement("button");
+      handle.type = "button";
+      handle.className = "schedule-resize";
+      handle.dataset.scheduleId = block.todo.id;
+      handle.title = "拖动或按上下方向键调整结束时间";
+      handle.setAttribute("aria-label", `调整${block.todo.title}的结束时间`);
+      card.appendChild(handle);
+
+      const endLabel = card.querySelector(".schedule-event-time span:last-child");
+      const clampEnd = (end) => Math.max(block.eventStart + scheduleResizeStep, Math.min(block.eventStart + minutesPerDay - 1, end));
+      function preview(end) {
+        const height = Math.max(0, Math.min(end, columnEnd) - block.start);
+        card.style.setProperty("--event-height", `${height / minutesPerDay * 100}%`);
+        endLabel.textContent = `–${clockLabel(end)}`;
+      }
+
+      let drag = null;
+      function updateDrag() {
+        const pixels = drag.y - drag.startY + window.scrollY - drag.scrollY;
+        const minutes = pixels * minutesPerDay / drag.height;
+        const steps = Math.round(minutes / scheduleResizeStep);
+        drag.end = steps ? clampEnd(block.eventEnd + steps * scheduleResizeStep) : block.eventEnd;
+        preview(drag.end);
+      }
+
+      function scrollWhileDragging() {
+        if (!drag || !card.isConnected) return;
+        const edge = 48;
+        const bottom = (window.visualViewport?.height || window.innerHeight) - edge;
+        const step = drag.y > bottom ? 8 : drag.y < edge ? -8 : 0;
+        if (step) {
+          window.scrollBy(0, step);
+          updateDrag();
+        }
+        drag.frame = requestAnimationFrame(scrollWhileDragging);
+      }
+
+      handle.addEventListener("pointerdown", (event) => {
+        if (!event.isPrimary || event.button !== 0) return;
+        event.preventDefault();
+        handle.setPointerCapture(event.pointerId);
+        drag = { id: event.pointerId, startY: event.clientY, y: event.clientY, scrollY: window.scrollY,
+          height: column.getBoundingClientRect().height, end: block.eventEnd, frame: 0 };
+        card.classList.add("is-resizing");
+      });
+      handle.addEventListener("pointermove", (event) => {
+        if (drag?.id !== event.pointerId) return;
+        drag.y = event.clientY;
+        if (!drag.frame && Math.abs(drag.y - drag.startY) < 4) return;
+        updateDrag();
+        if (!drag.frame) drag.frame = requestAnimationFrame(scrollWhileDragging);
+      });
+
+      function finishDrag(event) {
+        if (drag?.id !== event.pointerId) return;
+        if (event.type === "pointerup" && (drag.frame || Math.abs(event.clientY - drag.startY) >= 4)) {
+          drag.y = event.clientY;
+          updateDrag();
+        }
+        const { end, frame } = drag;
+        drag = null;
+        cancelAnimationFrame(frame);
+        card.classList.remove("is-resizing");
+        if (event.type === "pointerup" && end !== block.eventEnd) saveScheduleEnd(block, end);
+        else preview(block.eventEnd);
+      }
+      handle.addEventListener("pointerup", finishDrag);
+      handle.addEventListener("pointercancel", finishDrag);
+      handle.addEventListener("lostpointercapture", finishDrag);
+      handle.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+        event.preventDefault();
+        const end = clampEnd(block.eventEnd + (event.key === "ArrowUp" ? -scheduleResizeStep : scheduleResizeStep));
+        if (end === block.eventEnd) return;
+        saveScheduleEnd(block, end);
+        scheduleGrid.querySelector(`[data-schedule-id="${CSS.escape(block.todo.id)}"]`)?.focus({ preventScroll: true });
       });
     }
 
@@ -3337,7 +3410,7 @@
       todoModal.hidden = false;
       document.body.style.overflow = "hidden";
       renderTodos();
-      requestAnimationFrame(() => todoInput.focus());
+      closeTodoEditorButton.focus({ preventScroll: true });
     }
 
     function closeTodoEditor() {
@@ -4071,7 +4144,7 @@
       spinResult.textContent = "";
     });
 
-    optionList.addEventListener("click", (event) => {
+    optionList.addEventListener("click", async (event) => {
       const item = event.target.closest(".option-item");
       if (!item) return;
       const option = wheelOptions.find((entry) => entry.id === item.dataset.id);
@@ -4084,9 +4157,10 @@
       }
 
       if (event.target.dataset.action === "edit") {
-        const nextTitle = prompt("编辑转盘选项", option.title);
-        if (nextTitle !== null && nextTitle.trim()) {
-          option.title = nextTitle.trim();
+        const nextTitle = await requestText("编辑转盘选项", option.title);
+        const currentOption = wheelOptions.find((entry) => entry.id === option.id);
+        if (nextTitle?.trim() && currentOption) {
+          currentOption.title = nextTitle.trim();
           spinResult.textContent = "";
           saveWheels();
           renderOptions();
@@ -4112,15 +4186,15 @@
     nextDayButton.addEventListener("click", nextDay);
     prevWheelButton.addEventListener("click", prevWheel);
     nextWheelButton.addEventListener("click", nextWheel);
-    createWheelButton.addEventListener("click", () => {
-      const name = prompt("新建转盘名称", "新的转盘");
+    createWheelButton.addEventListener("click", async () => {
+      const name = await requestText("新建转盘名称", "新的转盘");
       if (name !== null) createNewWheel(name);
     });
-    editWheelButton.addEventListener("click", () => {
+    editWheelButton.addEventListener("click", async () => {
       if (isSpinning) return;
       const wheel = currentWheel();
-      const name = prompt("编辑转盘名称", wheel.name);
-      if (name !== null && name.trim()) {
+      const name = await requestText("编辑转盘名称", wheel.name);
+      if (name?.trim() && currentWheel() === wheel) {
         wheel.name = name.trim();
         saveWheels();
         renderWheelShell();
@@ -4141,7 +4215,6 @@
       scheduleContext.value = localStorage.getItem(storageKeys.scheduleContext) === "school" ? "school" : "vacation";
       applyModeUi();
       showRoom();
-      renderRecipes();
       avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
       applyTheme(localStorage.getItem(storageKeys.theme) || "light");
       applyBackground(localStorage.getItem(storageKeys.background) || "");
