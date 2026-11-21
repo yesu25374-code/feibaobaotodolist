@@ -208,9 +208,8 @@
       border-radius: 50%;
       background: linear-gradient(135deg, var(--primary), var(--accent));
       box-shadow: 0 12px 30px color-mix(in srgb, var(--primary) 28%, transparent);
-      color: #fff;
-      font-size: 22px;
-      font-weight: 800;
+      object-fit: cover;
+      border: 2px solid #fff;
       flex: 0 0 auto;
     }
 
@@ -2100,7 +2099,7 @@
   <main class="app">
     <header class="topbar">
       <div class="brand">
-        <div class="logo" aria-hidden="true">鱼</div>
+        <img class="logo" src="logo.jpg" alt="" aria-hidden="true">
         <div class="brand-text">
           <h1>小小鱼每日待办</h1>
           <p class="subtitle" id="brandSubtitle">把今天要做的事轻轻放进清单里</p>
