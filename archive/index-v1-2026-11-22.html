@@ -1,0 +1,4236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>小小鱼每日待办</title>
+  <meta name="theme-color" content="#ff8fb3" id="themeColorMeta">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#151923" id="themeColorDarkMeta">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="小小鱼每日待办">
+  <meta name="application-name" content="小小鱼每日待办">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="appleStatusBarMeta">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <style>
+    :root {
+      --bg: #f7fbff;
+      --surface: #ffffff;
+      --surface-soft: #eef7fb;
+      --text: #263238;
+      --muted: #6d7c85;
+      --primary: #ff8fb3;
+      --primary-strong: #e95d91;
+      --accent: #39b7c9;
+      --border: rgba(38, 50, 56, 0.12);
+      --shadow: 0 20px 60px rgba(44, 62, 80, 0.12);
+      --done: #9aa8ae;
+      --danger: #ef6b68;
+      --wheel-a: #ffb8cc;
+      --wheel-b: #8bdde8;
+      --wheel-c: #ffe08a;
+      --wheel-d: #a8e6b1;
+    }
+
+    [data-theme="dark"] {
+      --bg: #151923;
+      --surface: #202635;
+      --surface-soft: #2a3143;
+      --text: #eef4f7;
+      --muted: #aab6c0;
+      --primary: #7dd3fc;
+      --primary-strong: #38bdf8;
+      --accent: #f9a8d4;
+      --border: rgba(255, 255, 255, 0.12);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+      --done: #7f8a96;
+      --danger: #fb8d89;
+      --wheel-a: #7dd3fc;
+      --wheel-b: #c4b5fd;
+      --wheel-c: #f9a8d4;
+      --wheel-d: #86efac;
+    }
+
+    [data-theme="pink"] {
+      --bg: #fff5f8;
+      --surface-soft: #ffe8f0;
+      --primary: #ff76a8;
+      --primary-strong: #e64f89;
+      --accent: #ffb86b;
+      --wheel-a: #ff9cbe;
+      --wheel-b: #ffd1df;
+      --wheel-c: #ffc46f;
+      --wheel-d: #b7eed4;
+    }
+
+    [data-theme="blue"] {
+      --bg: #eff8ff;
+      --surface-soft: #dff1ff;
+      --primary: #48a7ff;
+      --primary-strong: #1678d6;
+      --accent: #20c6b4;
+      --wheel-a: #64b5ff;
+      --wheel-b: #a7e5ff;
+      --wheel-c: #8ee6d5;
+      --wheel-d: #ffe08a;
+    }
+
+    [data-theme="green"] {
+      --bg: #f2fff7;
+      --surface-soft: #def8e7;
+      --primary: #49c783;
+      --primary-strong: #229b5d;
+      --accent: #4cb6d6;
+      --wheel-a: #7ee2a8;
+      --wheel-b: #c7f2d5;
+      --wheel-c: #8ed7ee;
+      --wheel-d: #ffd184;
+    }
+
+    [data-theme="purple"] {
+      --bg: #fbf7ff;
+      --surface-soft: #f0e6ff;
+      --primary: #a97cff;
+      --primary-strong: #7c4de6;
+      --accent: #ff8fb3;
+      --wheel-a: #b99bff;
+      --wheel-b: #e1d3ff;
+      --wheel-c: #ffb0cf;
+      --wheel-d: #93e5d0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background:
+        radial-gradient(circle, rgba(255, 143, 179, 0.22) 0 2.5px, transparent 3px),
+        radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 2px, transparent 2.5px),
+        radial-gradient(circle at top left, var(--surface-soft), transparent 32rem),
+        linear-gradient(135deg, var(--bg), var(--surface-soft));
+      background-size: 22px 22px, 22px 22px, auto, auto;
+      background-position: 0 0, 11px 11px, 0 0, 0 0;
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: max(28px, env(safe-area-inset-top)) 0 max(48px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px 18px;
+      margin-bottom: 24px;
+    }
+
+    .room-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-self: end;
+      gap: 6px;
+    }
+
+    .room-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .room-link[aria-current="page"] {
+      background: var(--surface-soft);
+      border-color: var(--primary);
+      color: var(--primary-strong);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 12px 30px color-mix(in srgb, var(--primary) 28%, transparent);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 48px);
+      letter-spacing: 0;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .header-actions {
+      grid-area: 1 / 2 / span 2;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .sync-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .sync-btn {
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 700;
+      box-shadow: 0 8px 24px rgba(25, 45, 64, 0.08);
+    }
+
+    .sync-btn.is-active {
+      background: var(--surface-soft);
+      color: var(--primary-strong);
+    }
+
+    #backgroundButton {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    body.has-custom-bg {
+      background-image:
+        linear-gradient(rgba(247, 251, 255, 0.26), rgba(247, 251, 255, 0.34)),
+        var(--custom-bg-image),
+        radial-gradient(circle at top left, var(--surface-soft), transparent 32rem),
+        linear-gradient(135deg, var(--bg), var(--surface-soft));
+      background-size: cover, cover, auto, auto;
+      background-position: center, center, 0 0, 0 0;
+      background-attachment: fixed, fixed, scroll, scroll;
+    }
+
+    .theme-picker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface) 86%, transparent);
+      box-shadow: 0 8px 24px rgba(25, 45, 64, 0.08);
+    }
+
+    .theme-dot {
+      width: 28px;
+      height: 28px;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      background: var(--dot);
+      color: transparent;
+    }
+
+    .theme-dot.is-active {
+      border-color: var(--text);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 24%, transparent);
+    }
+
+    .avatar-button {
+      width: 58px;
+      height: 58px;
+      padding: 0;
+      border: 3px solid var(--surface);
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 14px 34px rgba(25, 45, 64, 0.16);
+      overflow: hidden;
+    }
+
+    .avatar-button img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: color-mix(in srgb, var(--surface) 93%, transparent);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .habit-dock {
+      position: relative;
+      z-index: 12;
+      margin: -8px 0 18px;
+      width: min(520px, 100%);
+    }
+
+    .habit-board {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      width: 100%;
+      min-height: 168px;
+      max-height: 168px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--surface) 88%, transparent), color-mix(in srgb, var(--surface-soft) 78%, transparent)),
+        radial-gradient(circle at 18% 14%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 52%);
+      color: var(--text);
+      box-shadow: 0 18px 44px rgba(25, 45, 64, 0.14);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+    }
+
+    .habit-board.is-empty {
+      grid-template-rows: auto auto;
+      gap: 8px;
+      min-height: 104px;
+      max-height: 104px;
+      padding: 12px 13px;
+    }
+
+    .habit-board.is-empty .habit-board-action[data-scroll-control] {
+      display: none;
+    }
+
+    .habit-board.is-empty .habit-board-foot {
+      display: none;
+    }
+
+    .habit-board-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .habit-board-title {
+      display: inline-grid;
+      place-items: center;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      white-space: nowrap;
+      box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 24%, transparent);
+    }
+
+    .habit-board-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .habit-board-action {
+      width: 30px;
+      min-height: 30px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .habit-board-action.is-active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #fff;
+      box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 24%, transparent);
+    }
+
+    .habit-board-window {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .habit-board.is-empty .habit-board-window {
+      min-height: 36px;
+      display: grid;
+      align-items: center;
+    }
+
+    .habit-preview-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      transform: translateY(0);
+      transition: transform 0.32s ease;
+    }
+
+    .habit-preview-list.is-rolling {
+      animation: habitRoll 0.44s ease both;
+    }
+
+    .habit-preview-item {
+      display: grid;
+      gap: 4px;
+      min-height: 46px;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--habit-color, var(--primary));
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface) 82%, var(--surface-soft) 18%);
+    }
+
+    .habit-preview-item:first-child {
+      min-height: 74px;
+      padding: 12px;
+      border: 0;
+      border-left: 7px solid var(--habit-color, var(--primary));
+      background: color-mix(in srgb, var(--surface) 72%, var(--primary) 14%);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .habit-preview-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 800;
+    }
+
+    .habit-preview-item:first-child .habit-preview-title {
+      font-size: 18px;
+      line-height: 1.22;
+    }
+
+    .habit-preview-meta {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .habit-board-empty {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 36px;
+      border: 0;
+      border-radius: 16px;
+      color: var(--muted);
+      text-align: left;
+      font-size: 14px;
+      font-weight: 800;
+      background: transparent;
+    }
+
+    .habit-board-empty::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      margin-right: 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--primary) 12%, transparent);
+      flex: 0 0 auto;
+    }
+
+    .habit-board-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 18px;
+    }
+
+    .habit-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: min(720px, 100%);
+      max-height: min(70vh, 540px);
+      overflow: auto;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 28px 70px rgba(25, 45, 64, 0.22);
+    }
+
+    .habit-popover[hidden] {
+      display: none !important;
+    }
+
+    .habit-popover-head,
+    .habit-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .habit-popover-head {
+      margin-bottom: 12px;
+    }
+
+    .habit-popover-head h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .habit-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 150px;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .habit-form .field:first-child,
+    .habit-form-actions {
+      grid-column: 1 / -1;
+    }
+
+    .habit-form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .habit-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .habit-row {
+      min-height: 58px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-left: 7px solid var(--habit-color, var(--primary));
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--surface) 90%, var(--surface-soft) 10%);
+    }
+
+    .habit-row-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .habit-row-text {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .habit-title {
+      overflow-wrap: anywhere;
+      font-weight: 800;
+    }
+
+    .habit-row.done-today .habit-title {
+      color: var(--done);
+      text-decoration: line-through;
+    }
+
+    .habit-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .habit-meta-line {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .habit-row-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    @keyframes habitRoll {
+      0% {
+        opacity: 0.45;
+        transform: translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .todo-panel {
+      padding: clamp(18px, 4vw, 32px);
+      margin-bottom: 24px;
+    }
+
+    .reminder-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 50px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .reminder-toggle input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+
+    .field {
+      min-height: 50px;
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      padding: 0 16px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .primary-btn,
+    .ghost-btn,
+    .icon-btn {
+      min-height: 44px;
+      border: 0;
+      border-radius: 16px;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .primary-btn {
+      padding: 0 22px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 28%, transparent);
+    }
+
+    .primary-btn:hover,
+    .ghost-btn:hover,
+    .icon-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .ghost-btn {
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      color: var(--text);
+      font-weight: 650;
+    }
+
+    .icon-btn {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      min-height: 42px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .icon-btn.danger {
+      color: var(--danger);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .stats {
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .head-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .mode-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      width: fit-content;
+      margin: 0 auto 14px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface) 80%, var(--primary) 8%);
+    }
+
+    .mode-tab {
+      min-width: 64px;
+      padding: 7px 16px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .mode-tab.is-active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #fff;
+      box-shadow: 0 6px 14px color-mix(in srgb, var(--primary) 30%, transparent);
+    }
+
+    .pager-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .pager-title {
+      min-width: 0;
+      text-align: center;
+    }
+
+    .pager-title h2,
+    .pager-title h3 {
+      margin: 0;
+      overflow-wrap: anywhere;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+
+    .pager-subtitle {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pager-arrow {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 28px;
+      line-height: 1;
+      transition: transform 0.2s, opacity 0.2s, background 0.2s;
+    }
+
+    .pager-arrow:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: var(--surface-soft);
+    }
+
+    .pager-arrow:disabled {
+      cursor: not-allowed;
+      opacity: 0.35;
+    }
+
+    .slide-frame {
+      overflow: hidden;
+    }
+
+    .slide-page {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .slide-left-enter {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    .slide-right-enter {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    .slide-active {
+      transform: translateX(0);
+      opacity: 1;
+      transition: all 0.3s ease;
+    }
+
+    .todo-readonly {
+      display: block;
+      margin: -4px 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .wheel-manager {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .wheel-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .todo-list,
+    .option-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .todo-item,
+    .option-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 62px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--surface);
+    }
+
+    .todo-item {
+      grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+      border-left: 7px solid var(--todo-color, var(--primary));
+      touch-action: pan-y;
+      user-select: none;
+    }
+
+    .todo-item.is-dragging {
+      opacity: 0.72;
+      box-shadow: 0 18px 38px rgba(25, 45, 64, 0.18);
+      transform: scale(1.015);
+      z-index: 4;
+      background: color-mix(in srgb, var(--surface) 86%, var(--primary) 14%);
+    }
+
+    .todo-item.is-editing {
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--todo-color, var(--primary)) 25%, transparent);
+    }
+
+    .drag-handle {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 42px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--muted);
+      cursor: grab;
+      font-size: 18px;
+      line-height: 1;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .mini-toggle {
+      width: 34px;
+      min-height: 34px;
+      padding: 0;
+      border-radius: 999px;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .compact-btn {
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .sort-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    .sort-step {
+      width: 28px;
+      min-height: 22px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+
+    .check {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 2px solid color-mix(in srgb, var(--primary) 55%, var(--border));
+      border-radius: 9px;
+      background: var(--surface);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+
+    .check:active {
+      transform: scale(0.9);
+    }
+
+    .check.is-done {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+
+    .check.is-failed {
+      border-color: #e5484d;
+      background: #e5484d;
+    }
+
+    .todo-item.failed .todo-title {
+      color: #e5484d;
+      text-decoration: line-through;
+      text-decoration-color: rgba(229, 72, 77, 0.6);
+    }
+
+    .todo-item.failed {
+      opacity: 0.82;
+    }
+
+    .todo-text {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .todo-title {
+      overflow-wrap: anywhere;
+      font-weight: 700;
+    }
+
+    .todo-date {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .todo-meta,
+    .todo-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .todo-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .todo-item.done .todo-title {
+      color: var(--done);
+      text-decoration: line-through;
+    }
+
+    .todo-editor {
+      display: grid;
+      grid-template-columns: 1fr 150px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .todo-editor .field:first-child,
+    .modal-actions {
+      grid-column: 1 / -1;
+    }
+
+    .todo-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
+    .todo-modal[hidden] {
+      display: none !important;
+    }
+
+    .todo-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(25, 33, 45, 0.32);
+      backdrop-filter: blur(8px);
+    }
+
+    .todo-modal-card {
+      position: relative;
+      width: min(560px, 100%);
+      max-height: min(86vh, 720px);
+      overflow: auto;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: 0 28px 70px rgba(25, 45, 64, 0.22);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 4px;
+    }
+
+    .background-dialog {
+      width: min(360px, calc(100% - 32px));
+      color: var(--text);
+    }
+
+    .background-dialog::backdrop {
+      background: rgba(25, 33, 45, 0.36);
+    }
+
+    .background-dialog h2 {
+      margin: 0 30px 14px 0;
+      font-size: 19px;
+    }
+
+    .background-dialog .modal-actions {
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .background-error {
+      margin: 10px 0 0;
+      color: var(--danger);
+      font-size: 13px;
+    }
+
+    .background-error:empty {
+      display: none;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .empty {
+      padding: 26px 16px;
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .undo-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .wheel-panel {
+      padding: clamp(18px, 4vw, 32px);
+    }
+
+    .wheel-layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 430px) 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .wheel-stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 430px;
+    }
+
+    .pointer {
+      position: absolute;
+      top: 13px;
+      z-index: 2;
+      width: 0;
+      height: 0;
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+      border-top: 30px solid var(--primary-strong);
+      filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.18));
+    }
+
+    #wheelCanvas {
+      width: min(100%, 390px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--surface);
+      box-shadow: inset 0 0 0 10px var(--surface), 0 18px 42px rgba(25, 45, 64, 0.17);
+    }
+
+    .wheel-center {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: 94px;
+      height: 94px;
+      border: 8px solid var(--surface);
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(25, 45, 64, 0.2);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .wheel-controls {
+      display: grid;
+      gap: 16px;
+    }
+
+    .option-form {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+    }
+
+    .option-item {
+      grid-template-columns: 1fr auto;
+      min-height: 54px;
+    }
+
+    .option-item.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+
+    .is-collapsed {
+      display: none !important;
+    }
+
+    .option-text {
+      overflow-wrap: anywhere;
+      font-weight: 700;
+    }
+
+    .result {
+      min-height: 48px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 820px) {
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .header-actions {
+        flex-direction: column-reverse;
+        align-items: flex-end;
+      }
+
+      .sync-actions {
+        width: 100%;
+      }
+
+      .theme-picker {
+        max-width: 180px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        border-radius: 20px;
+      }
+
+      .todo-editor,
+      .habit-form,
+      .wheel-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .wheel-stage {
+        min-height: 340px;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .app {
+        width: min(100% - 20px, 1080px);
+        padding-top: 16px;
+      }
+
+      .brand {
+        align-items: flex-start;
+      }
+
+      .logo {
+        width: 42px;
+        height: 42px;
+        font-size: 21px;
+      }
+
+      .avatar-button {
+        width: 52px;
+        height: 52px;
+      }
+
+      .sync-actions {
+        gap: 6px;
+      }
+
+      .sync-actions .sync-btn {
+        min-height: 40px;
+        padding: 0 12px;
+      }
+
+      .topbar {
+        column-gap: 8px;
+      }
+
+      .room-link {
+        padding-inline: 8px;
+      }
+
+      .todo-item,
+      .habit-row,
+      .option-item {
+        align-items: start;
+      }
+
+      .todo-item {
+        grid-template-columns: auto auto auto minmax(0, 1fr);
+      }
+
+      .todo-item .item-actions {
+        grid-column: 4;
+        justify-content: flex-end;
+      }
+
+      .option-item {
+        grid-template-columns: 1fr;
+      }
+
+      .option-item .item-actions {
+        justify-content: flex-end;
+      }
+
+      .habit-dock {
+        margin-top: -4px;
+      }
+
+      .habit-board {
+        min-height: 168px;
+        max-height: 168px;
+      }
+
+      .habit-board.is-empty {
+        min-height: 104px;
+        max-height: 104px;
+      }
+
+      .habit-board-head {
+        align-items: flex-start;
+      }
+
+      .habit-board-actions {
+        flex-wrap: wrap;
+      }
+
+      .habit-board-action {
+        width: 32px;
+        min-height: 32px;
+      }
+
+      .habit-row {
+        display: grid;
+      }
+
+      .habit-row-actions {
+        justify-content: flex-end;
+      }
+
+    }
+    .app[data-room="schedule"] {
+      width: 100%;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      background: var(--surface);
+      min-height: 100dvh;
+    }
+
+    .app[data-room="schedule"] > .topbar {
+      display: none;
+    }
+
+    .schedule-top {
+      padding: 8px 12px 0;
+    }
+
+    .schedule-top .pager-head {
+      margin-top: 4px;
+    }
+
+    .schedule-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 0 0 12px;
+    }
+
+    .schedule-context {
+      width: auto;
+      min-width: 0;
+    }
+
+    .schedule-scroll {
+      --hour-height: 64px;
+      background: var(--surface);
+    }
+
+    .schedule-header, .schedule-grid {
+      display: grid;
+      grid-template-columns: 49px repeat(7, minmax(0, 1fr));
+    }
+
+    .schedule-header {
+      position: sticky;
+      top: env(safe-area-inset-top);
+      z-index: 2;
+      background: var(--surface-soft);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .schedule-header time {
+      display: grid;
+      gap: 2px;
+      padding: 7px 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .schedule-header strong {
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .schedule-header .is-today strong {
+      color: var(--primary-strong);
+    }
+
+    .schedule-hours {
+      display: grid;
+      grid-auto-rows: var(--hour-height);
+      padding: 0 5px;
+      color: var(--muted);
+      text-align: right;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .schedule-hours time {
+      padding-top: 4px;
+    }
+
+    .schedule-hours time:last-child {
+      height: 23px;
+    }
+
+    .schedule-grid {
+      grid-template-rows: calc(24 * var(--hour-height) + 23px);
+    }
+
+    .schedule-day {
+      position: relative;
+      height: calc(24 * var(--hour-height));
+      border-inline-start: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: repeating-linear-gradient(to bottom, transparent 0 calc(var(--hour-height) - 1px), var(--border) calc(var(--hour-height) - 1px) var(--hour-height));
+      cursor: cell;
+    }
+
+    .schedule-event {
+      position: absolute;
+      top: var(--event-top);
+      left: var(--event-left);
+      width: var(--event-width);
+      height: max(16px, var(--event-height));
+      border-radius: 5px;
+      background: color-mix(in srgb, var(--event-color) 32%, var(--surface));
+      box-shadow: inset 2px 0 var(--event-color);
+    }
+
+    .schedule-event-open {
+      width: 100%;
+      height: 100%;
+      padding: 2px 4px;
+      overflow: hidden;
+      border: 0;
+      border-radius: inherit;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      font: inherit;
+      font-size: 12px;
+      line-height: 1.15;
+      cursor: pointer;
+    }
+
+    .schedule-event-open > span {
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      flex-shrink: 0;
+    }
+
+    .schedule-event-time {
+      display: none;
+      flex-wrap: wrap;
+      column-gap: 2px;
+      margin-top: 2px;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .schedule-resize {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: min(26px, 100%);
+      height: min(26px, 100%);
+      padding: 0;
+      border: 0;
+      border-radius: 5px 0 5px 0;
+      background: color-mix(in srgb, var(--event-color) 46%, var(--surface));
+      color: var(--text);
+      touch-action: none;
+      user-select: none;
+      cursor: ns-resize;
+    }
+
+    .schedule-resize::after {
+      content: "";
+      position: absolute;
+      right: 4px;
+      bottom: 4px;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid;
+      border-bottom: 2px solid;
+    }
+
+    .schedule-event.is-resizing {
+      z-index: 1;
+      outline: 2px solid var(--event-color);
+    }
+
+    .schedule-dialog {
+      width: min(500px, calc(100% - 28px));
+      color: var(--text);
+      max-height: min(88dvh, 720px);
+    }
+
+    .schedule-dialog::backdrop {
+      background: rgba(25, 33, 45, 0.36);
+    }
+
+    .schedule-form [hidden] {
+      display: none !important;
+    }
+
+    .schedule-dialog h2 {
+      margin: 0 30px 14px 0;
+      font-size: 20px;
+    }
+
+    .schedule-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .schedule-form label:not(.schedule-choice), .schedule-color-row {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .schedule-form .field {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .schedule-form input[type="color"] {
+      width: 60px;
+      height: 37px;
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    .schedule-form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .schedule-form .schedule-choice {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .schedule-color-row {
+      grid-template-columns: auto 1fr;
+      align-items: end;
+      gap: 14px;
+    }
+
+    .schedule-status {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 0;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .schedule-status legend, #scheduleEndHint {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    #scheduleEndHint:empty {
+      display: none;
+    }
+
+    .schedule-delete {
+      margin-inline-end: auto;
+      color: var(--danger);
+    }
+
+    [data-room-panel][hidden] {
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      .mode-tab {
+        min-width: 0;
+        padding-inline: 10px;
+      }
+
+      .schedule-header, .schedule-grid {
+        grid-template-columns: 40px repeat(7, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">鱼</div>
+        <div>
+          <h1>小小鱼每日待办</h1>
+          <p class="subtitle">把今天要做的事轻轻放进清单里</p>
+        </div>
+      </div>
+
+      <nav class="room-nav" aria-label="页面入口">
+        <a class="room-link" href="#todo" aria-current="page">待办</a>
+        <a class="room-link" href="#schedule">日程表</a>
+        <a class="room-link" href="#recipes">食谱</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="sync-actions">
+          <button class="sync-btn" id="backgroundButton" type="button" aria-haspopup="dialog">背景</button>
+          <button class="sync-btn" id="syncButton" type="button">云同步</button>
+        </div>
+        <div class="theme-picker" role="group" aria-label="选择主题色">
+          <button class="theme-dot" type="button" data-theme-button="light" style="--dot: linear-gradient(135deg, #ff8fb3, #39b7c9);" title="浅色默认">浅</button>
+          <button class="theme-dot" type="button" data-theme-button="dark" style="--dot: linear-gradient(135deg, #202635, #7dd3fc);" title="深色">深</button>
+          <button class="theme-dot" type="button" data-theme-button="pink" style="--dot: linear-gradient(135deg, #ff76a8, #ffb86b);" title="粉色系">粉</button>
+          <button class="theme-dot" type="button" data-theme-button="blue" style="--dot: linear-gradient(135deg, #48a7ff, #20c6b4);" title="蓝色系">蓝</button>
+          <button class="theme-dot" type="button" data-theme-button="green" style="--dot: linear-gradient(135deg, #49c783, #4cb6d6);" title="绿色系">绿</button>
+          <button class="theme-dot" type="button" data-theme-button="purple" style="--dot: linear-gradient(135deg, #a97cff, #ff8fb3);" title="紫色系">紫</button>
+        </div>
+
+        <button class="avatar-button" id="avatarButton" type="button" title="上传头像" aria-label="上传头像">
+          <img id="avatarPreview" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="头像">
+        </button>
+        <input class="hidden" id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp">
+      </div>
+    </header>
+
+    <section class="habit-dock" id="habitDock" data-room-panel="todo" aria-label="注意">
+      <div class="habit-board">
+        <div class="habit-board-head">
+          <span class="habit-board-title">注意</span>
+          <div class="habit-board-actions">
+            <button class="icon-btn habit-board-action" id="habitToggleButton" type="button" aria-expanded="false" aria-controls="habitPopover" title="添加注意" aria-label="添加注意">+</button>
+            <button class="icon-btn habit-board-action" id="habitPrevButton" type="button" data-scroll-control title="上翻" aria-label="上翻">↑</button>
+            <button class="icon-btn habit-board-action" id="habitNextButton" type="button" data-scroll-control title="下翻" aria-label="下翻">↓</button>
+            <button class="icon-btn habit-board-action" id="habitAutoButton" type="button" data-scroll-control title="自动滚动" aria-label="自动滚动">↻</button>
+          </div>
+        </div>
+        <div class="habit-board-window" id="habitPreviewWindow">
+          <ul class="habit-preview-list" id="habitPreviewList"></ul>
+          <div class="habit-board-empty hidden" id="habitPreviewEmpty">还没有注意事项</div>
+        </div>
+        <div class="habit-board-foot">
+          <span id="habitBoardCount">0 条</span>
+          <span id="habitBoardMode">手动翻看</span>
+        </div>
+      </div>
+
+      <div class="habit-popover" id="habitPopover" hidden>
+        <div class="habit-popover-head">
+          <h2>注意</h2>
+          <button class="icon-btn mini-toggle" id="closeHabitButton" type="button" title="关闭" aria-label="关闭">×</button>
+        </div>
+        <form class="habit-form" id="habitForm">
+          <input class="field" id="habitInput" type="text" placeholder="写下一个注意事项" autocomplete="off" required>
+          <input class="field" id="habitNote" type="text" placeholder="备注，例如准备材料" autocomplete="off">
+          <input class="field" id="habitTime" type="time" aria-label="提醒时间">
+          <input class="field" id="habitPlace" type="text" placeholder="地点" autocomplete="off">
+          <select class="field" id="habitColor" aria-label="重要程度">
+            <option value="#ff8fb3">粉色重要</option>
+            <option value="#48a7ff">蓝色普通</option>
+            <option value="#49c783">绿色轻松</option>
+            <option value="#f5b84b">黄色提醒</option>
+            <option value="#a97cff">紫色灵感</option>
+          </select>
+          <label class="reminder-toggle">
+            <input id="habitReminder" type="checkbox">
+            提醒
+          </label>
+          <div class="habit-form-actions">
+            <button class="ghost-btn" id="cancelHabitEditButton" type="button">取消</button>
+            <button class="primary-btn" id="habitSaveButton" type="submit">添加</button>
+          </div>
+        </form>
+        <ul class="habit-list" id="habitList"></ul>
+        <div class="empty hidden" id="habitEmpty">先放一个注意事项吧。</div>
+      </div>
+    </section>
+
+    <section class="panel todo-panel" id="todoPanel" data-room-panel="todo" aria-labelledby="todoTitle">
+      <div class="mode-tabs" role="tablist" aria-label="计划周期">
+        <button class="mode-tab is-active" type="button" role="tab" data-mode="day">每天</button>
+        <button class="mode-tab" type="button" role="tab" data-mode="week">每周</button>
+        <button class="mode-tab" type="button" role="tab" data-mode="month">每月</button>
+      </div>
+      <div class="pager-head">
+        <button class="pager-arrow" id="prevDayButton" type="button" title="查看前一天" aria-label="查看前一天">‹</button>
+        <div class="pager-title">
+          <h2 id="todoTitle">今日清单</h2>
+          <span class="pager-subtitle" id="dateLabel">5月17日 星期日 今天</span>
+        </div>
+        <button class="pager-arrow" id="nextDayButton" type="button" title="查看后一天" aria-label="查看后一天">›</button>
+      </div>
+
+      <div class="section-head">
+        <span class="todo-readonly" id="todoReadonly">可以切换或选择任意日期，提前安排待办。</span>
+        <div class="head-actions">
+          <button class="primary-btn" id="newTodoButton" type="button">+ 新建待办</button>
+          <button class="ghost-btn compact-btn" id="organizeTodosButton" type="button" title="按 待处理 → 已完成 → 未完成 整理，同组按时间排">整理</button>
+          <button class="ghost-btn compact-btn" id="collapseTodosButton" type="button">折叠</button>
+          <span class="stats" id="todoStats">0 项</span>
+        </div>
+      </div>
+
+      <div class="slide-frame" id="todoSlide">
+        <ul class="todo-list slide-page" id="todoList"></ul>
+      </div>
+      <div class="empty hidden" id="todoEmpty">今天还没有待办，先加一件小事吧。</div>
+      <div class="undo-bar hidden" id="undoBar">
+        <span id="undoText">已删除 1 个待办</span>
+        <button class="ghost-btn" id="undoDeleteButton" type="button">撤销</button>
+      </div>
+    </section>
+
+    <section class="panel wheel-panel" data-room-panel="recipes" aria-labelledby="wheelTitle" hidden>
+      <div class="wheel-manager">
+        <div class="wheel-tools">
+          <button class="icon-btn" id="editWheelButton" type="button" title="编辑名称">✎</button>
+          <button class="icon-btn danger" id="deleteWheelButton" type="button" title="删除当前转盘">×</button>
+        </div>
+        <button class="ghost-btn" id="createWheelButton" type="button">+ 新建转盘</button>
+      </div>
+
+      <div class="pager-head">
+        <button class="pager-arrow" id="prevWheelButton" type="button" title="上一个转盘" aria-label="上一个转盘">‹</button>
+        <div class="pager-title">
+          <h2 id="wheelTitle">默认转盘</h2>
+          <span class="pager-subtitle" id="wheelPageLabel">1 / 1</span>
+        </div>
+        <button class="pager-arrow" id="nextWheelButton" type="button" title="下一个转盘" aria-label="下一个转盘">›</button>
+      </div>
+
+      <div class="wheel-layout slide-page" id="wheelSlide">
+        <div class="wheel-stage">
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="wheelCanvas" width="720" height="720" role="img" aria-label="食谱转盘"></canvas>
+          <div class="wheel-center">今天<br>做啥</div>
+        </div>
+
+        <div class="wheel-controls">
+          <form class="option-form" id="optionForm">
+            <input class="field" id="optionInput" type="text" placeholder="添加转盘选项" autocomplete="off" required>
+            <button class="primary-btn" type="submit">添加</button>
+            <button class="ghost-btn compact-btn" id="collapseOptionsButton" type="button">折叠</button>
+          </form>
+
+          <button class="primary-btn" id="spinButton" type="button">开始抽奖</button>
+          <div class="result" id="spinResult"></div>
+          <ul class="option-list" id="optionList"></ul>
+          <div class="empty hidden" id="optionEmpty">至少添加 2 个选项后，就可以开始抽奖。</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="scheduleView" data-room-panel="schedule" aria-labelledby="scheduleViewTitle" hidden>
+      <div class="schedule-top">
+        <a class="room-link" id="scheduleBack" href="#todo">返回待办</a>
+        <div class="pager-head">
+          <button class="pager-arrow" id="prevScheduleWeek" type="button" aria-label="查看上一周">‹</button>
+          <div class="pager-title">
+            <h2 id="scheduleViewTitle">周日程</h2>
+            <span class="pager-subtitle" id="scheduleDateLabel"></span>
+          </div>
+          <button class="pager-arrow" id="nextScheduleWeek" type="button" aria-label="查看下一周">›</button>
+        </div>
+        <div class="schedule-toolbar">
+          <select class="field schedule-context" id="scheduleContext" aria-label="日程表模式">
+            <option value="vacation">假期</option>
+            <option value="school">在校</option>
+          </select>
+          <button class="primary-btn" id="newScheduleButton" type="button">+ 添加日程</button>
+        </div>
+      </div>
+      <div class="schedule-scroll" tabindex="0" aria-label="周日程，早上六点到次日早上六点">
+        <div class="schedule-header" id="scheduleHeader"></div>
+        <div class="schedule-grid" id="scheduleGrid"></div>
+      </div>
+    </section>
+
+    <dialog class="todo-modal-card schedule-dialog" id="textDialog" aria-labelledby="textDialogTitle">
+      <h2 id="textDialogTitle"></h2>
+      <form class="schedule-form" method="dialog">
+        <input class="field" id="textDialogInput" aria-label="名称" autocomplete="off">
+        <div class="modal-actions">
+          <button class="primary-btn" type="submit" value="save">保存</button>
+        </div>
+        <button class="icon-btn mini-toggle modal-close" type="submit" value="cancel" aria-label="取消" autofocus>×</button>
+      </form>
+    </dialog>
+
+    <dialog class="todo-modal-card background-dialog" id="backgroundDialog" aria-labelledby="backgroundTitle">
+      <h2 id="backgroundTitle">自定义背景</h2>
+      <form method="dialog">
+        <button class="icon-btn mini-toggle modal-close" type="submit" aria-label="关闭">×</button>
+      </form>
+      <div class="modal-actions">
+        <button class="primary-btn" id="chooseBackgroundButton" type="button" autofocus>上传图片</button>
+        <button class="ghost-btn hidden" id="clearBackgroundButton" type="button">恢复默认</button>
+      </div>
+      <input class="hidden" id="backgroundInput" type="file" accept="image/jpeg,image/png,image/webp">
+      <p class="background-error" id="backgroundError" role="status"></p>
+    </dialog>
+
+    <dialog class="todo-modal-card schedule-dialog" id="scheduleDialog" aria-labelledby="scheduleDialogTitle">
+      <h2 id="scheduleDialogTitle">添加日程</h2>
+      <button class="icon-btn mini-toggle modal-close" id="closeScheduleButton" type="button" aria-label="关闭" autofocus>×</button>
+      <form class="schedule-form" id="scheduleForm">
+        <label><span id="scheduleTitleLabel">日程名称</span><input class="field" name="title" required></label>
+        <label>日期<input class="field" name="date" type="date" required></label>
+        <div class="schedule-form-row">
+          <label>开始时间<input class="field" name="start" type="time" required></label>
+          <label>结束时间<input class="field" name="end" type="time" aria-describedby="scheduleEndHint" required><span id="scheduleEndHint"></span></label>
+        </div>
+        <label id="scheduleRepeatRow">周期
+          <select class="field" name="repeat">
+            <option value="once">仅这一次</option>
+            <option value="weekly">每周同一天</option>
+          </select>
+        </label>
+        <div id="scheduleRepeatUntilRow" hidden>
+          <label>重复至（含当天）<input class="field" name="until" type="date"></label>
+        </div>
+        <div class="schedule-form-row">
+          <label><span id="schedulePlaceLabel">地点</span><input class="field" name="place"></label>
+          <label><span id="schedulePeopleLabel">参与人</span><input class="field" name="people"></label>
+        </div>
+        <label>备注<input class="field" name="note"></label>
+        <div class="schedule-color-row">
+          <label>颜色<input class="field" name="color" type="color" value="#48a7ff"></label>
+          <label class="schedule-choice"><input name="reminder" type="checkbox"> 开始时提醒</label>
+        </div>
+        <fieldset class="schedule-status">
+          <legend>完成状态</legend>
+          <label class="schedule-choice"><input name="status" type="radio" value="pending" checked> 待处理</label>
+          <label class="schedule-choice"><input name="status" type="radio" value="done"> ✓ 完成</label>
+          <label class="schedule-choice"><input name="status" type="radio" value="failed"> ❌ 未完成</label>
+        </fieldset>
+        <div class="modal-actions">
+          <button class="ghost-btn schedule-delete" id="deleteScheduleButton" type="button" hidden>删除</button>
+          <button class="primary-btn" type="submit">保存</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="todo-modal" id="todoModal" hidden>
+      <div class="todo-modal-backdrop" id="todoModalBackdrop"></div>
+      <div class="todo-modal-card" role="dialog" aria-modal="true" aria-labelledby="todoModalTitle">
+        <button class="icon-btn mini-toggle modal-close" id="closeTodoEditorButton" type="button" title="关闭" aria-label="关闭">×</button>
+        <form class="todo-editor" id="todoEditorForm">
+          <input class="field" id="todoInput" type="text" placeholder="写下一个待办事项" autocomplete="off" required>
+          <input class="field" id="todoDate" type="date" aria-label="待办日期">
+          <input class="field" id="todoNote" type="text" placeholder="备注，例如准备材料" autocomplete="off">
+          <input class="field" id="todoTime" type="time" aria-label="提醒时间">
+          <input class="field" id="todoPlace" type="text" placeholder="地点" autocomplete="off">
+          <select class="field" id="todoPriority" aria-label="重要程度">
+            <option value="#ff8fb3">粉色重要</option>
+            <option value="#48a7ff">蓝色普通</option>
+            <option value="#49c783">绿色轻松</option>
+            <option value="#f5b84b">黄色提醒</option>
+            <option value="#a97cff">紫色灵感</option>
+          </select>
+          <label class="reminder-toggle">
+            <input id="todoReminder" type="checkbox">
+            提醒
+          </label>
+          <div class="modal-actions">
+            <button class="ghost-btn" id="cancelTodoEditorButton" type="button">取消</button>
+            <button class="primary-btn" id="todoSaveButton" type="submit">保存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const storageKeys = {
+      todos: "xiaoxiaoyu.todos",
+      avatar: "xiaoxiaoyu.avatar",
+      background: "xiaoxiaoyu.background",
+      theme: "xiaoxiaoyu.theme",
+      options: "xiaoxiaoyu.wheelOptions",
+      wheels: "wheels",
+      habits: "xiaoxiaoyu.habits",
+      currentWheelIndex: "currentWheelIndex",
+      syncCode: "xiaoxiaoyu.syncCode",
+      syncUpdatedAt: "xiaoxiaoyu.syncUpdatedAt",
+      todosCollapsed: "xiaoxiaoyu.todosCollapsed",
+      optionsCollapsed: "xiaoxiaoyu.optionsCollapsed",
+      remindedTodos: "xiaoxiaoyu.remindedTodos",
+      todoViewMode: "xiaoxiaoyu.todoViewMode",
+      scheduleContext: "xiaoxiaoyu.scheduleContext"
+    };
+
+    const supabaseConfig = {
+      url: "https://rkqrfnvdoajhqfxqerfc.supabase.co",
+      anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcXJmbnZkb2FqaHFmeHFlcmZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2ODE2NTcsImV4cCI6MjA5NTI1NzY1N30.EWIoqzu1O58c5rc6HYpNXEQwol6-6rdu3jo1Kvfk8SI"
+    };
+
+    const themeChrome = {
+      light: { color: "#ff8fb3", darkColor: "#151923", statusBar: "black-translucent" },
+      dark: { color: "#151923", darkColor: "#151923", statusBar: "black-translucent" },
+      pink: { color: "#ff76a8", darkColor: "#151923", statusBar: "black-translucent" },
+      blue: { color: "#48a7ff", darkColor: "#151923", statusBar: "black-translucent" },
+      green: { color: "#49c783", darkColor: "#151923", statusBar: "black-translucent" },
+      purple: { color: "#a97cff", darkColor: "#151923", statusBar: "black-translucent" }
+    };
+
+    const defaultAvatar = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop stop-color="#ff8fb3"/>
+            <stop offset="1" stop-color="#39b7c9"/>
+          </linearGradient>
+        </defs>
+        <rect width="120" height="120" rx="60" fill="url(#g)"/>
+        <circle cx="43" cy="48" r="8" fill="#fff"/>
+        <circle cx="78" cy="48" r="8" fill="#fff"/>
+        <path d="M35 73c12 12 39 12 51 0" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+        <path d="M22 32c15-18 61-18 76 0" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".7"/>
+      </svg>
+    `);
+
+    const todoPanel = document.querySelector("#todoPanel");
+    const newTodoButton = document.querySelector("#newTodoButton");
+    const todoInput = document.querySelector("#todoInput");
+    const todoDate = document.querySelector("#todoDate");
+    const todoNote = document.querySelector("#todoNote");
+    const todoTime = document.querySelector("#todoTime");
+    const todoPlace = document.querySelector("#todoPlace");
+    const todoPriority = document.querySelector("#todoPriority");
+    const todoReminder = document.querySelector("#todoReminder");
+    const todoList = document.querySelector("#todoList");
+    const todoEmpty = document.querySelector("#todoEmpty");
+    const todoStats = document.querySelector("#todoStats");
+    const collapseTodosButton = document.querySelector("#collapseTodosButton");
+    const organizeTodosButton = document.querySelector("#organizeTodosButton");
+    const undoBar = document.querySelector("#undoBar");
+    const undoText = document.querySelector("#undoText");
+    const undoDeleteButton = document.querySelector("#undoDeleteButton");
+    const todoModal = document.querySelector("#todoModal");
+    const todoModalBackdrop = document.querySelector("#todoModalBackdrop");
+    const todoEditorForm = document.querySelector("#todoEditorForm");
+    const closeTodoEditorButton = document.querySelector("#closeTodoEditorButton");
+    const cancelTodoEditorButton = document.querySelector("#cancelTodoEditorButton");
+    const todoSaveButton = document.querySelector("#todoSaveButton");
+    const dateLabel = document.querySelector("#dateLabel");
+    const prevDayButton = document.querySelector("#prevDayButton");
+    const nextDayButton = document.querySelector("#nextDayButton");
+    const scheduleView = document.querySelector("#scheduleView");
+    const scheduleViewTitle = document.querySelector("#scheduleViewTitle");
+    const scheduleDateLabel = document.querySelector("#scheduleDateLabel");
+    const scheduleContext = document.querySelector("#scheduleContext");
+    const scheduleGrid = document.querySelector("#scheduleGrid");
+    const scheduleHeader = document.querySelector("#scheduleHeader");
+    const scheduleDialog = document.querySelector("#scheduleDialog");
+    const scheduleForm = document.querySelector("#scheduleForm");
+    const scheduleFields = scheduleForm.elements;
+    const newScheduleButton = document.querySelector("#newScheduleButton");
+    const deleteScheduleButton = document.querySelector("#deleteScheduleButton");
+    const scheduleRepeatRow = document.querySelector("#scheduleRepeatRow");
+    const scheduleRepeatUntilRow = document.querySelector("#scheduleRepeatUntilRow");
+    const scheduleDayStart = 6 * 60;
+    const minutesPerDay = 24 * 60;
+    const scheduleResizeStep = 15;
+    const app = document.querySelector(".app");
+    const roomLinks = document.querySelectorAll(".room-nav .room-link");
+    const roomPanels = document.querySelectorAll("[data-room-panel]");
+    const textDialog = document.querySelector("#textDialog");
+    const textDialogInput = document.querySelector("#textDialogInput");
+    const avatarButton = document.querySelector("#avatarButton");
+    const avatarInput = document.querySelector("#avatarInput");
+    const avatarPreview = document.querySelector("#avatarPreview");
+    const syncButton = document.querySelector("#syncButton");
+    const backgroundButton = document.querySelector("#backgroundButton");
+    const backgroundInput = document.querySelector("#backgroundInput");
+    const backgroundDialog = document.querySelector("#backgroundDialog");
+    const chooseBackgroundButton = document.querySelector("#chooseBackgroundButton");
+    const clearBackgroundButton = document.querySelector("#clearBackgroundButton");
+    const backgroundError = document.querySelector("#backgroundError");
+    const habitDock = document.querySelector("#habitDock");
+    const habitBoard = document.querySelector(".habit-board");
+    const habitToggleButton = document.querySelector("#habitToggleButton");
+    const habitPrevButton = document.querySelector("#habitPrevButton");
+    const habitNextButton = document.querySelector("#habitNextButton");
+    const habitAutoButton = document.querySelector("#habitAutoButton");
+    const habitPreviewList = document.querySelector("#habitPreviewList");
+    const habitPreviewEmpty = document.querySelector("#habitPreviewEmpty");
+    const habitBoardCount = document.querySelector("#habitBoardCount");
+    const habitBoardMode = document.querySelector("#habitBoardMode");
+    const habitPopover = document.querySelector("#habitPopover");
+    const habitForm = document.querySelector("#habitForm");
+    const habitInput = document.querySelector("#habitInput");
+    const habitNote = document.querySelector("#habitNote");
+    const habitTime = document.querySelector("#habitTime");
+    const habitPlace = document.querySelector("#habitPlace");
+    const habitColor = document.querySelector("#habitColor");
+    const habitReminder = document.querySelector("#habitReminder");
+    const habitSaveButton = document.querySelector("#habitSaveButton");
+    const cancelHabitEditButton = document.querySelector("#cancelHabitEditButton");
+    const habitList = document.querySelector("#habitList");
+    const habitEmpty = document.querySelector("#habitEmpty");
+    const closeHabitButton = document.querySelector("#closeHabitButton");
+    const themeColorMeta = document.querySelector("#themeColorMeta");
+    const themeColorDarkMeta = document.querySelector("#themeColorDarkMeta");
+    const appleStatusBarMeta = document.querySelector("#appleStatusBarMeta");
+    const wheelTitle = document.querySelector("#wheelTitle");
+    const wheelPageLabel = document.querySelector("#wheelPageLabel");
+    const prevWheelButton = document.querySelector("#prevWheelButton");
+    const nextWheelButton = document.querySelector("#nextWheelButton");
+    const createWheelButton = document.querySelector("#createWheelButton");
+    const editWheelButton = document.querySelector("#editWheelButton");
+    const deleteWheelButton = document.querySelector("#deleteWheelButton");
+    const wheelSlide = document.querySelector("#wheelSlide");
+    const optionForm = document.querySelector("#optionForm");
+    const optionInput = document.querySelector("#optionInput");
+    const optionList = document.querySelector("#optionList");
+    const optionEmpty = document.querySelector("#optionEmpty");
+    const collapseOptionsButton = document.querySelector("#collapseOptionsButton");
+    const spinButton = document.querySelector("#spinButton");
+    const spinResult = document.querySelector("#spinResult");
+    const wheelCanvas = document.querySelector("#wheelCanvas");
+    const wheelContext = wheelCanvas.getContext("2d");
+
+    const todayDate = today();
+    let currentDate = todayDate;
+    let scheduleDate = todayDate;
+    let viewMode = "day";
+    let todos = [];
+    let wheels = [];
+    let currentWheelIndex = 0;
+    let wheelOptions = [];
+    let habits = [];
+    let habitRollIndex = 0;
+    let habitRollTimer = null;
+    let habitAutoScroll = false;
+    let editingHabitId = null;
+    let selectedOptionId = null;
+    let currentAngle = 0;
+    let isSpinning = false;
+    let syncCode = "";
+    let syncTimer = null;
+    let applyingCloudData = false;
+    let cloudSavePaused = true;
+    let lastDeletedTodo = null;
+    let undoTimer = null;
+    let draggedTodoId = null;
+    let touchSortTimer = null;
+    let touchSortingItem = null;
+    let pointerSortTimer = null;
+    let pointerSortingItem = null;
+    let pointerSortStart = null;
+    let editingTodoId = null;
+    let editingTodoDate = null;
+    let editingSchedule = null;
+
+    function load(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function save(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function syncConfigured() {
+      return Boolean(supabaseConfig.url && supabaseConfig.anonKey);
+    }
+
+    function syncHeaders() {
+      return {
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+        "Content-Type": "application/json"
+      };
+    }
+
+    function syncRpcEndpoint(functionName) {
+      const baseUrl = supabaseConfig.url.replace(/\/$/, "");
+      return `${baseUrl}/rest/v1/rpc/${functionName}`;
+    }
+
+    function allTodoDates() {
+      return Object.keys(localStorage)
+        .filter((key) => key.startsWith("todos_"))
+        .map((key) => key.replace("todos_", ""))
+        .sort();
+    }
+
+    function collectSyncData() {
+      const dailyTodos = {};
+      allTodoDates().forEach((date) => {
+        dailyTodos[date] = normalizeTodos(load(todoKey(date), []), date);
+      });
+
+      return {
+        version: 1,
+        savedAt: new Date().toISOString(),
+        dailyTodos,
+        habits,
+        wheels,
+        currentWheelIndex,
+        theme: localStorage.getItem(storageKeys.theme) || "light",
+        avatar: localStorage.getItem(storageKeys.avatar) || "",
+        background: localStorage.getItem(storageKeys.background) || ""
+      };
+    }
+
+    function syncContentScore(data) {
+      if (!data || typeof data !== "object") return 0;
+
+      const todoScore = Object.values(data.dailyTodos || {}).reduce((total, items) => {
+        return total + (Array.isArray(items) ? items.length * 10 : 0);
+      }, 0);
+
+      const wheelScore = normalizeWheels(data.wheels || []).reduce((total, wheel, index) => {
+        const optionCount = Array.isArray(wheel.options) ? wheel.options.length : 0;
+        const extraWheelWeight = index > 0 ? 5 : 0;
+        return total + optionCount + extraWheelWeight;
+      }, 0);
+
+      const habitScore = normalizeHabits(data.habits || []).length * 6;
+
+      return todoScore + wheelScore + habitScore;
+    }
+
+    async function syncBestAvailableData(cloudRow) {
+      const cloudData = cloudRow?.data || null;
+      const localData = collectSyncData();
+      const localScore = syncContentScore(localData);
+      const cloudScore = syncContentScore(cloudData);
+
+      if (localScore > cloudScore) {
+        await pushCloudData(syncCode);
+        return true;
+      }
+
+      if (cloudData) {
+        applySyncData(cloudData);
+        localStorage.setItem(storageKeys.syncUpdatedAt, cloudRow.updated_at || cloudData.savedAt || new Date().toISOString());
+        return true;
+      }
+
+      if (localScore > 0) {
+        await pushCloudData(syncCode);
+        return true;
+      }
+
+      return false;
+    }
+
+    function applySyncData(data) {
+      if (!data || typeof data !== "object") return;
+      applyingCloudData = true;
+
+      Object.entries(data.dailyTodos || {}).forEach(([date, items]) => {
+        const localItems = normalizeTodos(load(todoKey(date), []), date);
+        const cloudItems = normalizeTodos(items, date);
+        const merged = [...localItems];
+        cloudItems.forEach((cloudTodo) => {
+          const existingIndex = merged.findIndex((localTodo) => localTodo.id === cloudTodo.id);
+          if (existingIndex >= 0) {
+            merged[existingIndex] = { ...merged[existingIndex], ...cloudTodo };
+          } else {
+            merged.push(cloudTodo);
+          }
+        });
+        save(todoKey(date), merged);
+      });
+
+      habits = mergeHabits(habits, data.habits || []);
+      save(storageKeys.habits, habits);
+
+      wheels = normalizeWheels(data.wheels || []);
+      if (!wheels.length) {
+        wheels = [{ id: "default-wheel", name: "默认转盘", options: normalizeWheelOptions([]) }];
+      }
+      currentWheelIndex = Math.max(0, Math.min(Number(data.currentWheelIndex) || 0, wheels.length - 1));
+      save(storageKeys.wheels, wheels);
+      localStorage.setItem(storageKeys.currentWheelIndex, String(currentWheelIndex));
+
+      if (data.theme) applyTheme(data.theme);
+      if (data.avatar) {
+        localStorage.setItem(storageKeys.avatar, data.avatar);
+        avatarPreview.src = data.avatar;
+      }
+      if (typeof data.background === "string") applyBackground(data.background);
+
+      renderHabits();
+      loadTodosByDate(currentDate);
+      if (!scheduleView.hidden) renderSchedule();
+      loadWheel(currentWheelIndex);
+      applyingCloudData = false;
+    }
+
+    async function refreshCloudSync() {
+      if (!syncConfigured() || !syncCode) return;
+      try {
+        const cloudRow = await pullCloudData(syncCode);
+        await syncBestAvailableData(cloudRow);
+      } catch (error) {
+        console.warn(error.message || "云同步刷新失败");
+      } finally {
+        updateSyncButton();
+      }
+    }
+
+    async function bootstrapCloudData() {
+      if (!syncConfigured() || !syncCode) return false;
+      try {
+        const cloudRow = await pullCloudData(syncCode);
+        const synced = await syncBestAvailableData(cloudRow);
+        if (!synced) return false;
+        updateSyncButton();
+        return true;
+      } catch (error) {
+        console.warn(error.message || "云同步启动失败");
+        return false;
+      }
+    }
+
+    function updateSyncButton() {
+      syncButton.classList.toggle("is-active", Boolean(syncCode));
+      backgroundButton.classList.toggle("is-active", Boolean(syncCode));
+      if (!syncConfigured()) {
+        syncButton.textContent = "云同步未配置";
+      } else if (syncCode) {
+        syncButton.textContent = `同步中：${syncCode}`;
+      } else {
+        syncButton.textContent = "云同步";
+      }
+    }
+
+    async function pullCloudData(code) {
+      const response = await fetch(syncRpcEndpoint("xiaoxiaoyu_pull"), {
+        method: "POST",
+        headers: syncHeaders(),
+        body: JSON.stringify({ p_sync_code: code })
+      });
+      if (!response.ok) throw new Error("读取云端数据失败");
+      const rows = await response.json();
+      return rows[0] || null;
+    }
+
+    async function pushCloudData(code = syncCode) {
+      if (!syncConfigured() || !code) return;
+      const payload = collectSyncData();
+      const response = await fetch(syncRpcEndpoint("xiaoxiaoyu_push"), {
+        method: "POST",
+        headers: syncHeaders(),
+        body: JSON.stringify({
+          p_sync_code: code,
+          p_data: payload,
+          p_updated_at: payload.savedAt
+        })
+      });
+      if (!response.ok) throw new Error("保存云端数据失败");
+      localStorage.setItem(storageKeys.syncUpdatedAt, payload.savedAt);
+    }
+
+    function queueCloudSave() {
+      if (cloudSavePaused || applyingCloudData || !syncConfigured() || !syncCode) return;
+      window.clearTimeout(syncTimer);
+      syncTimer = window.setTimeout(() => {
+        pushCloudData().catch((error) => console.warn(error.message));
+      }, 600);
+    }
+
+    async function enableCloudSync() {
+      if (!syncConfigured()) {
+        alert("云同步还没配置 Supabase。先创建 Supabase 项目，并把 URL 和 anon key 填进代码。");
+        return;
+      }
+
+      const code = await requestText("输入同步码", syncCode);
+      if (code === null) return;
+      const cleanCode = code.trim();
+      if (!cleanCode) return;
+
+      syncButton.disabled = true;
+      syncButton.textContent = "同步中...";
+      try {
+        const cloudRow = await pullCloudData(cleanCode);
+        syncCode = cleanCode;
+        localStorage.setItem(storageKeys.syncCode, syncCode);
+
+        if (cloudRow?.data) {
+          const cloudTime = Date.parse(cloudRow.updated_at || cloudRow.data.savedAt || 0);
+          const localTime = Date.parse(localStorage.getItem(storageKeys.syncUpdatedAt) || 0);
+          const localScore = syncContentScore(collectSyncData());
+          const cloudScore = syncContentScore(cloudRow.data);
+          if (localScore > cloudScore) {
+            await pushCloudData(syncCode);
+          } else if (cloudScore > localScore || cloudTime >= localTime) {
+            applySyncData(cloudRow.data);
+          } else {
+            await pushCloudData(syncCode);
+          }
+        } else {
+          await pushCloudData(syncCode);
+        }
+
+        alert("云同步已开启。另一台设备输入同一个同步码即可互通。");
+      } catch (error) {
+        alert(error.message || "同步失败，请稍后再试。");
+      } finally {
+        syncButton.disabled = false;
+        updateSyncButton();
+      }
+    }
+
+    function normalizeWheelOptions(value) {
+      const source = Array.isArray(value) ? value : [];
+      return source
+        .map((item, index) => {
+          if (typeof item === "string") return { id: uid(), title: item };
+          if (item && typeof item.title === "string") return { id: item.id || uid(), title: item.title };
+          return null;
+        })
+        .filter((item) => item && item.title.trim())
+        .map((item) => ({ id: item.id, title: item.title.trim() }));
+    }
+
+    function normalizeTodos(value, fallbackDate = todayDate) {
+      const source = Array.isArray(value) ? value : [];
+      return source
+        .map((item, index) => {
+          if (!item) return null;
+          const title = item.title || item.text;
+          if (typeof title !== "string" || !title.trim()) return null;
+          return {
+            id: item.id || uid(),
+            title: title.trim(),
+            date: item.date || item.createdAt || fallbackDate,
+            done: Boolean(item.done),
+            failed: !item.done && Boolean(item.failed),
+            note: item.note || "",
+            time: item.time || "",
+            place: item.place || "",
+            color: item.color || item.priorityColor || "#ff8fb3",
+            ...(item.endTime ? { endTime: item.endTime } : {}),
+            ...(typeof item.people === "string" ? { people: item.people } : {}),
+            reminder: Boolean(item.reminder),
+            order: Number.isFinite(Number(item.order)) ? Number(item.order) : index
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function normalizeHabits(value) {
+      const source = Array.isArray(value) ? value : [];
+      return source
+        .map((item, index) => {
+          if (!item) return null;
+          const title = item.title || item.text;
+          if (typeof title !== "string" || !title.trim()) return null;
+          const completions = item.completions && typeof item.completions === "object" ? item.completions : {};
+          return {
+            id: item.id || uid(),
+            title: title.trim(),
+            note: item.note || "",
+            time: item.time || "",
+            place: item.place || "",
+            color: item.color || "#ff8fb3",
+            reminder: Boolean(item.reminder),
+            createdAt: item.createdAt || new Date().toISOString(),
+            order: Number.isFinite(Number(item.order)) ? Number(item.order) : index,
+            completions
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function mergeHabits(localValue, cloudValue) {
+      const merged = normalizeHabits(localValue);
+      normalizeHabits(cloudValue).forEach((cloudHabit) => {
+        const index = merged.findIndex((localHabit) => localHabit.id === cloudHabit.id);
+        if (index >= 0) {
+          merged[index] = {
+            ...merged[index],
+            ...cloudHabit,
+            completions: {
+              ...(merged[index].completions || {}),
+              ...(cloudHabit.completions || {})
+            }
+          };
+        } else {
+          merged.push(cloudHabit);
+        }
+      });
+      return merged.sort((a, b) => Number(a.order) - Number(b.order));
+    }
+
+    function normalizeWheels(value) {
+      const source = Array.isArray(value) ? value : [];
+      return source
+        .map((wheel, index) => {
+          if (!wheel) return null;
+          const name = typeof wheel.name === "string" && wheel.name.trim() ? wheel.name.trim() : `转盘 ${index + 1}`;
+          const options = normalizeWheelOptions(wheel.options || []);
+          return { id: wheel.id || uid(), name, options };
+        })
+        .filter(Boolean);
+    }
+
+    function uid() {
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function formatDateKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function today() {
+      return formatDateKey(new Date());
+    }
+
+    function todoKey(dateStr) {
+      return `todos_${dateStr}`;
+    }
+
+    function toLocalDate(dateStr) {
+      return new Date(`${dateStr}T00:00:00`);
+    }
+
+    function shiftDate(dateStr, days) {
+      const date = toLocalDate(dateStr);
+      date.setDate(date.getDate() + days);
+      return formatDateKey(date);
+    }
+
+    function weekStart(dateStr) {
+      const date = toLocalDate(dateStr);
+      const offset = (date.getDay() + 6) % 7;
+      date.setDate(date.getDate() - offset);
+      return formatDateKey(date);
+    }
+
+    // 每天：todos_2026-11-19；每周：todos_W2026-11-16（周一）；每月：todos_M2026-11
+    function listKey(mode, dateStr) {
+      if (mode === "week") return todoKey(`W${weekStart(dateStr)}`);
+      if (mode === "month") return todoKey(`M${dateStr.slice(0, 7)}`);
+      return todoKey(dateStr);
+    }
+
+    function currentListKey() {
+      return listKey(viewMode, currentDate);
+    }
+
+    function shiftPeriod(dateStr, step) {
+      if (viewMode === "week") return shiftDate(dateStr, step * 7);
+      if (viewMode === "month") {
+        const date = toLocalDate(dateStr);
+        date.setDate(1);
+        date.setMonth(date.getMonth() + step);
+        return formatDateKey(date);
+      }
+      return shiftDate(dateStr, step);
+    }
+
+    function isTodayPage() {
+      return currentListKey() === listKey(viewMode, todayDate);
+    }
+
+    function formatWeekLabel(dateStr) {
+      const monday = weekStart(dateStr);
+      const start = toLocalDate(monday);
+      const end = toLocalDate(shiftDate(monday, 6));
+      return `${start.getMonth() + 1}月${start.getDate()}日 – ${end.getMonth() + 1}月${end.getDate()}日${monday === weekStart(todayDate) ? " 本周" : ""}`;
+    }
+
+    function formatPeriodLabel(dateStr) {
+      if (viewMode === "week") return formatWeekLabel(dateStr);
+      if (viewMode === "month") {
+        const date = toLocalDate(dateStr);
+        return `${date.getFullYear()}年${date.getMonth() + 1}月${isTodayPage() ? " 本月" : ""}`;
+      }
+      return formatCurrentDateLabel(dateStr);
+    }
+
+    function formatCurrentDateLabel(dateStr) {
+      const date = toLocalDate(dateStr);
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const weekday = date.toLocaleDateString("zh-CN", { weekday: "long" });
+      return `${month}月${day}日 ${weekday}${dateStr === todayDate ? " 今天" : ""}`;
+    }
+
+    function formatDate(value) {
+      if (!value) return "未设置日期";
+      const date = new Date(`${value}T00:00:00`);
+      return date.toLocaleDateString("zh-CN", { month: "long", day: "numeric", weekday: "short" });
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+
+    function runSlide(element, direction) {
+      element.classList.remove("slide-left-enter", "slide-right-enter", "slide-active");
+      element.classList.add(direction === "left" ? "slide-left-enter" : "slide-right-enter");
+      element.getBoundingClientRect();
+      element.classList.add("slide-active");
+      window.setTimeout(() => {
+        element.classList.remove("slide-left-enter", "slide-right-enter", "slide-active");
+      }, 320);
+    }
+
+    function setupSwipe(element, onLeft, onRight) {
+      let startX = 0;
+      let startY = 0;
+
+      element.addEventListener("touchstart", (event) => {
+        const touch = event.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+      }, { passive: true });
+
+      element.addEventListener("touchend", (event) => {
+        if (event.target.closest(".schedule-resize")) return;
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        if (Math.abs(deltaX) <= 50 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+        if (deltaX < 0) onLeft();
+        if (deltaX > 0) onRight();
+      }, { passive: true });
+    }
+
+    function migrateTodoStorage() {
+      const legacyTodos = normalizeTodos(load(storageKeys.todos, []), todayDate);
+      if (!legacyTodos.length || localStorage.getItem(todoKey(todayDate))) return;
+      const grouped = legacyTodos.reduce((acc, todo) => {
+        const date = todo.date || todayDate;
+        acc[date] ||= [];
+        acc[date].push(todo);
+        return acc;
+      }, {});
+      Object.entries(grouped).forEach(([date, items]) => save(todoKey(date), items));
+    }
+
+    function migrateWheelStorage() {
+      const existing = normalizeWheels(load(storageKeys.wheels, []));
+      if (existing.length) {
+        wheels = existing;
+        currentWheelIndex = Math.min(Number(localStorage.getItem(storageKeys.currentWheelIndex)) || 0, wheels.length - 1);
+        return;
+      }
+
+      const legacyOptions = normalizeWheelOptions(load(storageKeys.options, ["整理桌面", "读 20 分钟书", "散步 15 分钟", "完成最重要的一件事"]));
+      wheels = [{ id: "default-wheel", name: "默认转盘", options: legacyOptions }];
+      currentWheelIndex = 0;
+      save(storageKeys.wheels, wheels);
+      localStorage.setItem(storageKeys.currentWheelIndex, "0");
+    }
+
+    function saveCurrentTodos() {
+      save(currentListKey(), todos);
+      queueCloudSave();
+    }
+
+    function saveHabits() {
+      habits = normalizeHabits(habits).map((habit, index) => ({ ...habit, order: index }));
+      save(storageKeys.habits, habits);
+      queueCloudSave();
+    }
+
+    function habitSummaryParts(habit) {
+      return [
+        habit.time ? `时间：${escapeHtml(habit.time)}` : "",
+        habit.place ? `地点：${escapeHtml(habit.place)}` : "",
+        habit.reminder && habit.time ? "已开启提醒" : ""
+      ].filter(Boolean);
+    }
+
+    function habitPreviewMeta(habit) {
+      return [
+        habit.time ? habit.time : "",
+        habit.place ? habit.place : "",
+        habit.note ? habit.note : ""
+      ].filter(Boolean)[0] || "";
+    }
+
+    function stopHabitAutoScroll() {
+      window.clearInterval(habitRollTimer);
+      habitRollTimer = null;
+      habitAutoScroll = false;
+      habitAutoButton.classList.remove("is-active");
+      habitBoardMode.textContent = "手动翻看";
+    }
+
+    function renderHabitPreview(animate = false) {
+      const visibleCount = habits.length ? 1 : 0;
+      const hasHabits = habits.length > 0;
+      const canScrollHabits = habits.length > 1;
+      if (habits.length) {
+        habitRollIndex = ((habitRollIndex % habits.length) + habits.length) % habits.length;
+      } else {
+        habitRollIndex = 0;
+      }
+
+      habitPreviewList.innerHTML = "";
+      habitBoard.classList.toggle("is-empty", !hasHabits);
+      habitPreviewEmpty.classList.toggle("hidden", hasHabits);
+      habitPreviewList.classList.toggle("hidden", !hasHabits);
+      habitBoardCount.textContent = `${habits.length} 条`;
+      habitBoardMode.textContent = habitAutoScroll && canScrollHabits ? "自动滚动" : "手动翻看";
+      [habitPrevButton, habitNextButton, habitAutoButton].forEach((button) => {
+        button.hidden = !canScrollHabits;
+        button.disabled = !canScrollHabits;
+      });
+      if (!habits.length) stopHabitAutoScroll();
+
+      for (let offset = 0; offset < visibleCount; offset += 1) {
+        const habit = habits[(habitRollIndex + offset) % habits.length];
+        const item = document.createElement("li");
+        item.className = "habit-preview-item";
+        item.style.setProperty("--habit-color", habit.color || "#ff8fb3");
+        item.innerHTML = `
+          <span class="habit-preview-title">${escapeHtml(habit.title)}</span>
+          <span class="habit-preview-meta">${escapeHtml(habitPreviewMeta(habit))}</span>
+        `;
+        habitPreviewList.appendChild(item);
+      }
+
+      if (animate) {
+        habitPreviewList.classList.remove("is-rolling");
+        habitPreviewList.getBoundingClientRect();
+        habitPreviewList.classList.add("is-rolling");
+      }
+    }
+
+    function stepHabitPreview(direction, animate = true) {
+      if (habits.length <= 1) return;
+      habitRollIndex = (habitRollIndex + direction + habits.length) % habits.length;
+      renderHabitPreview(animate);
+    }
+
+    function startHabitAutoScroll() {
+      window.clearInterval(habitRollTimer);
+      habitAutoScroll = true;
+      habitAutoButton.classList.add("is-active");
+      habitBoardMode.textContent = "自动滚动";
+      habitRollTimer = window.setInterval(() => {
+        stepHabitPreview(1, true);
+      }, 2200);
+    }
+
+    function toggleHabitAutoScroll() {
+      if (habitAutoScroll) {
+        stopHabitAutoScroll();
+        return;
+      }
+      if (habits.length <= 1) return;
+      startHabitAutoScroll();
+    }
+
+    function renderHabits() {
+      habits = normalizeHabits(habits);
+      habitList.innerHTML = "";
+      habitEmpty.classList.toggle("hidden", habits.length > 0);
+
+      habits.forEach((habit) => {
+        const item = document.createElement("li");
+        item.className = "habit-row";
+        item.dataset.id = habit.id;
+        item.style.setProperty("--habit-color", habit.color || "#ff8fb3");
+        const metaParts = habitSummaryParts(habit);
+        item.innerHTML = `
+          <div class="habit-row-main">
+            <div class="habit-row-text">
+              <span class="habit-title">${escapeHtml(habit.title)}</span>
+              ${habit.note ? `<span class="habit-note">备注：${escapeHtml(habit.note)}</span>` : ""}
+              ${metaParts.length ? `<span class="habit-meta-line">${metaParts.map((part) => `<span>${part}</span>`).join("")}</span>` : ""}
+            </div>
+          </div>
+          <div class="habit-row-actions">
+            <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
+            <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
+          </div>
+        `;
+        habitList.appendChild(item);
+      });
+
+      renderHabitPreview(false);
+    }
+
+    function resetHabitForm() {
+      editingHabitId = null;
+      habitInput.value = "";
+      habitNote.value = "";
+      habitTime.value = "";
+      habitPlace.value = "";
+      habitColor.value = "#ff8fb3";
+      habitReminder.checked = false;
+      habitSaveButton.textContent = "添加";
+    }
+
+    function fillHabitForm(habit) {
+      editingHabitId = habit.id;
+      habitInput.value = habit.title || "";
+      habitNote.value = habit.note || "";
+      habitTime.value = habit.time || "";
+      habitPlace.value = habit.place || "";
+      habitColor.value = habit.color || "#ff8fb3";
+      habitReminder.checked = Boolean(habit.reminder);
+      habitSaveButton.textContent = "保存";
+    }
+
+    function habitFormData() {
+      return {
+        title: habitInput.value.trim(),
+        note: habitNote.value.trim(),
+        time: habitTime.value,
+        place: habitPlace.value.trim(),
+        color: habitColor.value,
+        reminder: habitReminder.checked && Boolean(habitTime.value)
+      };
+    }
+
+    function addHabit(data) {
+      habits.push({
+        id: uid(),
+        ...data,
+        createdAt: new Date().toISOString(),
+        order: habits.length,
+        completions: {}
+      });
+    }
+
+    function setHabitPopover(open) {
+      habitPopover.hidden = !open;
+      habitToggleButton.setAttribute("aria-expanded", String(open));
+      if (!open) resetHabitForm();
+    }
+
+    function loadTodosByDate(dateStr) {
+      currentDate = dateStr;
+      todos = normalizeTodos(load(currentListKey(), []), dateStr);
+      renderTodos();
+    }
+
+    function prevDay() {
+      loadTodosByDate(shiftPeriod(currentDate, -1));
+      runSlide(todoList, "right");
+    }
+
+    function nextDay() {
+      loadTodosByDate(shiftPeriod(currentDate, 1));
+      runSlide(todoList, "left");
+    }
+
+    const modeText = {
+      day: { title: "今日清单", unit: "天", empty: "今天还没有待办，先加一件小事吧。", other: "这一天还没有待办～", hint: "可以切换或选择任意日期，提前安排待办。" },
+      week: { title: "周计划", unit: "周", empty: "这周还没有计划，写下本周想完成的事吧。", other: "这一周还没有计划～", hint: "放这一周要完成的事，左右切换看其他周。" },
+      month: { title: "月计划", unit: "月", empty: "这个月还没有计划，定几个小目标吧。", other: "这个月还没有计划～", hint: "放这个月的目标，左右切换看其他月份。" }
+    };
+
+    function applyModeUi() {
+      const text = modeText[viewMode];
+      todoPanel.dataset.mode = viewMode;
+      document.querySelectorAll(".mode-tab").forEach((tab) => {
+        const active = tab.dataset.mode === viewMode;
+        tab.classList.toggle("is-active", active);
+        tab.setAttribute("aria-selected", String(active));
+      });
+      document.querySelector("#todoTitle").textContent = text.title;
+      document.querySelector("#todoReadonly").textContent = text.hint;
+      prevDayButton.title = `查看上一${text.unit}`;
+      nextDayButton.title = `查看下一${text.unit}`;
+      prevDayButton.setAttribute("aria-label", prevDayButton.title);
+      nextDayButton.setAttribute("aria-label", nextDayButton.title);
+    }
+
+    function setViewMode(mode, date = todayDate) {
+      if (!Object.hasOwn(modeText, mode)) return;
+      viewMode = mode;
+      localStorage.setItem(storageKeys.todoViewMode, mode);
+      applyModeUi();
+      loadTodosByDate(date);
+    }
+
+    function showRoom() {
+      const hash = location.hash;
+      const room = hash === "#schedule" || hash === "#recipes" ? hash.slice(1) : "todo";
+      const previousRoom = app.dataset.room;
+      app.dataset.room = room;
+      roomPanels.forEach((panel) => { panel.hidden = panel.dataset.roomPanel !== room; });
+      roomLinks.forEach((link) => {
+        if (link.hash === `#${room}`) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
+      });
+      if (room === "schedule") renderSchedule();
+      if (previousRoom && previousRoom !== room) {
+        window.scrollTo(0, 0);
+        if (room === "schedule") document.querySelector("#scheduleBack").focus({ preventScroll: true });
+        else if (previousRoom === "schedule") document.querySelector(".room-nav [aria-current='page']").focus({ preventScroll: true });
+      }
+    }
+
+    function requestText(title, value = "") {
+      document.querySelector("#textDialogTitle").textContent = title;
+      textDialogInput.setAttribute("aria-label", title);
+      textDialogInput.value = value;
+      textDialog.returnValue = "";
+      return new Promise((resolve) => {
+        textDialog.addEventListener("close", () => {
+          resolve(textDialog.returnValue === "save" ? textDialogInput.value : null);
+        }, { once: true });
+        textDialog.showModal();
+      });
+    }
+
+    window.addEventListener("hashchange", showRoom);
+
+    function saveWheels() {
+      save(storageKeys.wheels, wheels);
+      localStorage.setItem(storageKeys.currentWheelIndex, String(currentWheelIndex));
+      queueCloudSave();
+    }
+
+    function currentWheel() {
+      return wheels[currentWheelIndex];
+    }
+
+    function loadWheel(index) {
+      if (!wheels.length) migrateWheelStorage();
+      currentWheelIndex = Math.max(0, Math.min(index, wheels.length - 1));
+      const wheel = currentWheel();
+      wheel.options = normalizeWheelOptions(wheel.options || []);
+      wheelOptions = wheel.options;
+      selectedOptionId = null;
+      currentAngle = 0;
+      localStorage.setItem(storageKeys.currentWheelIndex, String(currentWheelIndex));
+      renderWheelShell();
+      renderOptions();
+      drawWheel();
+    }
+
+    function renderWheelShell() {
+      const wheel = currentWheel();
+      wheelTitle.textContent = wheel?.name || "默认转盘";
+      wheelPageLabel.textContent = `${currentWheelIndex + 1} / ${wheels.length}`;
+      prevWheelButton.disabled = currentWheelIndex === 0 || isSpinning;
+      nextWheelButton.disabled = currentWheelIndex === wheels.length - 1 || isSpinning;
+      editWheelButton.disabled = isSpinning;
+      deleteWheelButton.disabled = currentWheelIndex === 0 || isSpinning;
+    }
+
+    function createNewWheel(name) {
+      const cleanName = name.trim();
+      if (!cleanName) return;
+      wheels.push({ id: uid(), name: cleanName, options: [] });
+      loadWheel(wheels.length - 1);
+      runSlide(wheelSlide, "left");
+    }
+
+    function deleteCurrentWheel() {
+      if (currentWheelIndex === 0 || wheels.length <= 1) return;
+      const wheel = currentWheel();
+      if (!confirm(`确定删除「${wheel.name}」吗？`)) return;
+      wheels.splice(currentWheelIndex, 1);
+      loadWheel(Math.min(currentWheelIndex, wheels.length - 1));
+      runSlide(wheelSlide, "right");
+    }
+
+    function prevWheel() {
+      if (currentWheelIndex <= 0 || isSpinning) return;
+      loadWheel(currentWheelIndex - 1);
+      runSlide(wheelSlide, "right");
+    }
+
+    function nextWheel() {
+      if (currentWheelIndex >= wheels.length - 1 || isSpinning) return;
+      loadWheel(currentWheelIndex + 1);
+      runSlide(wheelSlide, "left");
+    }
+
+    function renderTodos() {
+      dateLabel.textContent = formatPeriodLabel(currentDate);
+      todoList.innerHTML = "";
+      todoEmpty.classList.toggle("hidden", todos.length > 0);
+      todoEmpty.textContent = isTodayPage() ? modeText[viewMode].empty : modeText[viewMode].other;
+      todoList.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.todosCollapsed) === "true");
+      todoEmpty.classList.toggle("is-collapsed", localStorage.getItem(storageKeys.todosCollapsed) === "true");
+      const todosCollapsed = localStorage.getItem(storageKeys.todosCollapsed) === "true";
+      collapseTodosButton.textContent = todosCollapsed ? "展开" : "折叠";
+      collapseTodosButton.title = todosCollapsed ? "展开待办" : "折叠待办";
+      collapseTodosButton.setAttribute("aria-label", collapseTodosButton.title);
+      nextDayButton.disabled = false;
+      todoDate.value = currentDate;
+
+      const doneCount = todos.filter((todo) => todo.done).length;
+      const failedCount = todos.filter((todo) => todo.failed).length;
+      todoStats.textContent = `${doneCount}/${todos.length} 已完成${failedCount ? ` · ${failedCount} 未完成` : ""}`;
+
+      todos
+        .slice()
+        .sort((a, b) => (Number(a.order) - Number(b.order)) || (a.done - b.done) || (a.date || "").localeCompare(b.date || ""))
+        .forEach((todo) => {
+          const item = document.createElement("li");
+          item.className = `todo-item${todo.done ? " done" : ""}${todo.failed ? " failed" : ""}${todo.id === editingTodoId ? " is-editing" : ""}`;
+          item.dataset.id = todo.id;
+          item.style.setProperty("--todo-color", todo.color || "#ff8fb3");
+          const metaParts = [
+            todo.time ? `时间：${escapeHtml(scheduleTimeLabel(todo))}` : "",
+            todo.place ? `地点：${escapeHtml(todo.place)}` : "",
+            todo.people ? `人员：${escapeHtml(todo.people)}` : "",
+            todo.reminder && todo.time ? "已开启提醒" : ""
+          ].filter(Boolean);
+          item.innerHTML = `
+            <button class="drag-handle" type="button" draggable="true" data-sort-handle title="按住拖动排序" aria-label="按住拖动排序">⋮⋮</button>
+            <div class="sort-actions" aria-label="调整顺序">
+              <button class="icon-btn sort-step" type="button" data-action="move-up" title="上移">↑</button>
+              <button class="icon-btn sort-step" type="button" data-action="move-down" title="下移">↓</button>
+            </div>
+            <button class="check${todo.done ? " is-done" : ""}${todo.failed ? " is-failed" : ""}" type="button" title="${todo.done ? "已完成（再点标记为未完成）" : todo.failed ? "未完成（再点恢复）" : "点一下标记完成"}" aria-label="切换完成状态">${todo.done ? "✓" : todo.failed ? "✕" : ""}</button>
+            <div class="todo-text">
+              <span class="todo-title">${escapeHtml(todo.title)}</span>
+              <span class="todo-date">${formatDate(todo.date)}</span>
+              ${todo.note ? `<span class="todo-note">备注：${escapeHtml(todo.note)}</span>` : ""}
+              ${metaParts.length ? `<span class="todo-meta">${metaParts.map((part) => `<span>${part}</span>`).join("")}</span>` : ""}
+            </div>
+            <div class="item-actions">
+              <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
+              <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
+            </div>
+          `;
+          todoList.appendChild(item);
+        });
+    }
+
+    function reorderTodos() {
+      todos = [...todoList.querySelectorAll(".todo-item")]
+        .map((item, index) => {
+          const todo = todos.find((entry) => entry.id === item.dataset.id);
+          if (todo) todo.order = index;
+          return todo;
+        })
+        .filter(Boolean);
+      saveCurrentTodos();
+      renderTodos();
+    }
+
+    function moveTodo(todoId, direction) {
+      const orderedTodos = todos
+        .slice()
+        .sort((a, b) => (Number(a.order) - Number(b.order)) || (a.done - b.done) || (a.date || "").localeCompare(b.date || ""));
+      const index = orderedTodos.findIndex((todo) => todo.id === todoId);
+      const nextIndex = index + direction;
+      if (index < 0 || nextIndex < 0 || nextIndex >= orderedTodos.length) return;
+      const [todo] = orderedTodos.splice(index, 1);
+      orderedTodos.splice(nextIndex, 0, todo);
+      todos = orderedTodos.map((entry, order) => ({ ...entry, order }));
+      saveCurrentTodos();
+      renderTodos();
+    }
+
+    function showUndo(todo, index, date = currentDate, mode = viewMode) {
+      lastDeletedTodo = { todo, index, date, mode, key: listKey(mode, date) };
+      undoText.textContent = `已删除「${todo.title}」`;
+      if (scheduleView.hidden) todoPanel.append(undoBar);
+      else scheduleView.querySelector(".schedule-scroll").before(undoBar);
+      undoBar.classList.remove("hidden");
+      window.clearTimeout(undoTimer);
+      undoTimer = window.setTimeout(() => {
+        undoBar.classList.add("hidden");
+        lastDeletedTodo = null;
+      }, 8000);
+    }
+
+    function clockMinutes(time) {
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return NaN;
+      const [hour, minute] = time.split(":").map(Number);
+      return hour * 60 + minute;
+    }
+
+    function clockLabel(minutes) {
+      const clock = minutes % minutesPerDay;
+      return `${String(Math.floor(clock / 60)).padStart(2, "0")}:${String(clock % 60).padStart(2, "0")}`;
+    }
+
+    function scheduleTimeLabel(todo) {
+      if (!todo.endTime) return todo.time;
+      const nextDay = clockMinutes(todo.endTime) < clockMinutes(todo.time);
+      return `${todo.time}–${nextDay ? "次日 " : ""}${todo.endTime}`;
+    }
+
+    function renderSchedule() {
+      const school = scheduleContext.value === "school";
+      scheduleViewTitle.textContent = school ? "周课程表" : "周日程";
+      scheduleDateLabel.textContent = formatWeekLabel(scheduleDate);
+      newScheduleButton.textContent = school ? "+ 添加课程" : "+ 添加日程";
+      const monday = weekStart(scheduleDate);
+      const weekdays = Array.from({ length: 7 }, (_, index) => shiftDate(monday, index));
+      scheduleHeader.innerHTML = "<span></span>" + weekdays.map((date, index) =>
+        `<time datetime="${date}"${date === todayDate ? ' class="is-today"' : ""}><strong>周${"一二三四五六日"[index]}</strong>${Number(date.slice(5, 7))}/${Number(date.slice(8))}</time>`
+      ).join("");
+      scheduleGrid.innerHTML = '<div class="schedule-hours">' + Array.from({ length: 25 }, (_, index) =>
+        `<time>${clockLabel(scheduleDayStart + index * 60)}</time>`
+      ).join("") + "</div>";
+
+      const entries = [];
+      for (let offset = -1; offset <= 7; offset += 1) {
+        const date = shiftDate(monday, offset);
+        normalizeTodos(load(todoKey(date), []), date).forEach((todo) => {
+          const start = clockMinutes(todo.time);
+          if (!Number.isFinite(start)) return;
+          const end = clockMinutes(todo.endTime);
+          const duration = end === start || !Number.isFinite(end)
+            ? 60 : (end - start + minutesPerDay) % minutesPerDay;
+          const absoluteStart = offset * minutesPerDay + start;
+          entries.push({ todo, date, start: absoluteStart, end: absoluteStart + duration });
+        });
+      }
+
+      weekdays.forEach((date, index) => {
+        const column = document.createElement("div");
+        column.className = "schedule-day";
+        column.dataset.date = date;
+        const start = index * minutesPerDay + scheduleDayStart;
+        const end = start + minutesPerDay;
+        const blocks = entries
+          .filter((entry) => entry.start < end && entry.end > start)
+          .map((entry) => ({ ...entry, eventStart: entry.start, eventEnd: entry.end, start: Math.max(entry.start, start), end: Math.min(entry.end, end) }))
+          .sort((a, b) => a.start - b.start || b.end - a.end);
+
+        let laneEnds = [];
+        blocks.forEach((block) => {
+          if (laneEnds.every((laneEnd) => laneEnd <= block.start)) laneEnds = [];
+          const emptyLane = laneEnds.findIndex((laneEnd) => laneEnd <= block.start);
+          block.lane = emptyLane < 0 ? laneEnds.length : emptyLane;
+          laneEnds[block.lane] = block.end;
+          block.group = laneEnds;
+        });
+
+        blocks.forEach((block) => {
+          const { todo, date: todoDate, start: blockStart, end: blockEnd, eventEnd, lane, group } = block;
+          const card = document.createElement("div");
+          card.className = "schedule-event";
+          card.style.setProperty("--event-top", `${((blockStart - start) / minutesPerDay) * 100}%`);
+          card.style.setProperty("--event-height", `${((blockEnd - blockStart) / minutesPerDay) * 100}%`);
+          card.style.setProperty("--event-left", `${(lane / group.length) * 100}%`);
+          card.style.setProperty("--event-width", `${100 / group.length}%`);
+          card.style.setProperty("--event-color", scheduleColor(todo.color));
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "schedule-event-open";
+          const status = todo.done ? "✓ " : todo.failed ? "❌ " : "";
+          button.title = [status + todo.title, scheduleTimeLabel(todo), todo.place].filter(Boolean).join(" · ");
+          button.innerHTML = `<span>${status}${escapeHtml(todo.title)}</span><small class="schedule-event-time"><span>${escapeHtml(todo.time)}</span><span>–${clockLabel(eventEnd)}</span></small>`;
+          button.addEventListener("click", () => openScheduleEditor(todoDate, todo));
+          card.appendChild(button);
+          if (blockEnd === eventEnd) attachScheduleResize(card, column, block, end);
+          column.appendChild(card);
+        });
+        scheduleGrid.appendChild(column);
+      });
+    }
+
+    function saveScheduleEnd(block, end) {
+      const key = todoKey(block.date);
+      const items = normalizeTodos(load(key, []), block.date);
+      const item = items.find((entry) => entry.id === block.todo.id);
+      if (item && item.time === block.todo.time && item.endTime === block.todo.endTime) {
+        item.endTime = clockLabel(end);
+        save(key, items);
+        queueCloudSave();
+        loadTodosByDate(currentDate);
+      }
+      renderSchedule();
+    }
+
+    function attachScheduleResize(card, column, block, columnEnd) {
+      const handle = document.createElement("button");
+      handle.type = "button";
+      handle.className = "schedule-resize";
+      handle.dataset.scheduleId = block.todo.id;
+      handle.title = "拖动或按上下方向键调整结束时间";
+      handle.setAttribute("aria-label", `调整${block.todo.title}的结束时间`);
+      card.appendChild(handle);
+
+      const endLabel = card.querySelector(".schedule-event-time span:last-child");
+      const clampEnd = (end) => Math.max(block.eventStart + scheduleResizeStep, Math.min(block.eventStart + minutesPerDay - 1, end));
+      function preview(end) {
+        const height = Math.max(0, Math.min(end, columnEnd) - block.start);
+        card.style.setProperty("--event-height", `${height / minutesPerDay * 100}%`);
+        endLabel.textContent = `–${clockLabel(end)}`;
+      }
+
+      let drag = null;
+      function updateDrag() {
+        const pixels = drag.y - drag.startY + window.scrollY - drag.scrollY;
+        const minutes = pixels * minutesPerDay / drag.height;
+        const steps = Math.round(minutes / scheduleResizeStep);
+        drag.end = steps ? clampEnd(block.eventEnd + steps * scheduleResizeStep) : block.eventEnd;
+        preview(drag.end);
+      }
+
+      function scrollWhileDragging() {
+        if (!drag || !card.isConnected) return;
+        const edge = 48;
+        const bottom = (window.visualViewport?.height || window.innerHeight) - edge;
+        const step = drag.y > bottom ? 8 : drag.y < edge ? -8 : 0;
+        if (step) {
+          window.scrollBy(0, step);
+          updateDrag();
+        }
+        drag.frame = requestAnimationFrame(scrollWhileDragging);
+      }
+
+      handle.addEventListener("pointerdown", (event) => {
+        if (!event.isPrimary || event.button !== 0) return;
+        event.preventDefault();
+        handle.setPointerCapture(event.pointerId);
+        drag = { id: event.pointerId, startY: event.clientY, y: event.clientY, scrollY: window.scrollY,
+          height: column.getBoundingClientRect().height, end: block.eventEnd, frame: 0 };
+        card.classList.add("is-resizing");
+      });
+      handle.addEventListener("pointermove", (event) => {
+        if (drag?.id !== event.pointerId) return;
+        drag.y = event.clientY;
+        if (!drag.frame && Math.abs(drag.y - drag.startY) < 4) return;
+        updateDrag();
+        if (!drag.frame) drag.frame = requestAnimationFrame(scrollWhileDragging);
+      });
+
+      function finishDrag(event) {
+        if (drag?.id !== event.pointerId) return;
+        if (event.type === "pointerup" && (drag.frame || Math.abs(event.clientY - drag.startY) >= 4)) {
+          drag.y = event.clientY;
+          updateDrag();
+        }
+        const { end, frame } = drag;
+        drag = null;
+        cancelAnimationFrame(frame);
+        card.classList.remove("is-resizing");
+        if (event.type === "pointerup" && end !== block.eventEnd) saveScheduleEnd(block, end);
+        else preview(block.eventEnd);
+      }
+      handle.addEventListener("pointerup", finishDrag);
+      handle.addEventListener("pointercancel", finishDrag);
+      handle.addEventListener("lostpointercapture", finishDrag);
+      handle.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+        event.preventDefault();
+        const end = clampEnd(block.eventEnd + (event.key === "ArrowUp" ? -scheduleResizeStep : scheduleResizeStep));
+        if (end === block.eventEnd) return;
+        saveScheduleEnd(block, end);
+        scheduleGrid.querySelector(`[data-schedule-id="${CSS.escape(block.todo.id)}"]`)?.focus({ preventScroll: true });
+      });
+    }
+
+    function scheduleColor(color) {
+      return /^#[0-9a-f]{6}$/i.test(color) ? color : "#48a7ff";
+    }
+
+    function updateScheduleForm() {
+      const start = clockMinutes(scheduleFields.start.value);
+      const end = clockMinutes(scheduleFields.end.value);
+      const overnight = end < start;
+      document.querySelector("#scheduleEndHint").textContent = overnight ? "次日结束" : "";
+      scheduleFields.end.setCustomValidity(start === end ? "开始时间和结束时间不能相同。" : "");
+      const repeating = !editingSchedule && scheduleFields.repeat.value === "weekly";
+      scheduleRepeatUntilRow.hidden = !repeating;
+      scheduleFields.until.required = repeating;
+      scheduleFields.until.min = scheduleFields.date.value;
+    }
+
+    function openScheduleEditor(date, todo = null, time = "09:00") {
+      const school = scheduleContext.value === "school";
+      const noun = school ? "课程" : "日程";
+      editingSchedule = todo ? { date, id: todo.id } : null;
+      scheduleForm.reset();
+      scheduleFields.title.setCustomValidity("");
+      document.querySelector("#scheduleDialogTitle").textContent = `${todo ? "编辑" : "添加"}${noun}`;
+      document.querySelector("#scheduleTitleLabel").textContent = `${noun}名称`;
+      document.querySelector("#schedulePlaceLabel").textContent = school ? "教室地点" : "地点";
+      document.querySelector("#schedulePeopleLabel").textContent = school ? "任课老师" : "参与人";
+      scheduleFields.title.value = todo?.title || "";
+      scheduleFields.date.value = date;
+      scheduleFields.start.value = todo?.time || time;
+      scheduleFields.end.value = todo?.endTime || clockLabel(clockMinutes(scheduleFields.start.value) + 60);
+      scheduleFields.place.value = todo?.place || "";
+      scheduleFields.people.value = todo?.people || "";
+      scheduleFields.note.value = todo?.note || "";
+      scheduleFields.color.value = scheduleColor(todo?.color);
+      scheduleFields.reminder.checked = Boolean(todo?.reminder);
+      scheduleFields.status.value = todo?.done ? "done" : todo?.failed ? "failed" : "pending";
+      scheduleRepeatRow.hidden = Boolean(todo);
+      deleteScheduleButton.hidden = !todo;
+      updateScheduleForm();
+      scheduleDialog.showModal();
+    }
+
+    function saveSchedule(event) {
+      event.preventDefault();
+      const data = new FormData(scheduleForm);
+      const title = data.get("title").trim();
+      if (!title) {
+        scheduleFields.title.setCustomValidity("请输入名称。");
+        scheduleFields.title.reportValidity();
+        return;
+      }
+
+      const date = data.get("date");
+      const status = data.get("status");
+      const item = {
+        title, date,
+        time: data.get("start"),
+        endTime: data.get("end"),
+        place: data.get("place").trim(),
+        people: data.get("people").trim(),
+        note: data.get("note").trim(),
+        color: data.get("color"),
+        reminder: data.has("reminder"),
+        done: status === "done",
+        failed: status === "failed"
+      };
+
+      const previousDate = editingSchedule?.date;
+      if (editingSchedule) {
+        const sourceDate = editingSchedule.date;
+        const source = normalizeTodos(load(todoKey(sourceDate), []), sourceDate);
+        const index = source.findIndex((entry) => entry.id === editingSchedule.id);
+        if (index < 0) {
+          scheduleDialog.close();
+          renderSchedule();
+          loadTodosByDate(currentDate);
+          return;
+        }
+        source[index] = { ...source[index], ...item };
+        if (sourceDate !== date) {
+          const [moved] = source.splice(index, 1);
+          const destination = normalizeTodos(load(todoKey(date), []), date);
+          destination.push({ ...moved, order: destination.length });
+          save(todoKey(date), destination);
+        }
+        save(todoKey(sourceDate), source);
+      } else {
+        const until = data.get("repeat") === "weekly" ? data.get("until") : date;
+        for (let occurrence = date; occurrence <= until; occurrence = shiftDate(occurrence, 7)) {
+          const items = normalizeTodos(load(todoKey(occurrence), []), occurrence);
+          items.push({
+            ...item,
+            id: uid(),
+            date: occurrence,
+            done: occurrence === date && item.done,
+            failed: occurrence === date && item.failed,
+            order: items.length
+          });
+          save(todoKey(occurrence), items);
+        }
+      }
+
+      queueCloudSave();
+      scheduleDialog.close();
+      if (previousDate !== date) {
+        scheduleDate = clockMinutes(item.time) < scheduleDayStart ? shiftDate(date, -1) : date;
+      }
+      renderSchedule();
+      loadTodosByDate(scheduleView.hidden && previousDate !== date ? date : currentDate);
+      scheduleReminders();
+    }
+
+    function shiftScheduleWeek(step) {
+      scheduleDate = shiftDate(scheduleDate, step * 7);
+      renderSchedule();
+    }
+
+    document.querySelector("#prevScheduleWeek").addEventListener("click", () => shiftScheduleWeek(-1));
+    document.querySelector("#nextScheduleWeek").addEventListener("click", () => shiftScheduleWeek(1));
+    newScheduleButton.addEventListener("click", () => openScheduleEditor(scheduleDate));
+    scheduleContext.addEventListener("change", () => {
+      localStorage.setItem(storageKeys.scheduleContext, scheduleContext.value);
+      renderSchedule();
+    });
+    scheduleGrid.addEventListener("click", (event) => {
+      if (!event.target.matches(".schedule-day")) return;
+      const day = event.target;
+      const bounds = day.getBoundingClientRect();
+      const hour = Math.min(23, Math.floor((event.clientY - bounds.top) * 24 / bounds.height));
+      const start = scheduleDayStart + hour * 60;
+      const date = start >= minutesPerDay ? shiftDate(day.dataset.date, 1) : day.dataset.date;
+      openScheduleEditor(date, null, clockLabel(start));
+    });
+    scheduleForm.addEventListener("input", () => {
+      scheduleFields.title.setCustomValidity("");
+      updateScheduleForm();
+    });
+    scheduleFields.reminder.addEventListener("change", () => {
+      if (scheduleFields.reminder.checked) ensureNotificationPermission();
+    });
+    document.querySelector("#closeScheduleButton").addEventListener("click", () => scheduleDialog.close());
+    scheduleForm.addEventListener("submit", saveSchedule);
+    deleteScheduleButton.addEventListener("click", () => {
+      if (!editingSchedule) return;
+      const { id, date } = editingSchedule;
+      const items = normalizeTodos(load(todoKey(date), []), date);
+      const index = items.findIndex((item) => item.id === id);
+      if (index >= 0) {
+        const [removed] = items.splice(index, 1);
+        save(todoKey(date), items);
+        showUndo(removed, index, date, "day");
+        queueCloudSave();
+      }
+      scheduleDialog.close();
+      renderSchedule();
+      loadTodosByDate(currentDate);
+    });
+
+    function resetTodoEditor(date = currentDate) {
+      todoInput.value = "";
+      todoDate.value = date;
+      todoNote.value = "";
+      todoTime.value = "";
+      todoPlace.value = "";
+      todoPriority.value = "#ff8fb3";
+      todoReminder.checked = false;
+    }
+
+    function openTodoEditor(todo = null) {
+      editingTodoId = todo?.id || null;
+      editingTodoDate = todo ? currentDate : null;
+      if (todo) {
+        todoInput.value = todo.title || "";
+        todoDate.value = todo.date || currentDate;
+        todoTime.value = todo.time || "";
+        todoPlace.value = todo.place || "";
+        todoNote.value = todo.note || "";
+        todoPriority.value = todo.color || "#ff8fb3";
+        todoReminder.checked = Boolean(todo.reminder);
+      } else {
+        resetTodoEditor(currentDate);
+      }
+      todoSaveButton.textContent = todo ? "保存" : "添加";
+      todoModal.hidden = false;
+      document.body.style.overflow = "hidden";
+      renderTodos();
+      closeTodoEditorButton.focus({ preventScroll: true });
+    }
+
+    function closeTodoEditor() {
+      editingTodoId = null;
+      editingTodoDate = null;
+      todoModal.hidden = true;
+      document.body.style.overflow = "";
+      renderTodos();
+    }
+
+    function saveTodoEditor() {
+      const title = todoInput.value.trim();
+      if (!title) return;
+
+      const targetDate = todoDate.value || currentDate;
+      const formTodo = {
+        title,
+        date: targetDate,
+        note: todoNote.value.trim(),
+        time: todoTime.value,
+        place: todoPlace.value.trim(),
+        color: todoPriority.value,
+        reminder: todoReminder.checked && Boolean(todoTime.value)
+      };
+
+      if (!editingTodoId) {
+        if (listKey(viewMode, targetDate) !== currentListKey()) loadTodosByDate(targetDate);
+        todos.push({
+          id: uid(),
+          ...formTodo,
+          done: false,
+          order: todos.length
+        });
+        saveCurrentTodos();
+        closeTodoEditor();
+      } else {
+        const todo = todos.find((entry) => entry.id === editingTodoId);
+        if (!todo) {
+          closeTodoEditor();
+          return;
+        }
+
+        const updatedTodo = { ...todo, ...formTodo };
+
+        if (listKey(viewMode, targetDate) !== currentListKey()) {
+          todos = todos.filter((entry) => entry.id !== editingTodoId);
+          saveCurrentTodos();
+          const targetTodos = normalizeTodos(load(listKey(viewMode, targetDate), []), targetDate);
+          targetTodos.push({ ...updatedTodo, order: targetTodos.length });
+          save(listKey(viewMode, targetDate), targetTodos);
+          queueCloudSave();
+          closeTodoEditor();
+          loadTodosByDate(targetDate);
+        } else {
+          Object.assign(todo, updatedTodo);
+          saveCurrentTodos();
+          closeTodoEditor();
+        }
+      }
+
+      scheduleReminders();
+    }
+
+    function remindedSet() {
+      return new Set(load(storageKeys.remindedTodos, []));
+    }
+
+    function saveRemindedSet(set) {
+      save(storageKeys.remindedTodos, [...set]);
+    }
+
+    async function ensureNotificationPermission() {
+      if (!("Notification" in window)) return false;
+      if (Notification.permission === "granted") return true;
+      if (Notification.permission === "denied") return false;
+      const permission = await Notification.requestPermission();
+      return permission === "granted";
+    }
+
+    function todoReminderTime(todo) {
+      if (!todo.reminder || !todo.time) return null;
+      const date = new Date(`${todo.date}T${todo.time}:00`);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function habitReminderTime(habit) {
+      if (!habit.reminder || !habit.time) return null;
+      const date = new Date(`${todayDate}T${habit.time}:00`);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    async function notifyTodo(todo) {
+      const allowed = await ensureNotificationPermission();
+      if (!allowed) return;
+      new Notification(`待办提醒：${todo.title}`, {
+        body: [todo.place ? `地点：${todo.place}` : "", todo.note || ""].filter(Boolean).join(" · ") || "到时间啦",
+        tag: `todo-${todo.id}`
+      });
+    }
+
+    async function notifyHabit(habit) {
+      const allowed = await ensureNotificationPermission();
+      if (!allowed) return;
+      new Notification(`注意提醒：${habit.title}`, {
+        body: [habit.place ? `地点：${habit.place}` : "", habit.note || ""].filter(Boolean).join(" · ") || "到时间啦",
+        tag: `habit-${todayDate}-${habit.id}`
+      });
+    }
+
+    function scheduleReminders() {
+      const reminded = remindedSet();
+      const now = Date.now();
+      habits.forEach((habit) => {
+        const reminderTime = habitReminderTime(habit);
+        const remindKey = `habit-${todayDate}-${habit.id}`;
+        if (!reminderTime || reminded.has(remindKey)) return;
+        const delay = reminderTime.getTime() - now;
+        if (delay <= 0 && delay > -60000) {
+          reminded.add(remindKey);
+          notifyHabit(habit);
+        } else if (delay > 0 && delay < 2147483647) {
+          window.setTimeout(() => {
+            const latest = remindedSet();
+            if (latest.has(remindKey)) return;
+            latest.add(remindKey);
+            saveRemindedSet(latest);
+            notifyHabit(habit);
+          }, delay);
+        }
+      });
+
+      allTodoDates().forEach((date) => {
+        normalizeTodos(load(todoKey(date), []), date).forEach((todo) => {
+          const reminderTime = todoReminderTime(todo);
+          if (!reminderTime || todo.done || todo.failed || reminded.has(todo.id)) return;
+          const delay = reminderTime.getTime() - now;
+          if (delay <= 0 && delay > -60000) {
+            reminded.add(todo.id);
+            notifyTodo(todo);
+          } else if (delay > 0 && delay < 2147483647) {
+            window.setTimeout(() => {
+              const latest = remindedSet();
+              if (latest.has(todo.id)) return;
+              const current = normalizeTodos(load(todoKey(date), []), date).find((entry) => entry.id === todo.id);
+              if (!current || current.done || current.failed || todoReminderTime(current)?.getTime() !== reminderTime.getTime()) return;
+              latest.add(todo.id);
+              saveRemindedSet(latest);
+              notifyTodo(current);
+            }, delay);
+          }
+        });
+      });
+      saveRemindedSet(reminded);
+    }
+
+    todoDate.addEventListener("change", () => {
+      if (!todoDate.value || listKey(viewMode, todoDate.value) === currentListKey()) return;
+      const direction = todoDate.value > currentDate ? "left" : "right";
+      loadTodosByDate(todoDate.value);
+      runSlide(todoList, direction);
+    });
+
+    todoReminder.addEventListener("change", () => {
+      if (todoReminder.checked) ensureNotificationPermission();
+    });
+
+    habitReminder.addEventListener("change", () => {
+      if (habitReminder.checked) ensureNotificationPermission();
+    });
+
+    habitToggleButton.addEventListener("click", () => {
+      setHabitPopover(habitPopover.hidden);
+    });
+
+    habitPrevButton.addEventListener("click", () => {
+      stopHabitAutoScroll();
+      stepHabitPreview(-1);
+    });
+
+    habitNextButton.addEventListener("click", () => {
+      stopHabitAutoScroll();
+      stepHabitPreview(1);
+    });
+
+    habitAutoButton.addEventListener("click", toggleHabitAutoScroll);
+
+    closeHabitButton.addEventListener("click", () => setHabitPopover(false));
+    cancelHabitEditButton.addEventListener("click", resetHabitForm);
+
+    habitForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = habitFormData();
+      if (!data.title) return;
+      if (editingHabitId) {
+        const habit = habits.find((entry) => entry.id === editingHabitId);
+        if (habit) Object.assign(habit, data);
+      } else {
+        addHabit(data);
+      }
+      saveHabits();
+      renderHabits();
+      resetHabitForm();
+      scheduleReminders();
+    });
+
+    habitList.addEventListener("click", (event) => {
+      const item = event.target.closest(".habit-row");
+      if (!item) return;
+      const habit = habits.find((entry) => entry.id === item.dataset.id);
+      if (!habit) return;
+
+      if (event.target.dataset.action === "edit") {
+        fillHabitForm(habit);
+      }
+
+      if (event.target.dataset.action === "delete") {
+        if (!confirm(`确定删除「${habit.title}」吗？`)) return;
+        habits = habits.filter((entry) => entry.id !== habit.id);
+        habitRollIndex = Math.min(habitRollIndex, Math.max(0, habits.length - 1));
+        saveHabits();
+        renderHabits();
+        scheduleReminders();
+      }
+    });
+
+    newTodoButton.addEventListener("click", () => openTodoEditor());
+    closeTodoEditorButton.addEventListener("click", closeTodoEditor);
+    cancelTodoEditorButton.addEventListener("click", closeTodoEditor);
+    todoModalBackdrop.addEventListener("click", closeTodoEditor);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !todoModal.hidden) closeTodoEditor();
+      if (event.key === "Escape" && !habitPopover.hidden) setHabitPopover(false);
+    });
+
+    document.addEventListener("click", (event) => {
+      const path = event.composedPath ? event.composedPath() : [];
+      if (habitPopover.hidden || habitDock.contains(event.target) || path.includes(habitDock)) return;
+      setHabitPopover(false);
+    });
+
+    todoEditorForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      saveTodoEditor();
+    });
+
+    todoList.addEventListener("click", (event) => {
+      const item = event.target.closest(".todo-item");
+      if (!item) return;
+      const todo = todos.find((entry) => entry.id === item.dataset.id);
+      if (!todo) return;
+
+      if (event.target.closest(".check")) {
+        // 空 → ✓ 已完成 → ✕ 未完成 → 空
+        if (todo.done) {
+          todo.done = false;
+          todo.failed = true;
+        } else if (todo.failed) {
+          todo.failed = false;
+        } else {
+          todo.done = true;
+        }
+      }
+
+      if (event.target.dataset.action === "move-up") {
+        moveTodo(todo.id, -1);
+        return;
+      }
+
+      if (event.target.dataset.action === "move-down") {
+        moveTodo(todo.id, 1);
+        return;
+      }
+
+      if (event.target.dataset.action === "delete") {
+        const deleteIndex = todos.findIndex((entry) => entry.id === todo.id);
+        todos = todos.filter((entry) => entry.id !== todo.id);
+        if (editingTodoId === todo.id) closeTodoEditor();
+        showUndo(todo, deleteIndex);
+      }
+
+      if (event.target.dataset.action === "edit") {
+        if (viewMode === "day" && todo.endTime) openScheduleEditor(currentDate, todo);
+        else openTodoEditor(todo);
+        return;
+      }
+
+      saveCurrentTodos();
+      renderTodos();
+      scheduleReminders();
+    });
+
+    todoList.addEventListener("dragstart", (event) => {
+      const handle = event.target.closest("[data-sort-handle]");
+      const item = event.target.closest(".todo-item");
+      if (!handle || !item) return;
+      draggedTodoId = item.dataset.id;
+      item.classList.add("is-dragging");
+      event.dataTransfer.effectAllowed = "move";
+    });
+
+    todoList.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      const dragging = todoList.querySelector(".is-dragging");
+      const target = event.target.closest(".todo-item");
+      if (!dragging || !target || dragging === target) return;
+      const rect = target.getBoundingClientRect();
+      const after = event.clientY > rect.top + rect.height / 2;
+      todoList.insertBefore(dragging, after ? target.nextSibling : target);
+    });
+
+    todoList.addEventListener("dragend", () => {
+      const dragging = todoList.querySelector(".is-dragging");
+      if (dragging) dragging.classList.remove("is-dragging");
+      if (draggedTodoId) reorderTodos();
+      draggedTodoId = null;
+    });
+
+    function startPointerSort(item) {
+      if (pointerSortingItem === item) return;
+      pointerSortingItem = item;
+      draggedTodoId = item.dataset.id;
+      item.classList.add("is-dragging");
+      if (navigator.vibrate) navigator.vibrate(12);
+    }
+
+    function movePointerSort(clientX, clientY) {
+      if (!pointerSortingItem) return;
+      const target = document.elementFromPoint(clientX, clientY)?.closest(".todo-item");
+      if (!target || target === pointerSortingItem || !todoList.contains(target)) return;
+      const rect = target.getBoundingClientRect();
+      const after = clientY > rect.top + rect.height / 2;
+      todoList.insertBefore(pointerSortingItem, after ? target.nextSibling : target);
+    }
+
+    function finishPointerSort() {
+      window.clearTimeout(pointerSortTimer);
+      pointerSortTimer = null;
+      pointerSortStart = null;
+      if (!pointerSortingItem) return;
+      pointerSortingItem.classList.remove("is-dragging");
+      pointerSortingItem = null;
+      if (draggedTodoId) reorderTodos();
+      draggedTodoId = null;
+    }
+
+    todoList.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse" && !event.target.closest("[data-sort-handle]")) return;
+      const item = event.target.closest(".todo-item");
+      const handle = event.target.closest("[data-sort-handle]");
+      if (!item || !handle) return;
+      event.preventDefault();
+      pointerSortStart = { x: event.clientX, y: event.clientY };
+      window.clearTimeout(pointerSortTimer);
+      startPointerSort(item);
+      try {
+        handle.setPointerCapture(event.pointerId);
+      } catch {}
+    });
+
+    todoList.addEventListener("pointermove", (event) => {
+      if (!pointerSortingItem) return;
+      event.preventDefault();
+      movePointerSort(event.clientX, event.clientY);
+    });
+
+    todoList.addEventListener("pointerup", finishPointerSort);
+    todoList.addEventListener("pointercancel", finishPointerSort);
+
+    todoList.addEventListener("touchstart", (event) => {
+      const handle = event.target.closest("[data-sort-handle]");
+      const item = event.target.closest(".todo-item");
+      if (!handle || !item) return;
+      event.preventDefault();
+      touchSortingItem = item;
+      startPointerSort(item);
+    }, { passive: false });
+
+    todoList.addEventListener("touchmove", (event) => {
+      if (!touchSortingItem) return;
+      event.preventDefault();
+      const touch = event.touches[0];
+      movePointerSort(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    todoList.addEventListener("touchend", () => {
+      if (!touchSortingItem) return;
+      touchSortingItem = null;
+      finishPointerSort();
+    });
+
+    todoList.addEventListener("touchcancel", () => {
+      window.clearTimeout(touchSortTimer);
+      touchSortingItem = null;
+      finishPointerSort();
+    });
+
+    undoDeleteButton.addEventListener("click", () => {
+      if (!lastDeletedTodo) return;
+      const { key, index, todo, date, mode } = lastDeletedTodo;
+      const items = normalizeTodos(load(key, []), date);
+      if (!items.some((item) => item.id === todo.id)) items.splice(index, 0, todo);
+      save(key, items);
+      queueCloudSave();
+      if (!scheduleView.hidden) {
+        renderSchedule();
+        loadTodosByDate(currentDate);
+      }
+      else if (mode !== viewMode) setViewMode(mode, date);
+      else loadTodosByDate(date);
+      scheduleReminders();
+      undoBar.classList.add("hidden");
+      lastDeletedTodo = null;
+      window.clearTimeout(undoTimer);
+    });
+
+    organizeTodosButton.addEventListener("click", () => {
+      const rank = (todo) => (todo.done ? 1 : todo.failed ? 2 : 0);
+      todos = todos
+        .slice()
+        .sort((a, b) => (rank(a) - rank(b)) || (a.date || "").localeCompare(b.date || "") || (a.time || "99:99").localeCompare(b.time || "99:99") || (Number(a.order) - Number(b.order)))
+        .map((todo, order) => ({ ...todo, order }));
+      saveCurrentTodos();
+      renderTodos();
+    });
+
+    collapseTodosButton.addEventListener("click", () => {
+      const next = localStorage.getItem(storageKeys.todosCollapsed) !== "true";
+      localStorage.setItem(storageKeys.todosCollapsed, String(next));
+      renderTodos();
+    });
+
+    function applyTheme(theme) {
+      const nextTheme = theme || "light";
+      const chrome = themeChrome[nextTheme] || themeChrome.light;
+      document.documentElement.dataset.theme = nextTheme === "light" ? "" : nextTheme;
+      document.querySelectorAll("[data-theme-button]").forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.themeButton === nextTheme);
+      });
+      themeColorMeta.content = chrome.color;
+      themeColorDarkMeta.content = chrome.darkColor;
+      appleStatusBarMeta.content = chrome.statusBar;
+      localStorage.setItem(storageKeys.theme, nextTheme);
+      queueCloudSave();
+      requestAnimationFrame(drawWheel);
+    }
+
+    document.querySelectorAll("[data-theme-button]").forEach((button) => {
+      button.addEventListener("click", () => applyTheme(button.dataset.themeButton));
+    });
+
+    avatarButton.addEventListener("click", () => avatarInput.click());
+    avatarInput.addEventListener("change", () => {
+      const file = avatarInput.files?.[0];
+      if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        alert("请选择 jpg、png 或 webp 图片。");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const image = reader.result;
+        avatarPreview.src = image;
+        localStorage.setItem(storageKeys.avatar, image);
+        queueCloudSave();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function applyBackground(image = "") {
+      if (image) {
+        localStorage.setItem(storageKeys.background, image);
+        document.body.style.setProperty("--custom-bg-image", `url("${image}")`);
+      } else {
+        localStorage.removeItem(storageKeys.background);
+        document.body.style.removeProperty("--custom-bg-image");
+      }
+      document.body.classList.toggle("has-custom-bg", Boolean(image));
+      updateBackgroundControls();
+    }
+
+    function updateBackgroundControls() {
+      const hasImage = document.body.classList.contains("has-custom-bg");
+      chooseBackgroundButton.textContent = chooseBackgroundButton.disabled ? "处理中…" : hasImage ? "更换图片" : "上传图片";
+      clearBackgroundButton.classList.toggle("hidden", !hasImage);
+    }
+
+    function fileToImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("读取背景图片失败"));
+        reader.onload = () => {
+          const image = new Image();
+          image.onerror = () => reject(new Error("背景图片加载失败"));
+          image.onload = () => resolve(image);
+          image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function compressBackgroundImage(file) {
+      const image = await fileToImage(file);
+      const maxSize = 1600;
+      const ratio = Math.min(1, maxSize / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * ratio));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * ratio));
+      const context = canvas.getContext("2d");
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", 0.82);
+    }
+
+    backgroundButton.addEventListener("click", () => {
+      backgroundError.textContent = "";
+      backgroundDialog.showModal();
+    });
+    chooseBackgroundButton.addEventListener("click", () => backgroundInput.click());
+    clearBackgroundButton.addEventListener("click", () => {
+      applyBackground("");
+      backgroundDialog.close();
+      queueCloudSave();
+    });
+    backgroundInput.addEventListener("change", async () => {
+      const file = backgroundInput.files?.[0];
+      backgroundInput.value = "";
+      if (!file) return;
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        backgroundError.textContent = "请选择 JPG、PNG 或 WebP 图片。";
+        return;
+      }
+
+      try {
+        backgroundError.textContent = "";
+        chooseBackgroundButton.disabled = true;
+        clearBackgroundButton.disabled = true;
+        updateBackgroundControls();
+        const image = await compressBackgroundImage(file);
+        applyBackground(image);
+        backgroundDialog.close();
+        queueCloudSave();
+      } catch (error) {
+        backgroundError.textContent = error.name === "QuotaExceededError"
+          ? "浏览器存储空间不足，请尝试上传更小的图片。"
+          : error.message || "背景图片处理失败。";
+      } finally {
+        chooseBackgroundButton.disabled = false;
+        clearBackgroundButton.disabled = false;
+        updateBackgroundControls();
+      }
+    });
+
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function normalizeAngle(angle) {
+      const full = Math.PI * 2;
+      return ((angle % full) + full) % full;
+    }
+
+    function shortWheelText(text) {
+      return text.length > 6 ? `${text.slice(0, 6)}…` : text;
+    }
+
+    function drawWheel() {
+      const size = wheelCanvas.width;
+      const center = size / 2;
+      const radius = center - 18;
+      const colors = [cssVar("--wheel-a"), cssVar("--wheel-b"), cssVar("--wheel-c"), cssVar("--wheel-d")];
+      const items = wheelOptions.length ? wheelOptions : [{ title: "先添加选项" }];
+      const segmentAngle = (Math.PI * 2) / items.length;
+
+      wheelContext.clearRect(0, 0, size, size);
+      wheelContext.save();
+      wheelContext.translate(center, center);
+      wheelContext.rotate(currentAngle - Math.PI / 2);
+
+      items.forEach((item, index) => {
+        const start = index * segmentAngle;
+        const end = start + segmentAngle;
+        const isSelected = item.id && item.id === selectedOptionId;
+
+        wheelContext.beginPath();
+        wheelContext.moveTo(0, 0);
+        wheelContext.arc(0, 0, radius, start, end);
+        wheelContext.closePath();
+        wheelContext.fillStyle = colors[index % colors.length];
+        wheelContext.fill();
+
+        wheelContext.save();
+        wheelContext.rotate(start + segmentAngle / 2);
+        wheelContext.textAlign = "right";
+        wheelContext.textBaseline = "middle";
+        wheelContext.fillStyle = "#24313a";
+        wheelContext.font = "700 30px Microsoft YaHei, sans-serif";
+        wheelContext.fillText(shortWheelText(item.title), radius - 42, 0);
+        wheelContext.restore();
+
+        wheelContext.beginPath();
+        wheelContext.moveTo(0, 0);
+        wheelContext.arc(0, 0, radius, start, end);
+        wheelContext.closePath();
+        wheelContext.lineWidth = isSelected ? 18 : 3;
+        wheelContext.strokeStyle = isSelected ? cssVar("--primary-strong") : "rgba(255, 255, 255, 0.7)";
+        wheelContext.shadowColor = isSelected ? cssVar("--primary") : "transparent";
+        wheelContext.shadowBlur = isSelected ? 18 : 0;
+        wheelContext.stroke();
+        wheelContext.shadowBlur = 0;
+      });
+
+      wheelContext.beginPath();
+      wheelContext.arc(0, 0, radius, 0, Math.PI * 2);
+      wheelContext.lineWidth = 14;
+      wheelContext.strokeStyle = cssVar("--surface");
+      wheelContext.stroke();
+
+      wheelContext.beginPath();
+      wheelContext.arc(0, 0, 66, 0, Math.PI * 2);
+      wheelContext.fillStyle = cssVar("--surface");
+      wheelContext.fill();
+      wheelContext.restore();
+    }
+
+    function getResult(angle) {
+      if (!wheelOptions.length) return null;
+      const segmentAngle = (Math.PI * 2) / wheelOptions.length;
+      const pointerAngle = normalizeAngle(-angle);
+      const index = Math.floor(pointerAngle / segmentAngle) % wheelOptions.length;
+      return { index, option: wheelOptions[index] };
+    }
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function addOption(title) {
+      wheelOptions.push({ id: uid(), title: title.trim() });
+      selectedOptionId = null;
+      saveWheels();
+      renderOptions();
+      drawWheel();
+    }
+
+    function deleteOption(index) {
+      const [removed] = wheelOptions.splice(index, 1);
+      if (removed?.id === selectedOptionId) selectedOptionId = null;
+      saveWheels();
+      renderOptions();
+      drawWheel();
+    }
+
+    function spinWheel() {
+      if (isSpinning || wheelOptions.length < 2) return;
+
+      isSpinning = true;
+      selectedOptionId = null;
+      renderWheelShell();
+      renderOptions();
+      spinResult.textContent = "正在认真旋转...";
+
+      const startAngle = currentAngle;
+      const fullTurns = 5 + Math.floor(Math.random() * 4);
+      const randomOffset = Math.random() * Math.PI * 2;
+      const targetAngle = startAngle + fullTurns * Math.PI * 2 + randomOffset;
+      const duration = 4200 + Math.random() * 800;
+      const startTime = performance.now();
+
+      function animate(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        currentAngle = startAngle + (targetAngle - startAngle) * easeOutCubic(progress);
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+          return;
+        }
+
+        currentAngle = normalizeAngle(currentAngle);
+        const result = getResult(currentAngle);
+        if (result) {
+          selectedOptionId = result.option.id;
+          spinResult.textContent = `今天就做这件事！${result.option.title}`;
+          alert(`今天就做这件事！\n${result.option.title}`);
+        }
+        isSpinning = false;
+        renderWheelShell();
+        renderOptions();
+        drawWheel();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function renderOptions() {
+      optionList.innerHTML = "";
+      optionEmpty.classList.toggle("hidden", wheelOptions.length > 0);
+      const optionsCollapsed = localStorage.getItem(storageKeys.optionsCollapsed) === "true";
+      optionList.classList.toggle("is-collapsed", optionsCollapsed);
+      optionEmpty.classList.toggle("is-collapsed", optionsCollapsed);
+      collapseOptionsButton.textContent = optionsCollapsed ? "展开" : "折叠";
+      collapseOptionsButton.title = optionsCollapsed ? "展开选项" : "折叠选项";
+      collapseOptionsButton.setAttribute("aria-label", collapseOptionsButton.title);
+      spinButton.disabled = wheelOptions.length < 2 || isSpinning;
+      spinButton.textContent = isSpinning ? "转动中..." : "开始抽奖";
+
+      wheelOptions.forEach((option, index) => {
+        const item = document.createElement("li");
+        item.className = `option-item${option.id === selectedOptionId ? " selected" : ""}`;
+        item.dataset.id = option.id;
+        item.dataset.index = index;
+        item.innerHTML = `
+          <span class="option-text">${escapeHtml(option.title)}</span>
+          <div class="item-actions">
+            <button class="icon-btn" type="button" data-action="edit" title="编辑">✎</button>
+            <button class="icon-btn danger" type="button" data-action="delete" title="删除">×</button>
+          </div>
+        `;
+        optionList.appendChild(item);
+      });
+
+      drawWheel();
+    }
+
+    optionForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const title = optionInput.value.trim();
+      if (!title) return;
+      addOption(title);
+      optionInput.value = "";
+      spinResult.textContent = "";
+    });
+
+    optionList.addEventListener("click", async (event) => {
+      const item = event.target.closest(".option-item");
+      if (!item) return;
+      const option = wheelOptions.find((entry) => entry.id === item.dataset.id);
+      const optionIndex = Number(item.dataset.index);
+      if (!option || isSpinning) return;
+
+      if (event.target.dataset.action === "delete") {
+        deleteOption(optionIndex);
+        spinResult.textContent = "";
+      }
+
+      if (event.target.dataset.action === "edit") {
+        const nextTitle = await requestText("编辑转盘选项", option.title);
+        const currentOption = wheelOptions.find((entry) => entry.id === option.id);
+        if (nextTitle?.trim() && currentOption) {
+          currentOption.title = nextTitle.trim();
+          spinResult.textContent = "";
+          saveWheels();
+          renderOptions();
+          drawWheel();
+        }
+      }
+    });
+
+    spinButton.addEventListener("click", spinWheel);
+    collapseOptionsButton.addEventListener("click", () => {
+      const next = localStorage.getItem(storageKeys.optionsCollapsed) !== "true";
+      localStorage.setItem(storageKeys.optionsCollapsed, String(next));
+      renderOptions();
+    });
+    document.querySelectorAll(".mode-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        if (tab.dataset.mode === viewMode) return;
+        setViewMode(tab.dataset.mode);
+        runSlide(todoList, "left");
+      });
+    });
+    prevDayButton.addEventListener("click", prevDay);
+    nextDayButton.addEventListener("click", nextDay);
+    prevWheelButton.addEventListener("click", prevWheel);
+    nextWheelButton.addEventListener("click", nextWheel);
+    createWheelButton.addEventListener("click", async () => {
+      const name = await requestText("新建转盘名称", "新的转盘");
+      if (name !== null) createNewWheel(name);
+    });
+    editWheelButton.addEventListener("click", async () => {
+      if (isSpinning) return;
+      const wheel = currentWheel();
+      const name = await requestText("编辑转盘名称", wheel.name);
+      if (name?.trim() && currentWheel() === wheel) {
+        wheel.name = name.trim();
+        saveWheels();
+        renderWheelShell();
+      }
+    });
+    deleteWheelButton.addEventListener("click", deleteCurrentWheel);
+    syncButton.addEventListener("click", enableCloudSync);
+
+    async function init() {
+      syncCode = localStorage.getItem(storageKeys.syncCode) || "";
+      updateSyncButton();
+      migrateTodoStorage();
+      migrateWheelStorage();
+      habits = normalizeHabits(load(storageKeys.habits, []));
+      todoDate.value = todayDate;
+      const savedMode = localStorage.getItem(storageKeys.todoViewMode);
+      if (Object.hasOwn(modeText, savedMode)) viewMode = savedMode;
+      scheduleContext.value = localStorage.getItem(storageKeys.scheduleContext) === "school" ? "school" : "vacation";
+      applyModeUi();
+      showRoom();
+      avatarPreview.src = localStorage.getItem(storageKeys.avatar) || defaultAvatar;
+      applyTheme(localStorage.getItem(storageKeys.theme) || "light");
+      applyBackground(localStorage.getItem(storageKeys.background) || "");
+      const bootstrapped = await bootstrapCloudData();
+      if (!bootstrapped) {
+        renderHabits();
+        loadTodosByDate(todayDate);
+        loadWheel(currentWheelIndex);
+      }
+      cloudSavePaused = false;
+      setupSwipe(todoPanel, prevDay, nextDay);
+      setupSwipe(scheduleView, () => shiftScheduleWeek(-1), () => shiftScheduleWeek(1));
+      setupSwipe(wheelSlide, nextWheel, prevWheel);
+      scheduleReminders();
+    }
+
+    init();
+  </script>
+</body>
+</html>
