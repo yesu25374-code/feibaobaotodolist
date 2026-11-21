@@ -1,6 +1,6 @@
 // 小小鱼待办 Service Worker：页面网络优先、离线时用缓存；图标等静态文件缓存优先
-const CACHE = "xxy-v4";
-const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192-v3.png", "./icon-512-v3.png", "./apple-touch-icon-v3.png", "./logo.jpg", "./favicon-v3.png"];
+const CACHE = "xxy-v5";
+const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192-v4.png", "./icon-512-v4.png", "./apple-touch-icon-v4.png", "./logo-v2.jpg", "./favicon-v4.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)).then(() => self.skipWaiting()));

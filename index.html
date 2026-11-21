@@ -11,8 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="小小鱼每日待办">
   <meta name="application-name" content="小小鱼每日待办">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="appleStatusBarMeta">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v3.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="favicon-v3.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v4.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon-v4.png">
   <link rel="manifest" href="manifest.webmanifest">
   <style>
     :root {
@@ -2131,7 +2131,7 @@
   <main class="app">
     <header class="topbar">
       <div class="brand">
-        <img class="logo" src="logo.jpg" alt="" aria-hidden="true">
+        <img class="logo" src="logo-v2.jpg" alt="" aria-hidden="true">
         <div class="brand-text">
           <h1>小小鱼每日待办</h1>
           <p class="subtitle" id="brandSubtitle">把今天要做的事轻轻放进清单里</p>
@@ -4677,7 +4677,7 @@
       try {
         const registration = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : null;
         if (registration) {
-          await registration.showNotification(title, { body, tag, icon: "icon-192-v3.png", badge: "icon-192-v3.png" });
+          await registration.showNotification(title, { body, tag, icon: "icon-192-v4.png", badge: "icon-192-v4.png" });
           return;
         }
       } catch {}
