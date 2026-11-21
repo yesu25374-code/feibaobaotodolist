@@ -11,7 +11,8 @@
   <meta name="apple-mobile-web-app-title" content="小小鱼每日待办">
   <meta name="application-name" content="小小鱼每日待办">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" id="appleStatusBarMeta">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v2.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-v3.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon-v3.png">
   <link rel="manifest" href="manifest.webmanifest">
   <style>
     :root {
@@ -53,6 +54,30 @@
       --wheel-b: #c4b5fd;
       --wheel-c: #f9a8d4;
       --wheel-d: #86efac;
+    }
+
+    [data-theme="puppy"] {
+      --bg: #fdf4f0;
+      --surface-soft: #fbe9ea;
+      --text: #4a4448;
+      --muted: #8f8589;
+      --primary: #f0a1b4;
+      --primary-strong: #d8718d;
+      --accent: #9cc79a;
+      --border: rgba(74, 68, 72, 0.12);
+      --wheel-a: #f8c5d1;
+      --wheel-b: #d9e9cf;
+      --wheel-c: #f8dca8;
+      --wheel-d: #dcdadd;
+    }
+
+    [data-theme="puppy"] body:not(.has-custom-bg) {
+      background:
+        url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22220%22%20height%3D%22220%22%20viewBox%3D%220%200%20220%20220%22%3E%3Cg%20opacity%3D%22.55%22%3E%3Cg%20transform%3D%22translate(30%2036)%22%20fill%3D%22%23f6b5c3%22%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-6%22%20r%3D%225%22%2F%3E%3Ccircle%20cx%3D%226%22%20cy%3D%22-2%22%20r%3D%225%22%2F%3E%3Ccircle%20cx%3D%224%22%20cy%3D%225%22%20r%3D%225%22%2F%3E%3Ccircle%20cx%3D%22-4%22%20cy%3D%225%22%20r%3D%225%22%2F%3E%3Ccircle%20cx%3D%22-6%22%20cy%3D%22-2%22%20r%3D%225%22%2F%3E%3Ccircle%20r%3D%223%22%20fill%3D%22%23fbe3a6%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M150%2040c10-10%2024-8%2028-4-6%2010-20%2012-28%204z%22%20fill%3D%22%23b9d8a8%22%2F%3E%3Cpath%20d%3D%22M150%2040l26-4%22%20stroke%3D%22%239cc79a%22%20stroke-width%3D%221%22%2F%3E%3Cg%20transform%3D%22translate(176%20150)%22%20fill%3D%22%23f6b5c3%22%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-5%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%225%22%20cy%3D%22-1%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%223%22%20cy%3D%224%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%22-3%22%20cy%3D%224%22%20r%3D%224%22%2F%3E%3Ccircle%20cx%3D%22-5%22%20cy%3D%22-1%22%20r%3D%224%22%2F%3E%3Ccircle%20r%3D%222.4%22%20fill%3D%22%23fbe3a6%22%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%22M60%20170c-4-14%204-26%2010-28%204%2010-2%2024-10%2028z%22%20fill%3D%22%23c8dfb6%22%2F%3E%3Ccircle%20cx%3D%22110%22%20cy%3D%22100%22%20r%3D%223%22%20fill%3D%22%23f8cf9a%22%2F%3E%3Ccircle%20cx%3D%22196%22%20cy%3D%2286%22%20r%3D%222.5%22%20fill%3D%22%23f3b3c2%22%2F%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%22120%22%20r%3D%222.5%22%20fill%3D%22%23c8dfb6%22%2F%3E%3Ccircle%20cx%3D%22120%22%20cy%3D%22196%22%20r%3D%223%22%20fill%3D%22%23f3b3c2%22%2F%3E%3Ccircle%20cx%3D%2296%22%20cy%3D%2224%22%20r%3D%222%22%20fill%3D%22%23f8cf9a%22%2F%3E%3Cpath%20d%3D%22M118%20132c0-6%205-10%2010-10s10%204%2010%2010z%22%20fill%3D%22%23f2c193%22%2F%3E%3Crect%20x%3D%22125%22%20y%3D%22132%22%20width%3D%226%22%20height%3D%228%22%20rx%3D%222%22%20fill%3D%22%23f7e3cf%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"),
+        radial-gradient(circle at top left, #fff7f3, transparent 32rem),
+        linear-gradient(160deg, #fdf4f0, #fbe9ea 60%, #f3f1ea);
+      background-color: var(--bg);
+      background-size: 220px 220px, auto, auto;
     }
 
     [data-theme="pink"] {
@@ -321,19 +346,25 @@
       width: 50px;
       height: 50px;
       padding: 0;
-      border: 3px solid var(--surface);
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      box-shadow: 0 12px 30px rgba(25, 45, 64, 0.16);
-      overflow: hidden;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 8px 22px rgba(25, 45, 64, 0.1);
+      cursor: pointer;
       flex: 0 0 auto;
     }
 
-    .avatar-button img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
+    .avatar-button .i {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.4s ease;
+    }
+
+    .avatar-button:hover .i {
+      transform: rotate(60deg);
     }
 
     body.has-custom-bg {
@@ -2093,6 +2124,7 @@
     <symbol id="i-unfold" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></symbol>
     <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
     <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.6-4.4M4 4v4h4M4 13a8 8 0 0 0 14.6 4.4M20 20v-4h-4"/></symbol>
   </svg>
 
@@ -2117,7 +2149,7 @@
           <svg class="i"><use href="#i-cloud"/></svg><span id="syncPillText">未同步</span>
         </button>
         <button class="avatar-button" id="avatarButton" type="button" title="设置" aria-label="打开设置" aria-haspopup="dialog">
-          <img id="avatarPreview" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="">
+          <svg class="i"><use href="#i-gear"/></svg><img id="avatarPreview" class="hidden" alt="">
         </button>
       </div>
     </header>
@@ -2318,7 +2350,7 @@
         <button class="icon-btn mini-toggle modal-close" type="submit" aria-label="关闭" autofocus><svg class="i"><use href="#i-x"/></svg></button>
       </form>
 
-      <section class="settings-group">
+      <section class="settings-group hidden">
         <h3>头像</h3>
         <div class="settings-row">
           <img class="settings-avatar" id="settingsAvatar" alt="当前头像">
@@ -2330,6 +2362,7 @@
       <section class="settings-group">
         <h3>主题色</h3>
         <div class="theme-picker" role="group" aria-label="选择主题色">
+          <button class="theme-dot" type="button" data-theme-button="puppy" style="--dot: linear-gradient(135deg, #f0a1b4, #dcdadd 55%, #9cc79a);" title="小狗"><span>小狗</span></button>
           <button class="theme-dot" type="button" data-theme-button="light" style="--dot: linear-gradient(135deg, #ff8fb3, #39b7c9);" title="浅色默认"><span>默认</span></button>
           <button class="theme-dot" type="button" data-theme-button="dark" style="--dot: linear-gradient(135deg, #202635, #7dd3fc);" title="深色"><span>深色</span></button>
           <button class="theme-dot" type="button" data-theme-button="pink" style="--dot: linear-gradient(135deg, #ff76a8, #ffb86b);" title="粉色系"><span>粉</span></button>
@@ -2488,6 +2521,7 @@
 
     const themeChrome = {
       light: { color: "#ff8fb3", darkColor: "#151923", statusBar: "black-translucent" },
+      puppy: { color: "#f0a1b4", darkColor: "#151923", statusBar: "black-translucent" },
       dark: { color: "#151923", darkColor: "#151923", statusBar: "black-translucent" },
       pink: { color: "#ff76a8", darkColor: "#151923", statusBar: "black-translucent" },
       blue: { color: "#48a7ff", darkColor: "#151923", statusBar: "black-translucent" },
@@ -4643,7 +4677,7 @@
       try {
         const registration = "serviceWorker" in navigator ? await navigator.serviceWorker.getRegistration() : null;
         if (registration) {
-          await registration.showNotification(title, { body, tag, icon: "icon-192-v2.png", badge: "icon-192-v2.png" });
+          await registration.showNotification(title, { body, tag, icon: "icon-192-v3.png", badge: "icon-192-v3.png" });
           return;
         }
       } catch {}
