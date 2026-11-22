@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>小小鱼每日待办</title>
   <meta name="theme-color" content="#ff8fb3" id="themeColorMeta">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#151923" id="themeColorDarkMeta">
@@ -2441,6 +2441,12 @@
       .ai-card-meta input[type="date"] { width: 100%; }
       .ai-card-meta input[type="time"] { flex: 1; }
       .room-link span { white-space: nowrap; }
+    }
+
+    /* 禁止手机缩放：双击不放大，输入框不自动放大 */
+    html { touch-action: manipulation; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    @media (max-width: 820px) {
+      input.field, select.field, textarea.field { font-size: 16px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -6373,6 +6379,10 @@ ${days.join("\n")}
         toast("语音没能启动，用输入法键盘上的🎤说话吧");
       }
     });
+
+    // iOS Safari 会无视 user-scalable=no，这里再拦一次双指缩放
+    ["gesturestart", "gesturechange"].forEach((type) => document.addEventListener(type, (event) => event.preventDefault(), { passive: false }));
+    document.addEventListener("touchmove", (event) => { if (event.touches.length > 1) event.preventDefault(); }, { passive: false });
 
     /* ================= 启动 ================= */
 
