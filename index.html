@@ -2257,6 +2257,192 @@
 
     .slide-active { transition: transform 0.45s var(--ease-out), opacity 0.35s var(--ease-out) !important; }
 
+    /* ---------- AI 整理 ---------- */
+    .ai-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 22px;
+      min-height: min(640px, calc(100dvh - 220px));
+    }
+    .ai-panel[hidden] { display: none; }
+    .ai-head h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      font-size: 22px;
+    }
+    .ai-head h2 .i { width: 22px; height: 22px; color: var(--primary); }
+    .ai-sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+    .ai-log {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+    .ai-hint {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .ai-hint p { margin: 0; }
+    .ai-example {
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .ai-bubble {
+      max-width: 88%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+      animation: itemRise 0.4s var(--ease-out) both;
+    }
+    .ai-bubble.user {
+      align-self: flex-end;
+      border-bottom-right-radius: 6px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #fff;
+    }
+    .ai-bubble.bot {
+      align-self: flex-start;
+      border-bottom-left-radius: 6px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+    }
+    .ai-bubble.bot.error { color: var(--danger); }
+    .ai-bubble.thinking::after {
+      content: "…";
+      display: inline-block;
+      animation: aiDots 1s steps(3) infinite;
+      width: 1.2em;
+      overflow: hidden;
+      vertical-align: bottom;
+    }
+    @keyframes aiDots { from { width: 0; } }
+    .ai-result {
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      animation: itemRise 0.45s var(--ease-out) both;
+    }
+    .ai-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--card-color, var(--primary));
+      border-radius: 16px;
+      background: var(--surface);
+    }
+    .ai-card.is-removed { display: none; }
+    .ai-type {
+      border: 0;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: color-mix(in srgb, var(--card-color, var(--primary)) 16%, transparent);
+      color: var(--text);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .ai-card-title {
+      min-width: 0;
+      border: 0;
+      border-bottom: 1px dashed transparent;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-weight: 700;
+      outline: none;
+      padding: 2px 0;
+    }
+    .ai-card-title:focus { border-bottom-color: var(--primary); }
+    .ai-card-remove { min-height: 32px; width: 32px; padding: 0; background: transparent; color: var(--muted); }
+    .ai-card-meta {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .ai-card-meta input {
+      min-height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0 8px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+    }
+    .ai-card-meta input[type="date"] { width: 140px; }
+    .ai-card-meta input[type="time"] { width: 104px; }
+    .ai-card-meta .ai-place { flex: 1; min-width: 110px; }
+    .ai-card-meta .ai-dash { align-self: center; color: var(--muted); }
+    .ai-result-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .ai-result-actions .primary-btn, .ai-result-actions .ghost-btn { min-height: 42px; }
+    .ai-result.is-done .ai-card { opacity: 0.6; pointer-events: none; }
+    .ai-composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      position: sticky;
+      bottom: 0;
+    }
+    .ai-input {
+      flex: 1;
+      min-height: 52px;
+      max-height: 160px;
+      padding: 13px 16px;
+      resize: none;
+      line-height: 1.45;
+      font: inherit;
+    }
+    .ai-actions { display: flex; gap: 8px; }
+    .ai-mic {
+      width: 52px;
+      min-height: 52px;
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      color: var(--text);
+    }
+    .ai-mic.is-listening {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+      animation: aiPulse 1.2s ease-in-out infinite;
+    }
+    @keyframes aiPulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--danger) 22%, transparent); } }
+    .ai-send { min-height: 52px; }
+    .ai-send:disabled { opacity: 0.5; }
+    @media (max-width: 820px) {
+      .ai-panel { padding: 16px; min-height: calc(100dvh - var(--tabbar-h) - 150px); }
+      .ai-send span { display: none; }
+      .ai-send { width: 52px; padding: 0; }
+      .ai-card-meta input[type="date"] { width: 100%; }
+      .ai-card-meta input[type="time"] { flex: 1; }
+      .room-link span { white-space: nowrap; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -2292,6 +2478,9 @@
     <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2"/></symbol>
     <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM6 11a6 6 0 0 0 12 0M12 17v4M9 21h6"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2.5-6.5L4 12zM11.5 13.5L20 4"/></symbol>
     <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.6-4.4M4 4v4h4M4 13a8 8 0 0 0 14.6 4.4M20 20v-4h-4"/></symbol>
   </svg>
 
@@ -2309,6 +2498,7 @@
         <a class="room-link" href="#todo" aria-current="page"><svg class="i"><use href="#i-list"/></svg><span>待办</span></a>
         <a class="room-link" href="#schedule"><svg class="i"><use href="#i-calendar"/></svg><span>日程</span></a>
         <a class="room-link" href="#recipes"><svg class="i"><use href="#i-bowl"/></svg><span>食谱</span></a>
+        <a class="room-link" href="#ai"><svg class="i"><use href="#i-sparkle"/></svg><span>AI整理</span></a>
       </nav>
 
       <div class="header-actions">
@@ -2482,6 +2672,27 @@
       </div>
     </section>
 
+    <section class="panel ai-panel" id="aiView" data-room-panel="ai" aria-labelledby="aiTitle" hidden>
+      <div class="ai-head">
+        <h2 id="aiTitle"><svg class="i"><use href="#i-sparkle"/></svg>AI 整理</h2>
+        <p class="ai-sub">随便说说你的安排，AI 帮你拆成日程和待办，确认后一键加入。</p>
+      </div>
+      <div class="ai-log" id="aiLog" aria-live="polite">
+        <div class="ai-hint" id="aiHint">
+          <p>可以这样说：</p>
+          <button type="button" class="ai-example">明天上午8点到10点有课，下午3点去取快递，周五前交论文</button>
+          <button type="button" class="ai-example">后天晚上7点和朋友吃火锅，记得带充电宝</button>
+        </div>
+      </div>
+      <form class="ai-composer" id="aiForm">
+        <textarea class="field ai-input" id="aiInput" rows="1" placeholder="打字，或点麦克风说话…" aria-label="输入安排"></textarea>
+        <div class="ai-actions">
+          <button class="icon-btn ai-mic" id="aiMicButton" type="button" title="语音输入" aria-label="语音输入"><svg class="i"><use href="#i-mic"/></svg></button>
+          <button class="primary-btn ai-send" id="aiSendButton" type="submit"><svg class="i"><use href="#i-send"/></svg><span>整理</span></button>
+        </div>
+      </form>
+    </section>
+
     <div class="toast hidden" id="undoBar" role="status" aria-live="polite">
       <span id="undoText">已删除 1 个待办</span>
       <button class="toast-btn" id="undoDeleteButton" type="button">撤销</button>
@@ -2562,6 +2773,18 @@
           <span class="sync-status" id="syncStatusText">未开启</span>
           <button class="ghost-btn compact-btn" id="syncNowButton" type="button"><svg class="i"><use href="#i-refresh"/></svg>立即同步</button>
           <button class="ghost-btn compact-btn" id="syncDisconnectButton" type="button">断开</button>
+        </div>
+      </section>
+
+      <section class="settings-group">
+        <h3>AI 整理</h3>
+        <p class="settings-note">填入 DeepSeek 的 API Key（sk- 开头）。开了云同步的话，其他设备会自动带上。</p>
+        <form class="settings-row sync-form" id="aiKeyForm">
+          <input class="field" id="aiKeyInput" type="password" placeholder="sk-..." autocomplete="off" aria-label="DeepSeek API Key">
+          <button class="primary-btn" type="submit">保存</button>
+        </form>
+        <div class="settings-row">
+          <span class="sync-status" id="aiKeyStatus">未设置</span>
         </div>
       </section>
 
@@ -2680,7 +2903,9 @@
       optionsCollapsed: "xiaoxiaoyu.optionsCollapsed",
       remindedTodos: "xiaoxiaoyu.remindedTodos",
       todoViewMode: "xiaoxiaoyu.todoViewMode",
-      scheduleContext: "xiaoxiaoyu.scheduleContext"
+      scheduleContext: "xiaoxiaoyu.scheduleContext",
+      aiKey: "xiaoxiaoyu.aiKey",
+      aiKeyAt: "xiaoxiaoyu.aiKeyAt"
     };
 
     const supabaseConfig = {
@@ -3294,7 +3519,9 @@
         series: normalizeSeries(load(storageKeys.series, [])),
         theme: localStorage.getItem(storageKeys.theme) || "puppy",
         themeAt: Number(localStorage.getItem(storageKeys.themeAt)) || 0,
-        mediaAt: Math.max(media.avatarAt, media.backgroundAt)
+        mediaAt: Math.max(media.avatarAt, media.backgroundAt),
+        aiKey: localStorage.getItem(storageKeys.aiKey) || "",
+        aiKeyAt: Number(localStorage.getItem(storageKeys.aiKeyAt)) || 0
       };
     }
 
@@ -3333,6 +3560,8 @@
 
       const cloudThemeAt = Number(cloud.themeAt) || 0;
       const useCloudTheme = cloud.theme && cloudThemeAt > (local.themeAt || 0);
+      const cloudAiKeyAt = Number(cloud.aiKeyAt) || 0;
+      const useCloudAiKey = typeof cloud.aiKey === "string" && cloud.aiKey && (!local.aiKey || cloudAiKeyAt > (local.aiKeyAt || 0));
 
       return {
         version: 2,
@@ -3343,7 +3572,9 @@
         series: seriesMerged,
         theme: useCloudTheme ? cloud.theme : local.theme,
         themeAt: useCloudTheme ? cloudThemeAt : (local.themeAt || 0),
-        mediaAt: Math.max(Number(cloud.mediaAt) || 0, local.mediaAt || 0)
+        mediaAt: Math.max(Number(cloud.mediaAt) || 0, local.mediaAt || 0),
+        aiKey: useCloudAiKey ? cloud.aiKey : (local.aiKey || ""),
+        aiKeyAt: useCloudAiKey ? cloudAiKeyAt : (local.aiKeyAt || 0)
       };
     }
 
@@ -3382,6 +3613,11 @@
       if (merged.theme !== (localStorage.getItem(storageKeys.theme) || "puppy")) {
         localStorage.setItem(storageKeys.themeAt, String(merged.themeAt));
         applyTheme(merged.theme, { fromSync: true });
+      }
+      if (merged.aiKey && merged.aiKey !== (localStorage.getItem(storageKeys.aiKey) || "")) {
+        localStorage.setItem(storageKeys.aiKey, merged.aiKey);
+        localStorage.setItem(storageKeys.aiKeyAt, String(merged.aiKeyAt));
+        updateAiKeyUi();
       }
     }
 
@@ -4453,7 +4689,7 @@
 
     function showRoom() {
       const hash = location.hash;
-      const room = hash === "#schedule" || hash === "#recipes" ? hash.slice(1) : "todo";
+      const room = ["#schedule", "#recipes", "#ai"].includes(hash) ? hash.slice(1) : "todo";
       const previousRoom = app.dataset.room;
       app.dataset.room = room;
       roomPanels.forEach((panel) => { panel.hidden = panel.dataset.roomPanel !== room; });
@@ -5732,6 +5968,402 @@
       navigator.serviceWorker.register("sw.js").catch((error) => console.warn("Service Worker 注册失败", error));
     }
 
+    /* ================= AI 整理 ================= */
+
+    const aiLog = $("#aiLog");
+    const aiForm = $("#aiForm");
+    const aiInput = $("#aiInput");
+    const aiSendButton = $("#aiSendButton");
+    const aiMicButton = $("#aiMicButton");
+    const aiKeyInput = $("#aiKeyInput");
+    const aiKeyStatus = $("#aiKeyStatus");
+    const aiWeekNames = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    const aiColors = { schedule: "#48a7ff", todo: "#ff8fb3" };
+    let aiBusy = false;
+
+    function aiKey() {
+      return (localStorage.getItem(storageKeys.aiKey) || "").trim();
+    }
+
+    function updateAiKeyUi() {
+      const key = aiKey();
+      aiKeyStatus.textContent = key ? `已设置（…${key.slice(-4)}）` : "未设置";
+      if (document.activeElement !== aiKeyInput) aiKeyInput.value = key;
+    }
+
+    $("#aiKeyForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const key = aiKeyInput.value.trim();
+      localStorage.setItem(storageKeys.aiKey, key);
+      localStorage.setItem(storageKeys.aiKeyAt, String(Date.now()));
+      updateAiKeyUi();
+      queueCloudSave();
+      toast(key ? "AI Key 已保存" : "AI Key 已清除");
+    });
+
+    function aiPrompt() {
+      const now = new Date();
+      const days = [];
+      for (let i = 0; i < 21; i += 1) {
+        const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+        const tag = i === 0 ? "（今天）" : i === 1 ? "（明天）" : i === 2 ? "（后天）" : "";
+        days.push(`${formatDateKey(date)} ${aiWeekNames[date.getDay()]}${tag}`);
+      }
+      const clock = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      return `你是一个中文日程助理，负责把用户随口说的安排整理成结构化的日程和待办。
+现在是 ${formatDateKey(now)} ${aiWeekNames[now.getDay()]} ${clock}。
+日期对照表（周一为一周开始，"这周X"指本周，"下周X"指下一周）：
+${days.join("\n")}
+
+规则：
+- 有明确开始时间、要在某个时间段去做/参加的事（上课、开会、约饭、看病等）→ type 为 "schedule"，必须填 start；能推断出结束时间就填 end，否则 end 留空。
+- 只是要完成的事、没有具体时间段的（交作业、买东西、打电话等）→ type 为 "todo"；如果提到了大概时刻也可以填 start。
+- "周五前/截止"之类的，date 填截止那天。没说日期的默认今天；如果说的时间今天已经过了且没说日期，用明天。
+- 上午/早上 = 上午时间；下午 1-6 点 = 13:00-18:00；晚上 X 点 = X+12 点。时间统一用 24 小时制 HH:MM。
+- title 简短（2-12 字），去掉时间日期等已拆出的信息；地点放 place，其他补充放 note。
+- 一句话里有多件事要拆开。和日程无关的闲聊不要编造条目。
+- reply 用一句温柔简短的中文告诉用户你整理了什么（不要列出细节）。
+
+只输出 JSON：{"reply": "...", "items": [{"type": "schedule|todo", "title": "", "date": "YYYY-MM-DD", "start": "HH:MM 或空", "end": "HH:MM 或空", "place": "", "note": ""}]}`;
+    }
+
+    function aiCleanTime(value) {
+      const match = /^(\d{1,2}):(\d{2})/.exec(String(value || "").trim());
+      if (!match) return "";
+      const hour = Number(match[1]);
+      const minute = Number(match[2]);
+      if (hour > 23 || minute > 59) return "";
+      return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    }
+
+    function aiAddHour(time) {
+      const [hour, minute] = time.split(":").map(Number);
+      const total = Math.min(hour * 60 + minute + 60, 23 * 60 + 59);
+      return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+    }
+
+    function aiNormalizeItems(raw) {
+      const list = Array.isArray(raw) ? raw : [];
+      return list.map((item) => {
+        if (!item || typeof item.title !== "string" || !item.title.trim()) return null;
+        const start = aiCleanTime(item.start);
+        const type = item.type === "schedule" && start ? "schedule" : "todo";
+        return {
+          type,
+          title: item.title.trim().slice(0, 60),
+          date: isDateKey(item.date || "") ? item.date : todayDate,
+          start,
+          end: aiCleanTime(item.end),
+          place: typeof item.place === "string" ? item.place.trim() : "",
+          note: typeof item.note === "string" ? item.note.trim() : ""
+        };
+      }).filter(Boolean);
+    }
+
+    async function aiRequest(text) {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 45000);
+      try {
+        const response = await fetch("https://api.deepseek.com/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey()}` },
+          body: JSON.stringify({
+            model: "deepseek-chat",
+            temperature: 0.2,
+            response_format: { type: "json_object" },
+            messages: [
+              { role: "system", content: aiPrompt() },
+              { role: "user", content: text }
+            ]
+          }),
+          signal: controller.signal
+        });
+        if (response.status === 401) throw new Error("API Key 不对，去设置里检查一下");
+        if (response.status === 402) throw new Error("DeepSeek 余额不足了，去充一下值吧");
+        if (!response.ok) throw new Error(`AI 服务出错了（${response.status}），稍后再试`);
+        const data = await response.json();
+        const content = data?.choices?.[0]?.message?.content || "{}";
+        const parsed = JSON.parse(content);
+        return { reply: typeof parsed.reply === "string" ? parsed.reply : "", items: aiNormalizeItems(parsed.items) };
+      } catch (error) {
+        if (error.name === "AbortError") throw new Error("AI 响应超时了，再试一次吧");
+        if (error instanceof TypeError) throw new Error("网络连不上 AI，检查一下网络");
+        throw error;
+      } finally {
+        window.clearTimeout(timer);
+      }
+    }
+
+    function aiBubble(role, text, extraClass = "") {
+      const bubble = document.createElement("div");
+      bubble.className = `ai-bubble ${role} ${extraClass}`.trim();
+      bubble.textContent = text;
+      aiLog.append(bubble);
+      bubble.scrollIntoView({ block: "end", behavior: "smooth" });
+      return bubble;
+    }
+
+    function aiFriendlyDate(dateStr) {
+      const date = toLocalDate(dateStr);
+      const diff = Math.round((date - toLocalDate(todayDate)) / 86400000);
+      const near = { 0: "今天", 1: "明天", 2: "后天" }[diff];
+      return near || `${date.getMonth() + 1}月${date.getDate()}日 ${aiWeekNames[date.getDay()]}`;
+    }
+
+    function aiCard(item) {
+      const card = document.createElement("div");
+      card.className = "ai-card";
+      card.innerHTML = `
+        <button class="ai-type" type="button" title="点一下切换类型"></button>
+        <input class="ai-card-title" aria-label="名称">
+        <button class="icon-btn ai-card-remove" type="button" aria-label="不要这条"><svg class="i"><use href="#i-x"/></svg></button>
+        <div class="ai-card-meta">
+          <input type="date" class="ai-date" aria-label="日期">
+          <input type="time" class="ai-start" aria-label="开始时间">
+          <span class="ai-dash">–</span>
+          <input type="time" class="ai-end" aria-label="结束时间">
+          <input class="ai-place" placeholder="地点" aria-label="地点">
+        </div>`;
+      const typeButton = card.querySelector(".ai-type");
+      const end = card.querySelector(".ai-end");
+      const dash = card.querySelector(".ai-dash");
+      card.querySelector(".ai-card-title").value = item.title;
+      card.querySelector(".ai-date").value = item.date;
+      card.querySelector(".ai-start").value = item.start;
+      end.value = item.end;
+      card.querySelector(".ai-place").value = item.place;
+      card.dataset.note = item.note;
+      const applyType = (type) => {
+        card.dataset.type = type;
+        card.style.setProperty("--card-color", aiColors[type]);
+        typeButton.textContent = type === "schedule" ? "📅 日程" : "✅ 待办";
+        end.hidden = type !== "schedule";
+        dash.hidden = type !== "schedule";
+      };
+      applyType(item.type);
+      typeButton.addEventListener("click", () => applyType(card.dataset.type === "schedule" ? "todo" : "schedule"));
+      card.querySelector(".ai-card-remove").addEventListener("click", () => {
+        card.classList.add("is-removed");
+        const result = card.closest(".ai-result");
+        if (result && !result.querySelector(".ai-card:not(.is-removed)")) {
+          result.querySelector(".ai-confirm").disabled = true;
+        }
+      });
+      return card;
+    }
+
+    function aiReadCard(card) {
+      const title = card.querySelector(".ai-card-title").value.trim();
+      const date = card.querySelector(".ai-date").value;
+      if (!title || !isDateKey(date)) return null;
+      let type = card.dataset.type;
+      const start = card.querySelector(".ai-start").value;
+      let end = card.querySelector(".ai-end").value;
+      if (type === "schedule" && !start) type = "todo";
+      if (type === "schedule" && (!end || end <= start)) end = aiAddHour(start);
+      return {
+        title, date, type,
+        time: start || "",
+        endTime: type === "schedule" ? end : "",
+        place: card.querySelector(".ai-place").value.trim(),
+        note: card.dataset.note || ""
+      };
+    }
+
+    function aiCommit(result) {
+      const entries = [...result.querySelectorAll(".ai-card:not(.is-removed)")].map(aiReadCard).filter(Boolean);
+      if (!entries.length) return;
+      const now = Date.now();
+      const byDate = {};
+      entries.forEach((entry) => (byDate[entry.date] ||= []).push(entry));
+      Object.entries(byDate).forEach(([date, list]) => {
+        const items = loadList(todoKey(date));
+        let order = items.length ? Math.max(...items.map((item) => Number(item.order) || 0)) + 1 : 0;
+        list.forEach((entry) => {
+          items.push({
+            id: uid(),
+            title: entry.title,
+            date,
+            done: false,
+            failed: false,
+            note: entry.note,
+            time: entry.time,
+            ...(entry.endTime ? { endTime: entry.endTime } : {}),
+            place: entry.place,
+            color: aiColors[entry.type],
+            reminder: Boolean(entry.time),
+            order: order++,
+            updatedAt: now
+          });
+        });
+        saveList(todoKey(date), items);
+      });
+      result.classList.add("is-done");
+      const actions = result.querySelector(".ai-result-actions");
+      const schedules = entries.filter((entry) => entry.type === "schedule").length;
+      const todosCount = entries.length - schedules;
+      const parts = [];
+      if (schedules) parts.push(`${schedules} 个日程`);
+      if (todosCount) parts.push(`${todosCount} 个待办`);
+      actions.innerHTML = "";
+      const done = document.createElement("span");
+      done.className = "sync-status";
+      done.textContent = `已加入 ${parts.join("、")} ✓`;
+      const view = document.createElement("a");
+      view.className = "ghost-btn icon-btn";
+      view.href = schedules ? "#schedule" : "#todo";
+      view.textContent = schedules ? "去看日程" : "去看待办";
+      view.addEventListener("click", () => {
+        const first = entries[0].date;
+        if (schedules) scheduleDate = first;
+        else loadTodosByDate(first);
+      });
+      actions.append(done, view);
+      queueCloudSave();
+      refreshViews();
+      scheduleReminders();
+      toast(`已加入 ${parts.join("、")}`);
+    }
+
+    function aiShowResult(items) {
+      const result = document.createElement("div");
+      result.className = "ai-result";
+      const sorted = items.slice().sort((a, b) => a.date.localeCompare(b.date) || (a.start || "99").localeCompare(b.start || "99"));
+      let lastDate = "";
+      sorted.forEach((item) => {
+        if (item.date !== lastDate) {
+          lastDate = item.date;
+          const label = document.createElement("div");
+          label.className = "ai-sub";
+          label.textContent = aiFriendlyDate(item.date);
+          result.append(label);
+        }
+        result.append(aiCard(item));
+      });
+      const actions = document.createElement("div");
+      actions.className = "ai-result-actions";
+      actions.innerHTML = `<button class="ghost-btn icon-btn ai-cancel" type="button">算了</button><button class="primary-btn icon-btn ai-confirm" type="button">全部加入</button>`;
+      actions.querySelector(".ai-cancel").addEventListener("click", () => {
+        result.remove();
+        aiBubble("bot", "好的，这次就不加了～");
+      });
+      actions.querySelector(".ai-confirm").addEventListener("click", () => aiCommit(result));
+      result.append(actions);
+      aiLog.append(result);
+      result.scrollIntoView({ block: "end", behavior: "smooth" });
+    }
+
+    async function aiSubmit() {
+      const text = aiInput.value.trim();
+      if (!text || aiBusy) return;
+      if (!aiKey()) {
+        aiBubble("bot", "还没有设置 AI Key，点右上角齿轮 → AI 整理，粘贴 DeepSeek 的 Key 就能用啦。", "error");
+        return;
+      }
+      $("#aiHint")?.remove();
+      aiStopListening();
+      aiBusy = true;
+      aiSendButton.disabled = true;
+      aiInput.value = "";
+      aiAutoSize();
+      aiBubble("user", text);
+      const thinking = aiBubble("bot", "正在整理", "thinking");
+      try {
+        const { reply, items } = await aiRequest(text);
+        thinking.classList.remove("thinking");
+        if (!items.length) {
+          thinking.textContent = reply || "这句话里我没找到要记的安排，换个说法试试？";
+        } else {
+          thinking.textContent = reply || `帮你整理出 ${items.length} 条，看看对不对：`;
+          aiShowResult(items);
+        }
+      } catch (error) {
+        thinking.classList.remove("thinking");
+        thinking.classList.add("error");
+        thinking.textContent = error.message || "出错了，再试一次吧";
+        if (!aiInput.value) aiInput.value = text;
+      } finally {
+        aiBusy = false;
+        aiSendButton.disabled = false;
+      }
+    }
+
+    function aiAutoSize() {
+      aiInput.style.height = "auto";
+      aiInput.style.height = `${Math.min(aiInput.scrollHeight + 2, 160)}px`;
+    }
+
+    aiForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      aiSubmit();
+    });
+    aiInput.addEventListener("input", aiAutoSize);
+    aiInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey && !event.isComposing && window.matchMedia("(min-width: 821px)").matches) {
+        event.preventDefault();
+        aiSubmit();
+      }
+    });
+    aiLog.addEventListener("click", (event) => {
+      const example = event.target.closest(".ai-example");
+      if (!example) return;
+      aiInput.value = example.textContent;
+      aiAutoSize();
+      aiInput.focus();
+    });
+
+    // 语音输入：支持的浏览器用内置识别，不支持就提示用键盘上的麦克风
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let aiRecognition = null;
+
+    function aiStopListening() {
+      if (aiRecognition) aiRecognition.stop();
+    }
+
+    aiMicButton.addEventListener("click", () => {
+      if (aiRecognition) {
+        aiStopListening();
+        return;
+      }
+      if (!SpeechRecognitionCtor) {
+        toast("这个浏览器不支持网页语音，用输入法键盘上的🎤说话也一样哦");
+        aiInput.focus();
+        return;
+      }
+      const recognition = new SpeechRecognitionCtor();
+      recognition.lang = "zh-CN";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      const base = aiInput.value ? `${aiInput.value.replace(/\s+$/, "")}，` : "";
+      let finalText = "";
+      recognition.onresult = (event) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const piece = event.results[i][0].transcript;
+          if (event.results[i].isFinal) finalText += piece;
+          else interim += piece;
+        }
+        aiInput.value = base + finalText + interim;
+        aiAutoSize();
+      };
+      recognition.onerror = (event) => {
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") toast("没有麦克风权限，或者用输入法键盘上的🎤");
+        else if (event.error === "network") toast("语音服务连不上，用输入法键盘上的🎤说话吧");
+        else if (event.error !== "no-speech" && event.error !== "aborted") toast("语音识别出错了，再试一次");
+      };
+      recognition.onend = () => {
+        aiRecognition = null;
+        aiMicButton.classList.remove("is-listening");
+      };
+      try {
+        recognition.start();
+        aiRecognition = recognition;
+        aiMicButton.classList.add("is-listening");
+      } catch {
+        toast("语音没能启动，用输入法键盘上的🎤说话吧");
+      }
+    });
+
     /* ================= 启动 ================= */
 
     function init() {
@@ -5753,6 +6385,7 @@
       showRoom();
       updateSubtitle();
       updateSyncUi();
+      updateAiKeyUi();
       setupSwipe(todoPanel, nextDay, prevDay, ".todo-item, .quick-add, .mode-tabs");
       setupSwipe(scheduleView, () => shiftScheduleWeek(1), () => shiftScheduleWeek(-1), ".schedule-resize");
       setupSwipe(wheelSlide, () => switchWheel(currentWheelIndex + 1, "left"), () => switchWheel(currentWheelIndex - 1, "right"), ".option-list, .option-form, .result-card");
