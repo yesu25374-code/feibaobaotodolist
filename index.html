@@ -2435,6 +2435,34 @@
       input.field, select.field, textarea.field { font-size: 16px; }
     }
 
+    /* 周日程切换提示 */
+    #scheduleView { position: relative; }
+    .schedule-scroll { overflow-x: hidden; }
+    .week-badge {
+      position: fixed;
+      left: 50%;
+      top: 42%;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 14px 26px;
+      border-radius: 22px;
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+      box-shadow: 0 18px 40px rgba(25, 45, 64, 0.22);
+      backdrop-filter: blur(12px);
+      color: var(--text);
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.85);
+      transition: opacity 0.25s var(--ease-out), transform 0.35s var(--ease-spring);
+    }
+    .week-badge.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .week-badge strong { font-size: 22px; color: var(--primary-strong); }
+    .week-badge span { font-size: 13px; color: var(--muted); }
+    .week-badge .week-badge-arrow { font-size: 20px; color: var(--primary); font-weight: 800; }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -5077,16 +5105,71 @@
       scheduleReminders();
     }
 
+    // 切换周：表格先滑出、再从另一侧滑进来，同时中间弹出"上一周 / 下一周"提示
+    let weekSlideBusy = false;
+    function animateScheduleWeek(step, apply) {
+      const targets = [scheduleHeader, scheduleGrid];
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce || weekSlideBusy || !targets[0].animate) {
+        apply();
+        renderSchedule();
+        showWeekBadge(step);
+        return;
+      }
+      weekSlideBusy = true;
+      const offset = step > 0 ? -1 : 1;
+      const outs = targets.map((el) => el.animate(
+        [{ transform: "translateX(0)", opacity: 1 }, { transform: `translateX(${offset * 45}%)`, opacity: 0 }],
+        { duration: 170, easing: "cubic-bezier(.4,0,1,1)", fill: "forwards" }
+      ));
+      Promise.all(outs.map((a) => a.finished.catch(() => {}))).then(() => {
+        apply();
+        renderSchedule();
+        outs.forEach((a) => a.cancel());
+        targets.forEach((el) => el.animate(
+          [{ transform: `translateX(${-offset * 45}%)`, opacity: 0 }, { transform: "translateX(0)", opacity: 1 }],
+          { duration: 380, easing: "cubic-bezier(.2,.9,.3,1.15)" }
+        ));
+        scheduleDateLabel.animate(
+          [{ transform: "scale(1)", color: "var(--muted)" }, { transform: "scale(1.18)", color: "var(--primary-strong)", offset: 0.4 }, { transform: "scale(1)", color: "var(--muted)" }],
+          { duration: 650, easing: "ease-out" }
+        );
+        showWeekBadge(step);
+        window.setTimeout(() => { weekSlideBusy = false; }, 120);
+      });
+    }
+
+    let weekBadgeTimer = 0;
+    function showWeekBadge(step) {
+      let badge = $("#weekBadge");
+      if (!badge) {
+        badge = document.createElement("div");
+        badge.id = "weekBadge";
+        badge.className = "week-badge";
+        badge.setAttribute("aria-hidden", "true");
+        scheduleView.append(badge);
+      }
+      const monday = weekStart(scheduleDate);
+      const thisWeek = weekStart(todayDate);
+      const diff = Math.round((toLocalDate(monday) - toLocalDate(thisWeek)) / (7 * 86400000));
+      const name = diff === 0 ? "本周" : diff === 1 ? "下周" : diff === -1 ? "上周" : diff > 0 ? `${diff} 周后` : `${-diff} 周前`;
+      badge.innerHTML = `<span class="week-badge-arrow">${step > 0 ? "→" : "←"}</span><strong>${name}</strong><span>${formatWeekLabel(scheduleDate).replace(" 本周", "")}</span>`;
+      badge.classList.remove("show");
+      void badge.offsetWidth;
+      badge.classList.add("show");
+      window.clearTimeout(weekBadgeTimer);
+      weekBadgeTimer = window.setTimeout(() => badge.classList.remove("show"), 1100);
+    }
+
     function shiftScheduleWeek(step) {
-      scheduleDate = shiftDate(scheduleDate, step * 7);
-      renderSchedule();
+      animateScheduleWeek(step, () => { scheduleDate = shiftDate(scheduleDate, step * 7); });
     }
 
     $("#prevScheduleWeek").addEventListener("click", () => shiftScheduleWeek(-1));
     $("#nextScheduleWeek").addEventListener("click", () => shiftScheduleWeek(1));
     $("#scheduleTodayButton").addEventListener("click", () => {
-      scheduleDate = todayDate;
-      renderSchedule();
+      const step = weekStart(scheduleDate) > weekStart(todayDate) ? -1 : 1;
+      animateScheduleWeek(step, () => { scheduleDate = todayDate; });
     });
     newScheduleButton.addEventListener("click", () => openScheduleEditor(weekStart(scheduleDate) === weekStart(todayDate) ? todayDate : scheduleDate));
     scheduleContext.addEventListener("change", () => {
