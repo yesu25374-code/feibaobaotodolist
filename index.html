@@ -5985,6 +5985,16 @@
       return (localStorage.getItem(storageKeys.aiKey) || "").trim();
     }
 
+    // 专属链接 …/#key=sk-xxx：点开一次就把 Key 存到本机，并立刻从地址栏抹掉
+    (function importAiKeyFromLink() {
+      const match = /[#&]key=(sk-[A-Za-z0-9]+)/.exec(location.hash);
+      if (!match) return;
+      localStorage.setItem(storageKeys.aiKey, match[1]);
+      localStorage.setItem(storageKeys.aiKeyAt, String(Date.now()));
+      history.replaceState(null, "", `${location.pathname}${location.search}#ai`);
+      window.setTimeout(() => toast("AI 整理已开通，直接说就行～"), 600);
+    })();
+
     function updateAiKeyUi() {
       const key = aiKey();
       aiKeyStatus.textContent = key ? `已设置（…${key.slice(-4)}）` : "未设置";
