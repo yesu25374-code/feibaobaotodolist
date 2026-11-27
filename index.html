@@ -6652,7 +6652,7 @@ ${days.join("\n")}
       try {
         const response = await fetch("https://api.apimart.ai/v1/chat/completions", {
           method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, signal: controller.signal,
-          body: JSON.stringify({ model: "gemini-3.5-flash", stream: false, response_format: { type: "json_object" }, messages: [{ role: "system", content: closetSystemPrompt }, { role: "user", content: [{ type: "text", text: `判断类别：${closetState.category}。${closetState.price === null ? "未填写价格，只估合理价。" : `实际付价：人民币 ${closetState.price} 元。`}照片顺序从 0 开始，共 ${closetState.photos.length} 张。` }, ...closetState.photos.map(url => ({ type: "image_url", image_url: { url } }))] }] })
+          body: JSON.stringify({ model: "gemini-3.5-flash-lite", stream: false, response_format: { type: "json_object" }, messages: [{ role: "system", content: closetSystemPrompt }, { role: "user", content: [{ type: "text", text: `判断类别：${closetState.category}。${closetState.price === null ? "未填写价格，只估合理价。" : `实际付价：人民币 ${closetState.price} 元。`}照片顺序从 0 开始，共 ${closetState.photos.length} 张。` }, ...closetState.photos.map(url => ({ type: "image_url", image_url: { url } }))] }] })
         });
         if (response.status === 401) throw new Error("APIMart Key 不对，去设置里检查一下再试。");
         if (response.status === 402) throw new Error("APIMart 余额不足，充值后再来判决吧。");
