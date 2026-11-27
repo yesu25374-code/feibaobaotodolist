@@ -6682,6 +6682,15 @@ ${days.join("\n")}
       $("#closetReportPhoto").removeAttribute("src"); $("#closetMarks").replaceChildren(); $("#closetIssues").replaceChildren();
       document.querySelector('[data-closet-category="上衣"]').click(); closetRenderUploads(); closetStep(1);
     });
+    // 专属链接 …/#closetkey=sk-xxx：点开一次就把 APIMart Key 存到本机，并立刻从地址栏抹掉
+    (function importClosetKeyFromLink() {
+      const match = /[#&]closetkey=(sk-[A-Za-z0-9_-]+)/.exec(location.hash);
+      if (!match) return;
+      localStorage.setItem(storageKeys.closetKey, match[1]);
+      localStorage.setItem(storageKeys.closetKeyAt, String(Date.now()));
+      history.replaceState(null, "", `${location.pathname}${location.search}#closet`);
+      window.setTimeout(() => toast("肥肥查已开通，传张衣服照片试试～"), 600);
+    })();
     closetRenderUploads(); updateClosetKeyUi();
 
     /* ================= 启动 ================= */
